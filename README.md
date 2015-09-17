@@ -7,6 +7,17 @@
 2. DRY (extract as much information from the code as possible)
 3. When documenting an endpoint, it should be just swagger specification that you need to write. You shall not need to learn another API or spec format.                 
 
+
+=======
+Which translates to 
+
+1. No annotation needed 
+2. No need to learn yet another API, just learn how to write a swagger specification
+3. Write your swagger specification in your routes files as comments 
+4. Write a base swagger specification for general information that doesn't fit into the routes files.  
+5. Reference your case classes in your swagger spec and play-swagger will generate swagger definition for you 
+
+
 ## Installation
 
 add Swagger API dependency to your sbt
