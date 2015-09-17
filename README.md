@@ -20,8 +20,11 @@ Which translates to
 
 ## Installation
 
+### Step 1
 add Swagger API dependency to your sbt
 
+
+### Step 2
 add a controller to your Play app that serves the swagger spec
 
 ```scala
@@ -40,6 +43,7 @@ class ApiSpecs @Inject() (router: Router, cached: Cached) extends Controller {
 }
 ```
 
+### Step 3
 add an end point to the routes file 
 ```
 ###
@@ -50,6 +54,7 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 
 ```
 
+### Step 4
 Add a base swagger.yml to your resources folder. This one needs to provide all the required fields according to swagger spec
 E.g.
 ```
@@ -69,8 +74,10 @@ E.g.
 
 ```
 
+### Step 5a
 Deploy a swagger ui and point to the swagger spec end point.
 
+### Step 5b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
 Add the following dependency
