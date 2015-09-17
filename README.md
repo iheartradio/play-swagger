@@ -50,6 +50,25 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 
 ```
 
+Add a base swagger.yml to your resources folder. This one needs to provide all the required fields according to swagger spec
+E.g.
+```
+---
+  swagger: "2.0"
+  info: 
+    title: "Poweramp API"
+    description: "Power your music"
+    version: "1.0.0"
+  host: api2.iheart.com
+  schemes:
+    - "https"
+  consumes:
+    - application/json
+  produces: 
+    - application/json
+
+```
+
 Deploy a swagger ui and point to the swagger spec end point.
 
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
@@ -68,3 +87,7 @@ GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/l
 
 Then you should be able to open the swagger ui at
 http://localhost:9000/docs/swagger-ui/index.html?url=/docs/swagger.json
+
+
+
+
