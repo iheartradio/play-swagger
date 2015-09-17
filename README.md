@@ -7,6 +7,8 @@
 2. DRY (extract as much information from the code as possible)
 3. When documenting an endpoint, it should be just swagger specification that you need to write. You shall not need to learn another API or spec format.                 
 
+
+=======
 Which translates to 
 
 1. No annotation needed 
@@ -14,6 +16,7 @@ Which translates to
 3. Write your swagger specification in your routes files as comments 
 4. Write a base swagger specification for general information that doesn't fit into the routes files.  
 5. Reference your case classes in your swagger spec and play-swagger will generate swagger definition for you 
+
 
 ## Installation
 
@@ -47,6 +50,25 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 
 ```
 
+Add a base swagger.yml to your resources folder. This one needs to provide all the required fields according to swagger spec
+E.g.
+```
+---
+  swagger: "2.0"
+  info: 
+    title: "Poweramp API"
+    description: "Power your music"
+    version: "1.0.0"
+  host: api2.iheart.com
+  schemes:
+    - "https"
+  consumes:
+    - application/json
+  produces: 
+    - application/json
+
+```
+
 Deploy a swagger ui and point to the swagger spec end point.
 
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
@@ -65,3 +87,7 @@ GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/l
 
 Then you should be able to open the swagger ui at
 http://localhost:9000/docs/swagger-ui/index.html?url=/docs/swagger.json
+
+
+
+
