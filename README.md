@@ -10,11 +10,9 @@ A library that generates swagger specs from route files and case class reflectio
 
 Which translates to 
 
-1. No annotation needed 
-2. No need to learn yet another API, just learn how to write a [swagger specification](http://swagger.io/specification/)
-3. Write your swagger specification in your routes files as comments (json or yml)
-4. Reference your case classes in your swagger spec and play-swagger will generate swagger definition for you 
-5. Override automatically generated fields in the swagger spec in comment.
+1. Write your [swagger specification](http://swagger.io/specification/) in your routes files as comments (json or yml)
+2. Reference your case classes in your swagger spec and play-swagger will generate definitions
+3. Override anything in either the swagger spec in comment or the base swagger spec file (swagger.yml or swagger.json in your conf)
 
 ============================
 ## Day-to-day usage 
