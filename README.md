@@ -46,7 +46,8 @@ object Protocol {
 }
 ```
 
-This will generate the path with summary, tags, parameters and a response with schema defined. It also recursively generates definitions from your case class.  This works fine if you using a simple Json.format[CardCreated] to generate the json response out of this class. If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint. 
+This will generate the path with summary, tags, parameters and a response with schema defined. It also recursively generates definitions from your case class.  
+This works fine if you using a simple `Json.format[CardCreated]` to generate the json response out of this class. If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint. 
 
 The result swagger specs will look like:
   
