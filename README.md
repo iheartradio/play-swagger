@@ -19,7 +19,7 @@ Which translates to
 ============================
 ## Day-to-day usage 
 
-### An simple example
+#### An simple example
 
 In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment. This example is in yml, you can write json if you prefer
 ```
@@ -102,10 +102,10 @@ The result swagger specs will look like:
     }
 ```
 
-### How to override?
+#### How to override?
 To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. 
 
-### How to hide an endpoint?
+#### How to hide an endpoint?
 If you don't want an end point to be included, add `### NoDocs ###` in front of it 
 e.g.
 ```
@@ -113,7 +113,7 @@ e.g.
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 ```
 
-### How to find more examples?
+#### How to find more examples?
 In the tests!
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
  
@@ -124,7 +124,7 @@ In short you need to create a controller that uses the library to generate the s
 Then you just need to have a swagger UI instance to consumer that swagger spec. 
   
 
-### Step 1
+#### Step 1
 add Swagger API dependency to your sbt
 ```
 resolvers += Resolver.bintrayRepo("iheartradio", "maven")
@@ -132,7 +132,7 @@ resolvers += Resolver.bintrayRepo("iheartradio", "maven")
 libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.0-RELEASE"
 ```
 
-### Step 2
+#### Step 2
 add a controller to your Play app that serves the swagger spec
 
 ```scala
@@ -154,7 +154,7 @@ class ApiSpecs @Inject() (router: Router, cached: Cached) extends Controller {
 }
 ```
 
-### Step 3
+#### Step 3
 add an end point to the routes file 
 ```
 ###
@@ -165,7 +165,7 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 
 ```
 
-### Step 4
+#### Step 4
 Add a base swagger.yml (or swagger.json) to your resources folder. This one needs to provide all the required fields according to swagger spec
 E.g.
 ```
@@ -185,10 +185,10 @@ E.g.
 
 ```
 
-### Step 5a
-Deploy a swagger ui and point to the swagger spec end point.
+#### Step 5a
+Deploy a swagger ui and point to the swagger spec end point, or
 
-### Step 5b
+#### Step 5b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
 Add the following dependency
