@@ -53,7 +53,7 @@ This works fine if you using a simple `Json.format[CardCreated]` to generate the
 
 The result swagger specs will look like:
   
-```
+```json
 {
   "tags" : [ { "name": "cards" } ]
   "path" : {
@@ -176,7 +176,7 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 #### Step 4
 Add a base swagger.yml (or swagger.json) to your resources folder. This one needs to provide all the required fields according to swagger spec
 E.g.
-```
+```yml
 ---
   swagger: "2.0"
   info: 
