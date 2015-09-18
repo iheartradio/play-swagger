@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.{Json, JsArray, JsObject}
+import play.api.libs.json.{JsValue, Json, JsArray, JsObject}
 
 case class Track(name: String, genre: Option[String], artist: Artist)
 case class Artist(name: String, age: Int)
@@ -14,6 +14,7 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       ("GET","/api/station/$sid<[^/]+>/playedTracks/last", "@controllers.LiveMeta@.playedByStation(sid:Int)"),
       ("POST","/api/station/playedTracks", "controllers.LiveMeta.addPlayedTracks()"),
       ("GET","/api/player/$pid<.+>/context/$bid<.+>", "controllers.Player.getPlayer(pid:String, bid:String)"),
+      ("GET","/api/player/$pid<.+>/tracks/search", "controllers.Player.searchTrack(pid:String, bid:String)"),
       ("POST","/api/player/$pid<.+>/playedTracks", "controllers.Player.addPlayedTracks(pid:String)"),
       ("GET","/api/station/hidden", "controllers.LiveMeta.hiddenEndPoint()")
     )
@@ -65,7 +66,9 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       |###
       |#  summary: get player
       |###
-      |GET     /player/:pid/context/:bid                             controllers.Player.getPlayer(pid, bid)
+      |GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
+      |
+      |GET     /player/:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
       |
       |###
       |#  parameters:
@@ -102,6 +105,11 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
     val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
+
+
+    def parametersOf(json: JsValue): Seq[JsValue] = {
+      (json \ "parameters" ).as[JsArray].value
+    }
 
     "reads json comment" >> {
       (artistJson \ "summary" ).as[String] === "get recent tracks"
@@ -149,16 +157,17 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       (addTrackJson \ "consumes" ).as[JsArray].value(0).as[String] === "application/json"
     }
 
-    "generate body parameter with paramType " >> {
-      (addTrackJson \ "parameters" ).as[JsArray].value.length === 1
-      ((addTrackJson \ "parameters" ).as[JsArray].value(0) \ "paramType").asOpt[String] === Some("body")
+    "generate body parameter with in " >> {
+      val params = parametersOf(addTrackJson)
+      params.length === 1
+      (params.head \ "in").asOpt[String] === Some("body")
     }
 
     "does not generate for end points marked as hidden" >> {
       (pathJson \ "/api/station/hidden" \ "get").toOption must beEmpty
     }
 
-    "generate path correctly with missing type (String by default) in controller descrption" >> {
+    "generate path correctly with missing type (String by default) in controller description" >> {
       (playerJson \ "summary").asOpt[String] === Some("get player")
     }
 
@@ -167,7 +176,7 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     }
 
     "generate parameter for more path" >> {
-      (playerJson \ "parameters").as[JsArray].value.length === 2
+      parametersOf(playerJson).length === 2
     }
 
     "generate tags definition" >> {
@@ -187,6 +196,23 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       val params = (playerAddTrackJson \ "parameters").as[JsArray].value
       params.length === 2
       params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
+
+    }
+
+
+    "get parameter type of" >> {
+      val playerSearchJson = (pathJson \ "/api/player/{pid}/tracks/search" \ "get").as[JsObject]
+      val params: Seq[JsValue] = parametersOf(playerSearchJson)
+      params.length === 2
+
+      "path params" >> {
+        (params.head \ "name").as[String] === "pid"
+        (params.head \ "in").as[String] === "path"
+      }
+
+      "query params" >> {
+        (params.last \ "in").as[String] === "query"
+      }
 
     }
 

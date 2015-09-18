@@ -131,41 +131,12 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       else None
     }
 
-    def paramsFromControllerDesc(description: String): List[SwaggerParameter] = {
-
-      val paramsPattern = "\\((.+)\\)$".r
-      paramsPattern.findFirstMatchIn(description).map(_.group(1)).map { paramsString ⇒
-        paramsString.split(",").map { param =>
-          val Array(name, pType) = param.split(":")
-          mapParam(name, pType, domainNameSpace)
-        }
-
-      }.getOrElse(Array()).toList
-
-    }
-
-    def mergeParams(fromComment: JsArray, fromRoutes: List[SwaggerParameter]) : JsArray = {
-      val merged = fromRoutes.map { paramInRoute ⇒
-        val specInComment = fromComment.value.find { jo =>
-          (jo \ "name").as[String] == paramInRoute.name
-        }.getOrElse(Json.obj())
-        Json.toJson(paramInRoute)(propFormat).asInstanceOf[JsObject] deepMerge specInComment.asInstanceOf[JsObject]
-      }
-
-      val rest = fromComment.value.filter { fc ⇒
-        val name = (fc \ "name").as[String]
-        fromRoutes.find(_.name == name).isEmpty
-      }
-
-      JsArray(merged ++ rest)
-    }
-
-    def endPointSpec(controllerDesc: String, commentLines: List[String]): JsObject = {
+    def endPointSpec(controllerDesc: String, commentLines: List[String], path: String): JsObject = {
 
       def amendBodyParam(params: JsArray): JsArray = {
         val bodyParam = findByName(params, "body")
         if(bodyParam.isDefined) {
-          val enhancedBodyParam = bodyParam.get + ("paramType" → JsString("body"))
+          val enhancedBodyParam = bodyParam.get + ("in" → JsString("body"))
           JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
         } else params
       }
@@ -175,7 +146,22 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         case _ ⇒ Nil
       }
 
-      val paramsFromController = paramsFromControllerDesc(controllerDesc)
+      val paramsFromController = {
+        val paramsInPath = """\{(\w+)\}""".r.findAllMatchIn(path).map(_.group(1))
+
+        val paramsPattern = "\\((.+)\\)$".r
+
+        JsArray(paramsPattern.findFirstMatchIn(controllerDesc).map(_.group(1)).fold(Array[SwaggerParameter]()) { paramsString ⇒
+          paramsString.split(",").map { param =>
+            val Array(name, pType) = param.split(":")
+            mapParam(name, pType, domainNameSpace)
+          }
+        }.map { p ⇒
+          val jo = Json.toJson(p)(propFormat).asInstanceOf[JsObject]
+          val in = if (paramsInPath.contains(p.name)) "path" else "query"
+          jo + ("in" → JsString(in))
+        })
+      }
 
       val jsonFromComment = for {
         leadingSpace ← commentDocLines.headOption.flatMap( """^(#\s*)""".r.findFirstIn )
@@ -186,7 +172,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
       val paramsFromComment = jsonFromComment.flatMap(jc ⇒ (jc \ "parameters").asOpt[JsArray]).map(amendBodyParam)
 
-      val mergedParams = mergeParams(paramsFromComment.getOrElse(JsArray()), paramsFromController)
+      val mergedParams = mergeByName(paramsFromController, paramsFromComment.getOrElse(JsArray()))
 
       val parameterJson = (if (!mergedParams.value.isEmpty) Json.obj("parameters" → mergedParams) else Json.obj())
 
@@ -221,7 +207,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         None
       else {
         val path = rawPath.replaceAll( """\$(\w+)<[^>]+>""", "{$1}")
-        Some(path → Json.obj(method.toLowerCase -> endPointSpec(controllerDesc, commentLines)))
+        Some(path → Json.obj(method.toLowerCase -> endPointSpec(controllerDesc, commentLines, path)))
       }
     }
 
