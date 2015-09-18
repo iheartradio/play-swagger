@@ -55,10 +55,10 @@ The result swagger specs will look like:
   
 ```json
 {
-  "tags" : [ { "name": "cards" } ]
+  "tags" : [ { "name": "cards" } ],
   "path" : {
     "/api/cards/users/:profileId/contexts/:contextName/cards" : {
-      post: {
+      "post": {
         "tags": [ "cards" ],
         "summary": "create a card",
         "parameters": [
@@ -83,12 +83,12 @@ The result swagger specs will look like:
         "name" : { "type" : "string", "required" : true }
       },
       "required": ["name", "id"]
-    }
-    "com.iheart.api.Protocol.CardCreated": {
+    },
+    "com.iheart.api.Protocol.CardCreated" : {
       "properties" : {
         "card" : {
           "schema" : {
-            $ref: "#/definitions/com.iheart.api.Protocol.Card"
+            "$ref": "#/definitions/com.iheart.api.Protocol.Card"
            },
           "required" : true 
         }
@@ -134,7 +134,7 @@ Then you just need to have a swagger UI instance to consumer that swagger spec.
 
 #### Step 1
 add Swagger API dependency to your sbt
-```
+```scala
 resolvers += Resolver.jcenterRepo
 
 libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.1-RELEASE"
@@ -200,7 +200,7 @@ Deploy a swagger ui and point to the swagger spec end point, or
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
 Add the following dependency
-```
+```scala
 libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.2"
 ```
 
