@@ -19,7 +19,11 @@ Which translates to
 
 #### An simple example
 
-In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment. This example is in yml, you can write json if you prefer
+In a `cards.routes` which is referenced in `routes` as 
+```
+->  /api/cards    cards.Routes
+```
+You write the following swagger spec in comment. This example is in yml, you can write json if you prefer
 ```
  ###
  #  summary: create a card 
