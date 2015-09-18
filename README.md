@@ -1,6 +1,7 @@
 # Swagger API spec generator for Play 
 
-
+A library that generates swagger specs from route files and case class reflection, no code annotation needed.  
+ 
 ## Principles in this generator 
 
 1. No code pollution (e.g. annotation) 
@@ -13,14 +14,14 @@ Which translates to
 
 1. No annotation needed 
 2. No need to learn yet another API, just learn how to write a swagger specification
-3. Write your swagger specification in your routes files as comments 
+3. Write your swagger specification in your routes files as comments (json or yml)
 4. Reference your case classes in your swagger spec and play-swagger will generate swagger definition for you 
 5. Override automatically generated fields in the swagger spec in comment.
 
 
 ## Day-to-day usage - an example
 
-In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment
+In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment. This example is in yml, you can write json if you prefer
 ```
  ###
  #  summary: create a card 
@@ -103,8 +104,17 @@ The result swagger specs will look like:
 To override any of the automatically generated field, you just need to write the field in your comment. 
  
  
+### More examples
+
+More examples can be found in the test 
+/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
+ 
 
 ## Installation
+
+In short you need to create a controller that uses the library to generate the swagger spec and make it available as an endpoint.
+Then you just need to have a swagger UI instance to consumer that swagger spec. 
+  
 
 ### Step 1
 add Swagger API dependency to your sbt
@@ -148,7 +158,7 @@ GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
 ```
 
 ### Step 4
-Add a base swagger.yml to your resources folder. This one needs to provide all the required fields according to swagger spec
+Add a base swagger.yml (or swagger.json) to your resources folder. This one needs to provide all the required fields according to swagger spec
 E.g.
 ```
 ---
