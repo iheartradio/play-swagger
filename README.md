@@ -62,8 +62,8 @@ The result swagger specs will look like:
         "tags": [ "cards" ],
         "summary": "create a card",
         "parameters": [
-          {"name" : "profileId", "type":"integer", "format":"int32", "required":true},
-          {"name" : "contextName", "type":"string", "required":false}
+          {"name" : "profileId", "type":"integer", "format":"int32", "required":true, "in" : "path" },
+          {"name" : "contextName", "type":"string", "required":false, "in" : "path" }
         ], 
         "responses": {
           "200": {
@@ -79,15 +79,8 @@ The result swagger specs will look like:
   "definitions" : {
     "com.iheart.api.Protocol.Card": {
       "properties" : {
-        "id" : {
-          "type" : "integer",
-          "format" : "int32",
-          "required" : true 
-        },
-        "name" : {
-          "type" : "string",
-          "required" : true 
-        }
+        "id" : { "type" : "integer", "format" : "int32", "required" : true },
+        "name" : { "type" : "string", "required" : true }
       },
       "required": ["name", "id"]
     }
@@ -114,6 +107,19 @@ e.g.
 ### NoDocs ###
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 ```
+
+#### How to specify body content in a post 
+Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
+```
+###  
+#  parameters:
+#    - name: body
+#      schema:
+#        $ref: '#/definitions/com.iheart.api.Track'
+###
+POST   /tracks       controller.Api.createTrack()
+```
+Again, play-swagger will generate the definition for com.iheart.api.Track case class
 
 #### How to find more examples?
 In the tests!
