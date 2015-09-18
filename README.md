@@ -35,8 +35,7 @@ In a cards.routes which is referenced in routes as `->  /api/cards    cards.Rout
 
 ```
 
-Note that everything in the comment is just standard swagger definition, and it $refs to a case class CardCreated
-The CardCreated class is defined in a Protocol object, and it reference another case class Card. Here is the source code
+Note that everything in the comment is just standard swagger definition, and it $refs to a case class CardCreated, which is defined in a Protocol object, and it references another case class Card. Here is the source code:
 ```scala
 package com.iheart.api
 
@@ -47,7 +46,7 @@ object Protocol {
 }
 ```
 
-This will generate the path with summary, tags, parameters and a response with schema defined. It also recursively generates definitions from your case class 
+This will generate the path with summary, tags, parameters and a response with schema defined. It also recursively generates definitions from your case class.  This works fine if you using a simple Json.format[CardCreated] to generate the json response out of this class. If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint. 
 
 The result swagger specs will look like:
   
