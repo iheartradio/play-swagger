@@ -135,7 +135,7 @@ Then you just need to have a swagger UI instance to consumer that swagger spec.
 #### Step 1
 add Swagger API dependency to your sbt
 ```
-resolvers += Resolver.bintrayRepo("iheartradio", "maven")
+resolvers += Resolver.jcenterRepo
 
 libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.1-RELEASE"
 ```
