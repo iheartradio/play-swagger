@@ -2,7 +2,7 @@
 
 A library that generates swagger specs from route files and case class reflection, no code annotation needed.  
  
-## Principles in this generator 
+## Principles in this lib
 
 1. No code pollution (e.g. annotation) 
 2. DRY (extract as much information from the code as possible)
