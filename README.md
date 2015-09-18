@@ -137,7 +137,7 @@ add Swagger API dependency to your sbt
 ```
 resolvers += Resolver.bintrayRepo("iheartradio", "maven")
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.0-RELEASE"
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.1-RELEASE"
 ```
 
 #### Step 2
