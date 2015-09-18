@@ -8,8 +8,6 @@ A library that generates swagger specs from route files and case class reflectio
 2. DRY (extract as much information from the code as possible)
 3. When documenting an endpoint, it should be just swagger specification that you need to write. You shall not need to learn another API or spec format.                 
 
-
-=======
 Which translates to 
 
 1. No annotation needed 
@@ -18,7 +16,7 @@ Which translates to
 4. Reference your case classes in your swagger spec and play-swagger will generate swagger definition for you 
 5. Override automatically generated fields in the swagger spec in comment.
 
-
+============================
 ## Day-to-day usage - an example
 
 In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment. This example is in yml, you can write json if you prefer
@@ -109,7 +107,7 @@ To override any of the automatically generated field, you just need to write the
 More examples can be found in the test 
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
  
-
+============================
 ## Installation
 
 In short you need to create a controller that uses the library to generate the swagger spec and make it available as an endpoint.
