@@ -17,7 +17,9 @@ Which translates to
 5. Override automatically generated fields in the swagger spec in comment.
 
 ============================
-## Day-to-day usage - an example
+## Day-to-day usage 
+
+### An simple example
 
 In a cards.routes which is referenced in routes as `->  /api/cards    cards.Routes`, you write the following swagger spec in comment. This example is in yml, you can write json if you prefer
 ```
@@ -99,12 +101,20 @@ The result swagger specs will look like:
       "required": ["card"]
     }
 ```
-To override any of the automatically generated field, you just need to write the field in your comment. 
- 
- 
-### More examples
 
-More examples can be found in the test 
+### How to override?
+To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. 
+
+### How to hide an endpoint?
+If you don't want an end point to be included, add `### NoDocs ###` in front of it 
+e.g.
+```
+### NoDocs ###
+GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+```
+
+### How to find more examples?
+In the tests!
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
  
 ============================
