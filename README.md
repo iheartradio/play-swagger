@@ -17,7 +17,7 @@ Which translates to
 ============================
 ## Day-to-day usage 
 
-#### An simple example
+#### A simple example
 
 In a `cards.routes` which is referenced in `routes` as 
 ```
@@ -52,50 +52,8 @@ This will generate the path with summary, tags, parameters and a response with s
 This works fine if you using a simple `Json.format[CardCreated]` to generate the json response out of this class. If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint. 
 
 The result swagger specs will look like:
-  
-```json
-{
-  "tags" : [ { "name": "cards" } ],
-  "path" : {
-    "/api/cards/users/:profileId/contexts/:contextName/cards" : {
-      "post": {
-        "tags": [ "cards" ],
-        "summary": "create a card",
-        "parameters": [
-          {"name" : "profileId", "type":"integer", "format":"int32", "required":true, "in" : "path" },
-          {"name" : "contextName", "type":"string", "required":false, "in" : "path" }
-        ], 
-        "responses": {
-          "200": {
-            "schema": {
-              "$ref": "#/definitions/com.iheart.poweramp.api.abtest.service.Protocol.TestCreated"
-            }
-          }
-        }
-      }
-    }
-  },
-  
-  "definitions" : {
-    "com.iheart.api.Protocol.Card": {
-      "properties" : {
-        "id" : { "type" : "integer", "format" : "int32", "required" : true },
-        "name" : { "type" : "string", "required" : true }
-      },
-      "required": ["name", "id"]
-    },
-    "com.iheart.api.Protocol.CardCreated" : {
-      "properties" : {
-        "card" : {
-          "schema" : {
-            "$ref": "#/definitions/com.iheart.api.Protocol.Card"
-           },
-          "required" : true 
-        }
-      },
-      "required": ["card"]
-    }
-```
+  ![](http://amp-public-share.s3-website-us-east-1.amazonaws.com/shifu/play-swagger-sample.png)
+
 
 #### How to override?
 To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. 
