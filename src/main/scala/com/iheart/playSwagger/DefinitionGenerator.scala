@@ -43,6 +43,8 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
           val refNames = thisDef.properties.collect {
             case p if p.referenceType.isDefined ⇒ p.referenceType.get
             case p if p.items.isDefined ⇒ p.items.get
+          }.filter { refName ⇒
+            domainNameSpace.fold(false)(refName.startsWith(_))
           }
           refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) =>
             allRefferdDefs(refName, foundDefs)
