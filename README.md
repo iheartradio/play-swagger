@@ -1,5 +1,6 @@
 # Swagger API spec generator for Play 
 
+[![Build Status](https://travis-ci.org/iheartradio/play-swagger.svg)](https://travis-ci.org/iheartradio/play-swagger)
 A library that generates swagger specs from route files and case class reflection, no code annotation needed.  
  
 ## Principles in this lib
