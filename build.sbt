@@ -5,6 +5,8 @@ name := "play-swagger"
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
+resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
+
 scalaVersion in ThisBuild := "2.11.7"
 
 libraryDependencies ++= Dependencies.playJson ++ Dependencies.test ++ Dependencies.yaml
