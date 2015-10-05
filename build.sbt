@@ -3,7 +3,7 @@ organization in ThisBuild := "com.iheart"
 
 name := "play-swagger"
 
-version in ThisBuild := "0.1.2-RELEASE"
+version in ThisBuild := "0.1.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.7"
 
