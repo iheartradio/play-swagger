@@ -10,6 +10,8 @@ case class RefReffedFoo(bar: String)
 case class FooWithSeq(seq : Seq[SeqItem])
 case class SeqItem(bar: String)
 
+case class WithListOfPrimitive(seq: Seq[Int])
+
 object MyObject {
   type MyId = Int
   case class MyInnerClass(bar: String, id: MyId)
@@ -67,6 +69,12 @@ class DefinitionGeneratorSpec extends Specification {
     "read seqence items" >> {
       val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithSeq")
       result.properties.head.items === Some("com.iheart.playSwagger.SeqItem")
+    }
+
+    "read primitive sequence itmes" >> {
+      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.WithListOfPrimitive")
+      result.properties.head.items === Some("Int")
+
     }
 
   }

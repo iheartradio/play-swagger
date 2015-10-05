@@ -24,11 +24,17 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   private val referencePrefix = "#/definitions/"
 
-  private def referenceWrites(path: String, extraFields: JsObject = Json.obj() ) = OWrites((os: Option[String]) ⇒
-    os.fold(Json.obj())(v ⇒
-      Json.obj(path → Json.obj("$ref" → JsString(referencePrefix + v)))
-      ++ extraFields
-    ))
+  private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
+
+  private def itemsWrite = OWrites((os: Option[String]) ⇒
+    os.fold(Json.obj()) { itemType: String ⇒
+    Json.obj("type" → "array",
+      "items" →
+        (if(domainNameSpace.fold(false)(ns ⇒ itemType.startsWith(ns)))
+          refWrite.writes(itemType)
+        else
+          Json.obj("type" → itemType)))}
+  )
 
   private val propFormat: Writes[SwaggerParameter] = (
       (__ \ 'name).write[String] ~
@@ -36,8 +42,8 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       (__ \ 'format).writeNullable[String] ~
       (__ \ 'required).write[Boolean] ~
       (__ \ 'example).writeNullable[JsValue] ~
-      referenceWrites("schema") ~
-      referenceWrites("items", Json.obj("type" → "array"))
+      (__ \ "schema").writeNullable[String](refWrite) ~
+      itemsWrite
     )(unlift(SwaggerParameter.unapply))
 
   private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)

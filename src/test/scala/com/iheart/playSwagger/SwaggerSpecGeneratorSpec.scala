@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsValue, Json, JsArray, JsObject}
 
-case class Track(name: String, genre: Option[String], artist: Artist)
+case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
 
 class SwaggerSpecGeneratorSpec  extends Specification {
@@ -114,17 +114,17 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       "resource" → resourceRoutesLines)
 
 
-    val json =  SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
-    val pathJson = json \ "paths"
-    val definitionsJson = json \ "definitions"
-    val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]
-    val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
-    val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
-    val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
-    val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
-    val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
-    val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
-
+    lazy val json =  SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
+    lazy val pathJson = json \ "paths"
+    lazy val definitionsJson = json \ "definitions"
+    lazy val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]
+    lazy val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
+    lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
+    lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
+    lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
+    lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
+    lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
+    lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
       (json \ "parameters" ).as[JsArray].value
@@ -159,8 +159,23 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     }
 
     "read definition from referenceTypes" >> {
-      val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
       (trackJson \ "properties" \ "name" \ "type" ).as[String] === "string"
+    }
+
+    "read schema of referenced type" >> {
+      (trackJson \ "properties" \ "artist" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
+    }
+
+    "read seq of referenced type" >> {
+      val relatedProp = (trackJson \ "properties" \ "related")
+      (relatedProp \ "type").asOpt[String] === Some("array")
+      (relatedProp \ "items" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
+    }
+
+    "read seq of primitive type" >> {
+      val numberProps = (trackJson \ "properties" \ "numbers")
+      (numberProps \ "type").asOpt[String] === Some("array")
+      (numberProps \ "items" \ "type").asOpt[String] === Some("Int")
     }
 
     "read definition from referenced referenceTypes" >> {
