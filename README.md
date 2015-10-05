@@ -96,7 +96,7 @@ add Swagger API dependency to your sbt
 ```scala
 resolvers += Resolver.jcenterRepo
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.1-RELEASE"
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.2-RELEASE"
 ```
 
 #### Step 2
