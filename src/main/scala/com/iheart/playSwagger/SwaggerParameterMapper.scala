@@ -2,6 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain.SwaggerParameter
 import org.joda.time.DateTime
+import play.api.libs.json.JsString
 
 object SwaggerParameterMapper {
   def mapParam(name: String, scalaTypeName: String, domainNameSpace: Option[String] = None): SwaggerParameter = {
@@ -34,6 +35,7 @@ object SwaggerParameterMapper {
           case "Double"   ⇒ prop("number", Some("double"))
           case "Float"    ⇒ prop("number", Some("float"))
           case "org.jodaTime.DateTime" ⇒ prop("integer", Some("epoch"))
+          case "Any"      ⇒ prop("any").copy(example = Some(JsString("any JSON value")))
           case unknown    ⇒ prop(unknown.toLowerCase())
         }
     }
