@@ -31,10 +31,11 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     ))
 
   private val propFormat: Writes[SwaggerParameter] = (
-      (__ \ 'name ).write[String] ~
-      (__ \ 'type ).writeNullable[String] ~
-      (__ \ 'format ).writeNullable[String] ~
-      (__ \ 'required ).write[Boolean] ~
+      (__ \ 'name).write[String] ~
+      (__ \ 'type).writeNullable[String] ~
+      (__ \ 'format).writeNullable[String] ~
+      (__ \ 'required).write[Boolean] ~
+      (__ \ 'example).writeNullable[JsValue] ~
       referenceWrites("schema") ~
       referenceWrites("items", Json.obj("type" → "array"))
     )(unlift(SwaggerParameter.unapply))
@@ -66,9 +67,9 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     }.reduce(_ ++ _)
     val allRefs = (pathsJson ++ baseJson) \\ "$ref"
     val definitions = DefinitionGenerator(domainNameSpace).allDefinitions(allRefs.
-      map(_.asOpt[String]).collect{ case Some(s) ⇒ s }.
-      filter(s ⇒ domainNameSpace.fold(false)(ns ⇒ s.startsWith(referencePrefix + ns))).
-      map(_.drop(referencePrefix.length))
+      flatMap(_.asOpt[String]).
+      filter(s ⇒ domainNameSpace.exists(ns ⇒ s.startsWith(referencePrefix + ns))).
+      map(_.drop(referencePrefix.length)).
       toList)
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))

@@ -1,5 +1,7 @@
 package com.iheart.playSwagger
 
+import play.api.libs.json.JsValue
+
 object Domain {
   type Path = String
   type Method = String
@@ -12,8 +14,8 @@ object Domain {
                                `type`: Option[String] = None,
                                format: Option[String] = None,
                                required: Boolean = true,
+                               example: Option[JsValue] = None,
                                referenceType: Option[String] = None,
                                items: Option[String] = None)
-
-
 }
+
