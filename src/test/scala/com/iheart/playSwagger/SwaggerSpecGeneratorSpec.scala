@@ -11,12 +11,19 @@ class SwaggerSpecGeneratorSpec  extends Specification {
   "integration" >> {
     val routesDocumentation = Seq(
       ("GET","/api/artist/$aid<[^/]+>/playedTracks/recent","controllers.LiveMeta.playedByArtist(aid:Int, limit:Option[Int])"),
+
       ("GET","/api/station/$sid<[^/]+>/playedTracks/last", "@controllers.LiveMeta@.playedByStation(sid:Int)"),
       ("POST","/api/station/playedTracks", "controllers.LiveMeta.addPlayedTracks()"),
+      ("GET","/api/station/hidden", "controllers.LiveMeta.hiddenEndPoint()"),
+
       ("GET","/api/player/$pid<.+>/context/$bid<.+>", "controllers.Player.getPlayer(pid:String, bid:String)"),
       ("GET","/api/player/$pid<.+>/tracks/search", "controllers.Player.searchTrack(pid:String, bid:String)"),
       ("POST","/api/player/$pid<.+>/playedTracks", "controllers.Player.addPlayedTracks(pid:String)"),
-      ("GET","/api/station/hidden", "controllers.LiveMeta.hiddenEndPoint()")
+
+      ("GET", "/api/resource/", "controllers.Resource.get()"),
+      ("PUT", "/api/resource/", "controllers.Resource.put()"),
+      ("POST", "/api/resource/", "controllers.Resource.post()"),
+      ("DELETE", "/api/resource/", "controllers.Resource.post()")
     )
     val liveMetaRoutesLines =
       """
@@ -81,6 +88,14 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       |
     """.stripMargin.split("\n").toList
 
+    val resourceRoutesLines =
+    """
+      |GET     /api/resource/   controllers.Resource.get()
+      |PUT     /api/resource/   controllers.Resource.put()
+      |POST    /api/resource/   controllers.Resource.post()
+      |DELETE  /api/resource/   controllers.Resource.delete()
+    """.stripMargin.split("\n").toList
+
     val base = Json.parse(
       """
         |{
@@ -93,7 +108,10 @@ class SwaggerSpecGeneratorSpec  extends Specification {
         |}
       """.stripMargin).asInstanceOf[JsObject]
 
-    val routesLines = Map("liveMeta" → liveMetaRoutesLines, "player" → playerRoutesLines)
+    val routesLines = Map(
+      "liveMeta" → liveMetaRoutesLines,
+      "player" → playerRoutesLines,
+      "resource" → resourceRoutesLines)
 
 
     val json =  SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
@@ -104,6 +122,7 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
+    val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
     val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
 
 
@@ -182,7 +201,7 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map( tO ⇒  (tO \ "name").as[String]).sorted === Seq("liveMeta", "player").sorted
+      tags.get.map(tO ⇒  (tO \ "name").as[String]).sorted === Seq("liveMeta", "player", "resource").sorted
     }
 
     "merge tag description from base" >> {
@@ -198,7 +217,6 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
 
     }
-
 
     "get parameter type of" >> {
       val playerSearchJson = (pathJson \ "/api/player/{pid}/tracks/search" \ "get").as[JsObject]
@@ -216,6 +234,11 @@ class SwaggerSpecGeneratorSpec  extends Specification {
 
     }
 
+    "allow multiple routes with the same path" >> {
+      resourceJson.keys.toSet === Set("get", "post", "delete", "put")
+    }
+
   }
 
 }
+

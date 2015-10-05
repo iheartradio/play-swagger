@@ -186,7 +186,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     }
 
 
-    def endPointEntry(routeDocumentation: (String, String, String)): Option[(String, JsValue)] = {
+    def endPointEntry(routeDocumentation: (String, String, String)): Option[(String, JsObject)] = {
       def methodDesc(raw: String) = raw.replace(" ", "").replace("@", "")
       def methodPath(desc: String) = """(controllers[^\(]+)(\(.*\))?$""".r.findFirstMatchIn(desc).map(_.group(1))
 
@@ -206,15 +206,17 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       else if(s"${marker}\\s*NoDocs\\s*${marker}".r.findFirstIn(commentLines.mkString("\n")).isDefined)
         None
       else {
-        val path = rawPath.replaceAll( """\$(\w+)<[^>]+>""", "{$1}")
+        val path = rawPath.replaceAll("""\$(\w+)<[^>]+>""", "{$1}")
         Some(path → Json.obj(method.toLowerCase -> endPointSpec(controllerDesc, commentLines, path)))
       }
     }
 
-    JsObject(routesDocumentation.map(endPointEntry).collect { case Some(o) ⇒ o })
+    // Multiple routes may have the same path, merge the objects instead of overwriting
+    JsObject {
+      routesDocumentation.flatMap(endPointEntry)
+        .groupBy(_._1) // Routes grouped by path
+        .mapValues(_.map(_._2).reduce(_ deepMerge _))
+    }
   }
 }
-
-
-
 
