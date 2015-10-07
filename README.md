@@ -1,6 +1,8 @@
-# Swagger API spec generator for Play 
 
 [![Build Status](https://travis-ci.org/iheartradio/play-swagger.svg)](https://travis-ci.org/iheartradio/play-swagger)
+
+# Swagger API spec generator for Play 
+
 A library that generates swagger specs from route files and case class reflection, no code annotation needed.  
  
 ## Principles in this lib
@@ -18,13 +20,17 @@ Which translates to
 ============================
 ## Day-to-day usage 
 
+For installation/get-started see the next section. 
+
 #### A simple example
 
 In a `cards.routes` which is referenced in `routes` as 
 ```
 ->  /api/cards    cards.Routes
 ```
-You write the following swagger spec in comment. This example is in yml, you can write json if you prefer
+You can write the following swagger spec in comment (This example is in yml, but json is also supported). The comment has to start and end with `###` 
+If you don't write any comment here the endpoint is still going to be picked up by play-swagger, the parameters will be included but there will not be any response format. 
+This allows newly added endpoints to be automatically included in swagger with some basic information.      
 ```
  ###
  #  summary: create a card 
@@ -49,8 +55,11 @@ object Protocol {
 }
 ```
 
-This will generate the path with summary, tags, parameters and a response with schema defined. It also recursively generates definitions from your case class.  
-This works fine if you using a simple `Json.format[CardCreated]` to generate the json response out of this class. If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint. 
+This will generate the path with summary, tags, parameters and a response with schema defined, which comes from the comments and case class reflection. 
+It also recursively generates definitions from your case class.  
+These schemas assumes that you are using a simple `Json.format[CardCreated]` to generate the json response out of this class.
+If not, you will have to write the definition yourself in the base swagger spec and reference it here at the endpoint 
+(give it a different name than the full package name though, play-swagger will try to generate definitions for any $ref that starts with the domain package name). 
 
 The result swagger specs will look like:
   ![](http://amp-public-share.s3-website-us-east-1.amazonaws.com/shifu/play-swagger-sample.png)
@@ -67,7 +76,7 @@ e.g.
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 ```
 
-#### How to specify body content in a post 
+#### How to specify body content in a POST endpoint 
 Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
 ```
 ###  
@@ -85,7 +94,7 @@ In the tests!
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
  
 ============================
-## Installation
+## Get Started
 
 In short you need to create a controller that uses the library to generate the swagger spec and make it available as an endpoint.
 Then you just need to have a swagger UI instance to consumer that swagger spec. 
@@ -100,7 +109,10 @@ libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.2-RELEASE"
 ```
 
 #### Step 2
-add a controller to your Play app that serves the swagger spec
+Play swagger is just a library that generates a swagger spec json for you.
+You can do anything you want with that json object (e.g. save it to a file), but the most common usage would be serving it in an endpoint in your play app.
+Here is how: 
+Add a controller to your Play app that serves the swagger spec
 
 ```scala
 
@@ -111,8 +123,8 @@ class ApiSpecs @Inject() (router: Router, cached: Cached) extends Controller {
   // In our case it would be "com.iheart"
   val domainPackage = "YOUR.DOMAIN.PACKAGE"  
   private lazy val generator = SwaggerSpecGenerator(domainPackage)   
-
-  def specs = cached("swaggerDef") {
+  
+  def specs = cached("swaggerDef") {  //it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   
     Action { _ ⇒
       Ok(generator.generate(router.documentation))
     }
@@ -175,4 +187,10 @@ http://localhost:9000/docs/swagger-ui/index.html?url=/docs/swagger.json
 
 
 
+============================
+## How to contribute
+
+If you have any questions/bug reports, please submit an issue on github. 
+With good unit tests coverage, it's pretty easy to add/modify this library as well. 
+Code contribution are more than welcome. Make sure that your code is tested and submit the pull request!    
 
