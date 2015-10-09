@@ -28,7 +28,8 @@ In a `cards.routes` which is referenced in `routes` as
 ```
 ->  /api/cards    cards.Routes
 ```
-You can write the following swagger spec in comment (This example is in yml, but json is also supported). The comment has to start and end with `###` 
+You can write the following swagger spec in comment (This example is in yml, but json is also supported). The comment has to start and end with `###`.
+
 If you don't write any comment here the endpoint is still going to be picked up by play-swagger, the parameters will be included but there will not be any response format. 
 This allows newly added endpoints to be automatically included in swagger with some basic information.      
 ```
