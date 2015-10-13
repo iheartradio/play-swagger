@@ -194,16 +194,17 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
 
     def endPointEntry(routeDocumentation: (String, String, String)): Option[(String, JsObject)] = {
-      def methodDesc(raw: String) = raw.replace(" ", "").replace("@", "")
-      def methodPath(desc: String) = """(controllers[^\(]+)(\(.*\))?$""".r.findFirstMatchIn(desc).map(_.group(1))
+      def cleanUp(raw: String) = raw.replace("@", "")
+      def condense(raw: String) = raw.replace(" ", "")
+      def methodPath(desc: String) = """(([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*)(\(.*\))?$""".r.findFirstMatchIn(desc).map(_.group(1))
 
       val (method, rawPath, controllerRaw) = routeDocumentation
 
-      val controllerDesc = methodDesc(controllerRaw)
+      val controllerDesc = condense(cleanUp(controllerRaw))
       val controllerMethodPath = methodPath(controllerDesc).get
 
       val beforeRouteEntry = allRoutes.takeWhile { l =>
-        methodPath(methodDesc(l)).fold(true)(_ != controllerMethodPath)
+        methodPath(cleanUp(l)).map(condense).fold(true)(_ != controllerMethodPath)
       }
 
       val commentLines = beforeRouteEntry.reverse.takeWhile(line ⇒ line.startsWith("#")).reverse

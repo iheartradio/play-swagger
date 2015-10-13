@@ -23,7 +23,10 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       ("GET", "/api/resource/", "controllers.Resource.get()"),
       ("PUT", "/api/resource/", "controllers.Resource.put()"),
       ("POST", "/api/resource/", "controllers.Resource.post()"),
-      ("DELETE", "/api/resource/", "controllers.Resource.post()")
+      ("DELETE", "/api/resource/", "controllers.Resource.post()"),
+
+      ("GET", "/api/customResource/", "com.iheart.controllers.Resource.get()")
+
     )
     val liveMetaRoutesLines =
       """
@@ -96,6 +99,11 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       |DELETE  /api/resource/   controllers.Resource.delete()
     """.stripMargin.split("\n").toList
 
+    val customControllerLines =
+    """
+      |GET     /api/customResource/    com.iheart.controllers.Resource.get()
+    """.stripMargin.split("\n").toList
+
     val base = Json.parse(
       """
         |{
@@ -108,10 +116,12 @@ class SwaggerSpecGeneratorSpec  extends Specification {
         |}
       """.stripMargin).asInstanceOf[JsObject]
 
+
     val routesLines = Map(
       "liveMeta" → liveMetaRoutesLines,
       "player" → playerRoutesLines,
-      "resource" → resourceRoutesLines)
+      "resource" → resourceRoutesLines,
+      "customResource" → customControllerLines)
 
 
     lazy val json =  SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
@@ -216,7 +226,7 @@ class SwaggerSpecGeneratorSpec  extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO ⇒  (tO \ "name").as[String]).sorted === Seq("liveMeta", "player", "resource").sorted
+      tags.get.map(tO ⇒  (tO \ "name").as[String]).sorted === Seq("customResource", "liveMeta", "player", "resource").sorted
     }
 
     "merge tag description from base" >> {
@@ -253,6 +263,9 @@ class SwaggerSpecGeneratorSpec  extends Specification {
       resourceJson.keys.toSet === Set("get", "post", "delete", "put")
     }
 
+    "parse controller with custom namespace" >> {
+      (pathJson \ "/api/customResource/" \ "get").asOpt[JsObject] must beSome[JsObject]
+    }
   }
 
 }
