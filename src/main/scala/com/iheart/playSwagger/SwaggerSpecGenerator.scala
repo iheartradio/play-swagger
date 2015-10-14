@@ -57,7 +57,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       (__ \ 'required ).write[Seq[String]]
     )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
 
-  def generate(routesDocumentation: RoutesDocumentation): JsValue = {
+  def generate(routesDocumentation: RoutesDocumentation): JsObject = {
     generateWithBase(routesDocumentation, RoutesFileReader().readAll(), base)
   }
 
