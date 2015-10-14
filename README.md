@@ -90,6 +90,13 @@ POST   /tracks       controller.Api.createTrack()
 ```
 Again, play-swagger will generate the definition for com.iheart.api.Track case class
 
+### How do I use a different "host" for different environment?
+The library returns play JsObject, you can change however you want like 
+```
+val spec = ps.generate(routeDocuments) + ("host" -> JsString(myHost)) 
+```
+
+
 #### How to find more examples?
 In the tests!
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
