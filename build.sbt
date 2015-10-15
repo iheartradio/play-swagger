@@ -3,7 +3,7 @@ organization in ThisBuild := "com.iheart"
 
 name := "play-swagger"
 
-version in ThisBuild := "0.1.4-RELEASE"
+version in ThisBuild := "0.1.5-SNAPSHOT"
 
 resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
 
