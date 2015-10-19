@@ -1,3 +1,4 @@
+import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 organization in ThisBuild := "com.iheart"
 
@@ -17,7 +18,8 @@ bintrayOrganization := Some("iheartradio")
 
 bintrayPackageLabels := Seq("play-framework", "swagger", "play")
 
-coverageMinimum := 85
+lazy val playSwagger = project in file(".")
 
-coverageFailOnMinimum := true
+coverallsToken := Some("tVYHvi1dwcXx3XzTnEOCLjCneOei9wraz")
 
+scalariformSettings

@@ -1,13 +1,13 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
+import com.iheart.playSwagger.Domain.{ Definition, SwaggerParameter }
 import org.specs2.mutable.Specification
 
 case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo)
 case class ReffedFoo(name: String, refrefFoo: RefReffedFoo)
 case class RefReffedFoo(bar: String)
 
-case class FooWithSeq(seq : Seq[SeqItem])
+case class FooWithSeq(seq: Seq[SeqItem])
 case class SeqItem(bar: String)
 
 case class WithListOfPrimitive(seq: Seq[Int])
@@ -19,7 +19,7 @@ object MyObject {
 class DefinitionGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
-  "definition" >>  {
+  "definition" >> {
 
     "generate name correctly" >> {
       DefinitionGenerator().definition[Foo].name === "com.iheart.playSwagger.Foo"
@@ -65,7 +65,6 @@ class DefinitionGeneratorSpec extends Specification {
       result.properties.last.referenceType === None
     }
 
-
     "read seqence items" >> {
       val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithSeq")
       result.properties.head.items === Some("com.iheart.playSwagger.SeqItem")
@@ -82,8 +81,8 @@ class DefinitionGeneratorSpec extends Specification {
   "allDefinitions" >> {
     val allDefs = DefinitionGenerator("com.iheart.playSwagger").allDefinitions(List("com.iheart.playSwagger.Foo"))
     allDefs.length === 3
-    allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo" ) must beSome[Definition]
-    allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo" ) must beSome[Definition]
-    allDefs.find(_.name == "com.iheart.playSwagger.Foo" ) must beSome[Definition]
+    allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo") must beSome[Definition]
+    allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo") must beSome[Definition]
+    allDefs.find(_.name == "com.iheart.playSwagger.Foo") must beSome[Definition]
   }
 }
