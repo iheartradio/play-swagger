@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{SwaggerParameter, Definition}
+import com.iheart.playSwagger.Domain.{ SwaggerParameter, Definition }
 import org.joda.time.DateTime
 
 import scala.reflect.runtime.universe._
@@ -16,20 +16,21 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
     }.get.paramLists.head
 
     val properties = fields.map { field ⇒
-      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, domainNameSpace)  //todo: find a better way to get the string representation of typeSignature
+      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, domainNameSpace) //todo: find a better way to get the string representation of typeSignature
     }
 
-    Definition( name = tpe.typeSymbol.fullName,
-                properties = properties)
+    Definition(
+      name = tpe.typeSymbol.fullName,
+      properties = properties
+    )
   }
 
   def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
 
-
   def definition(className: String): Definition = {
     val mirror = runtimeMirror(cl)
     val sym = mirror.staticClass(className)
-    val tpe = sym.selfType  
+    val tpe = sym.selfType
     definition(tpe)
   }
 
@@ -57,7 +58,6 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
     }
   }
 }
-
 
 object DefinitionGenerator {
   def apply(domainNameSpace: String)(implicit cl: ClassLoader): DefinitionGenerator = DefinitionGenerator(Some(domainNameSpace))

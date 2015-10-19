@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
+import com.iheart.playSwagger.Domain.{ Definition, SwaggerParameter }
 import play.api.libs.json._
 import ResourceReader.read
 import play.api.libs.functional.syntax._
@@ -28,23 +28,25 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   private def itemsWrite = OWrites((os: Option[String]) ⇒
     os.fold(Json.obj()) { itemType: String ⇒
-    Json.obj("type" → "array",
-      "items" →
-        (if(domainNameSpace.fold(false)(ns ⇒ itemType.startsWith(ns)))
-          refWrite.writes(itemType)
-        else
-          Json.obj("type" → itemType)))}
-  )
+      Json.obj(
+        "type" → "array",
+        "items" →
+          (if (domainNameSpace.fold(false)(ns ⇒ itemType.startsWith(ns)))
+            refWrite.writes(itemType)
+          else
+            Json.obj("type" → itemType))
+      )
+    })
 
   private val propFormat: Writes[SwaggerParameter] = (
-      (__ \ 'name).write[String] ~
-      (__ \ 'type).writeNullable[String] ~
-      (__ \ 'format).writeNullable[String] ~
-      (__ \ 'required).write[Boolean] ~
-      (__ \ 'example).writeNullable[JsValue] ~
-      (__ \ "schema").writeNullable[String](refWrite) ~
-      itemsWrite
-    )(unlift(SwaggerParameter.unapply))
+    (__ \ 'name).write[String] ~
+    (__ \ 'type).writeNullable[String] ~
+    (__ \ 'format).writeNullable[String] ~
+    (__ \ 'required).write[Boolean] ~
+    (__ \ 'example).writeNullable[JsValue] ~
+    (__ \ "schema").writeNullable[String](refWrite) ~
+    itemsWrite
+  )(unlift(SwaggerParameter.unapply))
 
   private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)
 
@@ -52,10 +54,10 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     JsObject(ps.map(p ⇒ p.name → Json.toJson(p)))
   }
   private implicit val defFormat: Writes[Definition] = (
-      (__ \ 'description ).writeNullable[String] ~
-      (__ \ 'properties ).write[Seq[SwaggerParameter]] ~
-      (__ \ 'required ).write[Seq[String]]
-    )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
+    (__ \ 'description).writeNullable[String] ~
+    (__ \ 'properties).write[Seq[SwaggerParameter]] ~
+    (__ \ 'required).write[Seq[String]]
+  )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
 
   def generate(routesDocumentation: RoutesDocumentation): JsObject = {
     generateWithBase(routesDocumentation, RoutesFileReader().readAll(), base)
@@ -63,13 +65,16 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   private def base = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
 
-  private[playSwagger] def generateWithBase(routesDocumentation: RoutesDocumentation,
-                                            routesLines: Map[Tag, List[Line]],
-                                            baseJson: JsObject = Json.obj()) : JsObject = {
+  private[playSwagger] def generateWithBase(
+    routesDocumentation: RoutesDocumentation,
+    routesLines: Map[Tag, List[Line]],
+    baseJson: JsObject = Json.obj()
+  ): JsObject = {
 
-    val pathsJson = routesLines.map { case (tag, lines) ⇒
-      val subTag = if(tag == RoutesFileReader.rootRoute) None else Some(tag)
-      paths(routesDocumentation, lines, subTag)
+    val pathsJson = routesLines.map {
+      case (tag, lines) ⇒
+        val subTag = if (tag == RoutesFileReader.rootRoute) None else Some(tag)
+        paths(routesDocumentation, lines, subTag)
     }.reduce(_ ++ _)
     val allRefs = (pathsJson ++ baseJson) \\ "$ref"
     val definitions = DefinitionGenerator(domainNameSpace).allDefinitions(allRefs.
@@ -94,10 +99,8 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     })
   }
 
-
   private def findByName(array: JsArray, name: String): Option[JsObject] =
     array.value.find(param ⇒ (param \ "name").asOpt[String] == Some(name)).map(_.as[JsObject])
-
 
   private def readBaseCfg(name: String): Option[JsObject] = {
     Option(cl.getResource(name)).map { url ⇒
@@ -107,7 +110,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         ext match {
           case "json" ⇒ Json.parse(st).asInstanceOf[JsObject]
           case "yml" ⇒ parseYaml(read(st).mkString("\n"))
-          case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yaml. " )
+          case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yaml. ")
         }
       } finally {
         st.close()
@@ -123,7 +126,6 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     Json.parse(jsonString).asInstanceOf[JsObject]
   }
 
-
   private[playSwagger] def paths(routesDocumentation: RoutesDocumentation, routesLines: List[String], tag: Option[Tag]): JsObject = {
     val allRoutes = routesLines.map(_.trim).filterNot(_.isEmpty)
 
@@ -133,7 +135,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     }
 
     def tryParseJson(comment: String): Option[JsObject] = {
-      if(comment.startsWith("{"))
+      if (comment.startsWith("{"))
         Some(Json.parse(comment).asInstanceOf[JsObject])
       else None
     }
@@ -142,7 +144,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
       def amendBodyParam(params: JsArray): JsArray = {
         val bodyParam = findByName(params, "body")
-        if(bodyParam.isDefined) {
+        if (bodyParam.isDefined) {
           val enhancedBodyParam = bodyParam.get + ("in" → JsString("body"))
           JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
         } else params
@@ -171,11 +173,10 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       }
 
       val jsonFromComment = for {
-        leadingSpace ← commentDocLines.headOption.flatMap( """^(#\s*)""".r.findFirstIn )
-        comment  = commentDocLines.map(_.drop(leadingSpace.length)).mkString("\n")
+        leadingSpace ← commentDocLines.headOption.flatMap("""^(#\s*)""".r.findFirstIn)
+        comment = commentDocLines.map(_.drop(leadingSpace.length)).mkString("\n")
         result ← tryParseJson(comment) orElse tryParseYaml(comment)
       } yield result
-
 
       val paramsFromComment = jsonFromComment.flatMap(jc ⇒ (jc \ "parameters").asOpt[JsArray]).map(amendBodyParam)
 
@@ -183,7 +184,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
       val parameterJson = (if (!mergedParams.value.isEmpty) Json.obj("parameters" → mergedParams) else Json.obj())
 
-      val rawPathJson = tag.fold(Json.obj())( t ⇒ Json.obj("tags" → List(t))) ++ jsonFromComment.getOrElse(Json.obj()) ++ parameterJson
+      val rawPathJson = tag.fold(Json.obj())(t ⇒ Json.obj("tags" → List(t))) ++ jsonFromComment.getOrElse(Json.obj()) ++ parameterJson
 
       val hasConsumes = (rawPathJson \ "consumes").toOption.isDefined
 
@@ -191,7 +192,6 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         rawPathJson + ("consumes" → Json.arr(defaultPostBodyFormat))
       else rawPathJson
     }
-
 
     def endPointEntry(routeDocumentation: (String, String, String)): Option[(String, JsObject)] = {
       def cleanUp(raw: String) = raw.replace("@", "")
@@ -209,9 +209,9 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
       val commentLines = beforeRouteEntry.reverse.takeWhile(line ⇒ line.startsWith("#")).reverse
 
-      if(beforeRouteEntry.length == allRoutes.length)
+      if (beforeRouteEntry.length == allRoutes.length)
         None //didn't find it in the routes lines
-      else if(s"${marker}\\s*NoDocs\\s*${marker}".r.findFirstIn(commentLines.mkString("\n")).isDefined)
+      else if (s"${marker}\\s*NoDocs\\s*${marker}".r.findFirstIn(commentLines.mkString("\n")).isDefined)
         None
       else {
         val path = rawPath.replaceAll("""\$(\w+)<[^>]+>""", "{$1}")
