@@ -11,9 +11,13 @@ scalaVersion in ThisBuild := "2.11.7"
 
 libraryDependencies ++= Dependencies.playJson ++ Dependencies.test ++ Dependencies.yaml
 
-
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/"))
 
 bintrayOrganization := Some("iheartradio")
 
 bintrayPackageLabels := Seq("play-framework", "swagger", "play")
+
+coverageMinimum := 85
+
+coverageFailOnMinimum := true
+
