@@ -12,6 +12,9 @@ case class SeqItem(bar: String)
 
 case class WithListOfPrimitive(seq: Seq[Int])
 
+case class FooWithOption(op: Option[OptionItem])
+case class OptionItem(bar: String)
+
 object MyObject {
   type MyId = Int
   case class MyInnerClass(bar: String, id: MyId)
@@ -70,10 +73,15 @@ class DefinitionGeneratorSpec extends Specification {
       result.properties.head.items === Some("com.iheart.playSwagger.SeqItem")
     }
 
-    "read primitive sequence itmes" >> {
+    "read primitive sequence items" >> {
       val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.WithListOfPrimitive")
       result.properties.head.items === Some("Int")
 
+    }
+
+    "read Optional items " >> {
+      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithOption")
+      result.properties.head.referenceType must beSome("com.iheart.playSwagger.OptionItem")
     }
 
   }

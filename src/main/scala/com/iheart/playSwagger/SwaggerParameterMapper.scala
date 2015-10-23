@@ -17,7 +17,9 @@ object SwaggerParameterMapper {
 
     val typeName = scalaTypeName.replace("scala.", "").replace("java.lang.", "")
 
-    if (domainNameSpace.fold(false)(typeName.startsWith(_)))
+    def isReference(tpeName: String): Boolean = domainNameSpace.fold(false)(tpeName.startsWith(_))
+
+    if (isReference(typeName))
       SwaggerParameter(name, referenceType = Some(typeName))
     else {
       val optionalType = higherOrderType("Option", typeName)
@@ -25,7 +27,10 @@ object SwaggerParameterMapper {
       if (itemType.isDefined)
         SwaggerParameter(name, items = itemType)
       else if (optionalType.isDefined)
-        mapParam(name, optionalType.get).copy(required = false)
+        (if(isReference(optionalType.get))
+          SwaggerParameter(name, referenceType = optionalType)
+        else
+          mapParam(name, optionalType.get)).copy(required = false)
       else
         typeName match {
           case "Int" ⇒ prop("integer", Some("int32"))
