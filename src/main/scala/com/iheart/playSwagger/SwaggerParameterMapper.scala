@@ -27,7 +27,7 @@ object SwaggerParameterMapper {
       if (itemType.isDefined)
         SwaggerParameter(name, items = itemType)
       else if (optionalType.isDefined)
-        (if(isReference(optionalType.get))
+        (if (isReference(optionalType.get))
           SwaggerParameter(name, referenceType = optionalType)
         else
           mapParam(name, optionalType.get)).copy(required = false)
