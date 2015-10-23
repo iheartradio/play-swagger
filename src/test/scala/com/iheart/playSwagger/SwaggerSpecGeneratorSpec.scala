@@ -6,6 +6,9 @@ import play.api.libs.json.{ JsValue, Json, JsArray, JsObject }
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
 
+case class Student(name: String, teacher: Option[Teacher])
+case class Teacher(name: String)
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
   "integration" >> {
@@ -25,7 +28,9 @@ class SwaggerSpecGeneratorSpec extends Specification {
       ("POST", "/api/resource/", "controllers.Resource.post()"),
       ("DELETE", "/api/resource/", "controllers.Resource.post()"),
 
-      ("GET", "/api/customResource/", "com.iheart.controllers.Resource.get()")
+      ("GET", "/api/customResource/", "com.iheart.controllers.Resource.get()"),
+
+      ("GET", "/api/students/$name<.+>", "com.iheart.controllers.Students.get(name:String)")
 
     )
     val liveMetaRoutesLines =
@@ -104,6 +109,17 @@ class SwaggerSpecGeneratorSpec extends Specification {
       |GET     /api/customResource/    com.iheart.controllers.Resource.get()
     """.stripMargin.split("\n").toList
 
+    val studentsLines =
+    """
+      |###
+      |#  responses:
+      |#    200:
+      |#      schema:
+      |#        $ref: '#/definitions/com.iheart.playSwagger.Student'
+      |###
+      |GET     /api/students/:name    com.iheart.controllers.Students.get(name)
+    """.stripMargin.split("\n").toList
+
     val base = Json.parse(
       """
         |{
@@ -121,8 +137,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "liveMeta" → liveMetaRoutesLines,
       "player" → playerRoutesLines,
       "resource" → resourceRoutesLines,
-      "customResource" → customControllerLines
-    )
+      "customResource" → customControllerLines,
+      "student" → studentsLines)
 
     lazy val json = SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
     lazy val pathJson = json \ "paths"
@@ -135,6 +151,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
+    lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
+    lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
       (json \ "parameters").as[JsArray].value
@@ -226,7 +244,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted === Seq("customResource", "liveMeta", "player", "resource").sorted
+      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must containAllOf(Seq("customResource", "liveMeta", "player", "resource"))
     }
 
     "merge tag description from base" >> {
@@ -265,6 +283,12 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
     "parse controller with custom namespace" >> {
       (pathJson \ "/api/customResource/" \ "get").asOpt[JsObject] must beSome[JsObject]
+    }
+
+    "parse class referenced in option type" >> {
+      studentJson must beSome[JsObject]
+      teacherJson must beSome[JsObject]
+      (teacherJson.get \ "properties" \ "name" \ "type" ).as[String] === "string"
     }
   }
 
