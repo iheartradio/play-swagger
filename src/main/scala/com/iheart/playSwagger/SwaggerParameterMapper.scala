@@ -24,10 +24,10 @@ object SwaggerParameterMapper {
       if (parts.length == 2) {
         val stringVal = parts.last.stripMargin
         Some(typeName match {
-          case "Int" | "Long" ⇒ JsNumber(stringVal.toLong)
+          case "Int" | "Long"     ⇒ JsNumber(stringVal.toLong)
           case "Double" | "Float" ⇒ JsNumber(stringVal.toDouble)
-          case "Boolean" ⇒ JsBoolean(stringVal.toBoolean)
-          case _ ⇒ JsString(stringVal)
+          case "Boolean"          ⇒ JsBoolean(stringVal.toBoolean)
+          case _                  ⇒ JsString(stringVal)
         })
       } else None
     }
@@ -46,13 +46,13 @@ object SwaggerParameterMapper {
 
     def generalParam =
       (typeName match {
-        case "Int" ⇒ swaggerParam("integer", Some("int32"))
-        case "Long" ⇒ swaggerParam("integer", Some("int64"))
-        case "Double" ⇒ swaggerParam("number", Some("double"))
-        case "Float" ⇒ swaggerParam("number", Some("float"))
+        case "Int"                   ⇒ swaggerParam("integer", Some("int32"))
+        case "Long"                  ⇒ swaggerParam("integer", Some("int64"))
+        case "Double"                ⇒ swaggerParam("number", Some("double"))
+        case "Float"                 ⇒ swaggerParam("number", Some("float"))
         case "org.jodaTime.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
-        case "Any" ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
-        case unknown ⇒ swaggerParam(unknown.toLowerCase())
+        case "Any"                   ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
+        case unknown                 ⇒ swaggerParam(unknown.toLowerCase())
       }).copy(default = defaultValueO, required = defaultValueO.isEmpty)
 
     if (isReference()) referenceParam(typeName)

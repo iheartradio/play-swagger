@@ -262,7 +262,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "get both body and url params" >> {
       val params = (playerAddTrackJson \ "parameters").as[JsArray].value
       params.length === 2
-      params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
+      params.map(p ⇒ (p \ "name").as[String]).toSet === Set("body", "pid")
 
     }
 
