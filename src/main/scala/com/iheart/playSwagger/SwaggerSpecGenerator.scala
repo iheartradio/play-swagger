@@ -18,10 +18,6 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   import SwaggerSpecGenerator.marker
 
-  private implicit def toOWrites[A](writes: Writes[A]): OWrites[A] = OWrites {
-    writes.writes(_).asInstanceOf[JsObject]
-  }
-
   private val referencePrefix = "#/definitions/"
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
