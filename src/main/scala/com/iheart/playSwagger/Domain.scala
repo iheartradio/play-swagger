@@ -17,9 +17,11 @@ object Domain {
     `type`: Option[String] = None,
     format: Option[String] = None,
     required: Boolean = true,
+    default: Option[JsValue] = None,
     example: Option[JsValue] = None,
     referenceType: Option[String] = None,
     items: Option[String] = None
+
   )
 }
 

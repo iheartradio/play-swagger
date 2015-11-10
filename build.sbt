@@ -16,4 +16,4 @@ lazy val playSwagger = project in file(".")
 
 coverallsToken := Some("tVYHvi1dwcXx3XzTnEOCLjCneOei9wraz")
 
-scalariformSettings
+Format.settings

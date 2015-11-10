@@ -43,6 +43,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
     (__ \ 'required).write[Boolean] ~
+    (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
     itemsWrite
