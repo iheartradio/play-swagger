@@ -304,7 +304,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
       (paramJson \ "name").as[String] === "aFlag"
 
-      "set requried as false" >> {
+      "set required as false" >> {
         (paramJson \ "required").as[Boolean] === false
       }
 
