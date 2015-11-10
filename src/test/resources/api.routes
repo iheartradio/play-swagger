@@ -1,0 +1,15 @@
+###
+#  summary: get player
+###
+GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
+
+GET     /player/:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
+
+###
+#  parameters:
+#    - name: body
+#      description: track information
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Track'
+###
+POST     /player/:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
