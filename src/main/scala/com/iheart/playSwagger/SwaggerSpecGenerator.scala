@@ -18,10 +18,6 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   import SwaggerSpecGenerator.marker
 
-  private implicit def toOWrites[A](writes: Writes[A]): OWrites[A] = OWrites {
-    writes.writes(_).asInstanceOf[JsObject]
-  }
-
   private val referencePrefix = "#/definitions/"
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
@@ -43,6 +39,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
     (__ \ 'required).write[Boolean] ~
+    (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
     itemsWrite
@@ -67,8 +64,8 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
   private[playSwagger] def generateWithBase(
     routesDocumentation: RoutesDocumentation,
-    routesLines: Map[Tag, List[Line]],
-    baseJson: JsObject = Json.obj()
+    routesLines:         Map[Tag, List[Line]],
+    baseJson:            JsObject             = Json.obj()
   ): JsObject = {
 
     val pathsJson = routesLines.map {
@@ -108,8 +105,8 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       try {
         val ext = url.getFile.split("\\.").last
         ext match {
-          case "json" ⇒ Json.parse(st).asInstanceOf[JsObject]
-          case "yml" ⇒ parseYaml(read(st).mkString("\n"))
+          case "json"  ⇒ Json.parse(st).asInstanceOf[JsObject]
+          case "yml"   ⇒ parseYaml(read(st).mkString("\n"))
           case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yaml. ")
         }
       } finally {
@@ -152,7 +149,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
 
       val commentDocLines = commentLines match {
         case `marker` +: docs :+ `marker` ⇒ docs
-        case _ ⇒ Nil
+        case _                            ⇒ Nil
       }
 
       val paramsFromController = {
@@ -161,7 +158,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         val paramsPattern = "\\((.+)\\)$".r
 
         JsArray(paramsPattern.findFirstMatchIn(controllerDesc).map(_.group(1)).fold(Array[SwaggerParameter]()) { paramsString ⇒
-          paramsString.split(",").map { param =>
+          paramsString.split(",").map { param ⇒
             val Array(name, pType) = param.split(":")
             mapParam(name, pType, domainNameSpace)
           }
@@ -203,7 +200,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       val controllerDesc = condense(cleanUp(controllerRaw))
       val controllerMethodPath = methodPath(controllerDesc).get
 
-      val beforeRouteEntry = allRoutes.takeWhile { l =>
+      val beforeRouteEntry = allRoutes.takeWhile { l ⇒
         methodPath(cleanUp(l)).map(condense).fold(true)(_ != controllerMethodPath)
       }
 
@@ -215,7 +212,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         None
       else {
         val path = rawPath.replaceAll("""\$(\w+)<[^>]+>""", "{$1}")
-        Some(path → Json.obj(method.toLowerCase -> endPointSpec(controllerDesc, commentLines, path)))
+        Some(path → Json.obj(method.toLowerCase → endPointSpec(controllerDesc, commentLines, path)))
       }
     }
 

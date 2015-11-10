@@ -2,46 +2,62 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain.SwaggerParameter
 import org.joda.time.DateTime
-import play.api.libs.json.JsString
+import play.api.libs.json.{ JsBoolean, JsNumber, JsValue, JsString }
 
 object SwaggerParameterMapper {
-  def mapParam(name: String, scalaTypeName: String, domainNameSpace: Option[String] = None): SwaggerParameter = {
+  def mapParam(name: String, typeAndOrDefaultValue: String, domainNameSpace: Option[String] = None): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
 
     def collectionItemType(typeName: String): Option[String] =
       List("Seq", "List", "Set", "Vector").map(higherOrderType(_, typeName)).reduce(_ orElse _)
 
-    def prop(tp: String, format: Option[String] = None, required: Boolean = true) =
+    def swaggerParam(tp: String, format: Option[String] = None, required: Boolean = true) =
       SwaggerParameter(name, `type` = Some(tp), format = format, required = required)
 
-    val typeName = scalaTypeName.replace("scala.", "").replace("java.lang.", "")
+    val parts = typeAndOrDefaultValue.split("\\?=")
 
-    def isReference(tpeName: String): Boolean = domainNameSpace.fold(false)(tpeName.startsWith(_))
+    val typePart = parts.head.stripMargin
+    val typeName = typePart.replace("scala.", "").replace("java.lang.", "")
 
-    if (isReference(typeName))
-      SwaggerParameter(name, referenceType = Some(typeName))
-    else {
-      val optionalType = higherOrderType("Option", typeName)
-      val itemType = collectionItemType(typeName)
-      if (itemType.isDefined)
-        SwaggerParameter(name, items = itemType)
-      else if (optionalType.isDefined)
-        (if (isReference(optionalType.get))
-          SwaggerParameter(name, referenceType = optionalType)
-        else
-          mapParam(name, optionalType.get)).copy(required = false)
-      else
-        typeName match {
-          case "Int" ⇒ prop("integer", Some("int32"))
-          case "Long" ⇒ prop("integer", Some("int64"))
-          case "Double" ⇒ prop("number", Some("double"))
-          case "Float" ⇒ prop("number", Some("float"))
-          case "org.jodaTime.DateTime" ⇒ prop("integer", Some("epoch"))
-          case "Any" ⇒ prop("any").copy(example = Some(JsString("any JSON value")))
-          case unknown ⇒ prop(unknown.toLowerCase())
-        }
+    val defaultValueO: Option[JsValue] = {
+      if (parts.length == 2) {
+        val stringVal = parts.last.stripMargin
+        Some(typeName match {
+          case "Int" | "Long"     ⇒ JsNumber(stringVal.toLong)
+          case "Double" | "Float" ⇒ JsNumber(stringVal.toDouble)
+          case "Boolean"          ⇒ JsBoolean(stringVal.toBoolean)
+          case _                  ⇒ JsString(stringVal)
+        })
+      } else None
     }
 
+    def isReference(tpeName: String = typeName): Boolean = domainNameSpace.fold(false)(tpeName.startsWith(_))
+    lazy val optionalTypeO = higherOrderType("Option", typeName)
+    lazy val itemTypeO = collectionItemType(typeName)
+
+    def referenceParam(referenceType: String) =
+      SwaggerParameter(name, referenceType = Some(referenceType))
+
+    def optionalParam(optionalTpe: String) = {
+      val param = (if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(name, optionalTpe))
+      param.copy(required = false, default = defaultValueO)
+    }
+
+    def generalParam =
+      (typeName match {
+        case "Int"                   ⇒ swaggerParam("integer", Some("int32"))
+        case "Long"                  ⇒ swaggerParam("integer", Some("int64"))
+        case "Double"                ⇒ swaggerParam("number", Some("double"))
+        case "Float"                 ⇒ swaggerParam("number", Some("float"))
+        case "org.jodaTime.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
+        case "Any"                   ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
+        case unknown                 ⇒ swaggerParam(unknown.toLowerCase())
+      }).copy(default = defaultValueO, required = defaultValueO.isEmpty)
+
+    if (isReference()) referenceParam(typeName)
+    else if (itemTypeO.isDefined) SwaggerParameter(name, items = itemTypeO)
+    else if (optionalTypeO.isDefined) optionalParam(optionalTypeO.get)
+    else generalParam
   }
 }

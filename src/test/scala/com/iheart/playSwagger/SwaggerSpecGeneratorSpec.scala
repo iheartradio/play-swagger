@@ -30,7 +30,9 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
       ("GET", "/api/customResource/", "com.iheart.controllers.Resource.get()"),
 
-      ("GET", "/api/students/$name<.+>", "com.iheart.controllers.Students.get(name:String)")
+      ("GET", "/api/students/$name<.+>", "com.iheart.controllers.Students.get(name:String)"),
+
+      ("PUT", "/api/students/defaultValueParam", "com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)")
 
     )
     val liveMetaRoutesLines =
@@ -110,7 +112,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     """.stripMargin.split("\n").toList
 
     val studentsLines =
-    """
+      """
       |###
       |#  responses:
       |#    200:
@@ -118,6 +120,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
       |#        $ref: '#/definitions/com.iheart.playSwagger.Student'
       |###
       |GET     /api/students/:name    com.iheart.controllers.Students.get(name)
+      |
+      |PUT     /api/students/defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
     """.stripMargin.split("\n").toList
 
     val base = Json.parse(
@@ -138,7 +142,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "player" → playerRoutesLines,
       "resource" → resourceRoutesLines,
       "customResource" → customControllerLines,
-      "student" → studentsLines)
+      "student" → studentsLines
+    )
 
     lazy val json = SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
     lazy val pathJson = json \ "paths"
@@ -257,7 +262,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "get both body and url params" >> {
       val params = (playerAddTrackJson \ "parameters").as[JsArray].value
       params.length === 2
-      params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
+      params.map(p ⇒ (p \ "name").as[String]).toSet === Set("body", "pid")
 
     }
 
@@ -288,7 +293,28 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "parse class referenced in option type" >> {
       studentJson must beSome[JsObject]
       teacherJson must beSome[JsObject]
-      (teacherJson.get \ "properties" \ "name" \ "type" ).as[String] === "string"
+      (teacherJson.get \ "properties" \ "name" \ "type").as[String] === "string"
+    }
+
+    "parse param with default value as optional field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParam" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "aFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+        (paramJson \ "default").as[Boolean] === true
+      }
     }
   }
 
