@@ -15,7 +15,7 @@ case class RoutesFileReader(implicit cl: ClassLoader) {
 
   private def readRoutes(routeFileName: ResourceName): Map[APIName, List[Line]] = {
     val lines = read(routeFileName)
-    val thisEntry = Map(routeFileName.replace(".routes", "") -> lines)
+    val thisEntry = Map(routeFileName.replace(".routes", "") → lines)
 
     imports(lines).foldLeft(thisEntry) { (memo, importFile) ⇒ memo ++ readRoutes(importFile) }
   }
