@@ -108,51 +108,6 @@ If not, you will have to write the definition yourself in the base swagger spec 
 <p>The result swagger specs will look like:
   <img src="http://amp-public-share.s3-website-us-east-1.amazonaws.com/shifu/play-swagger-sample.png" alt=""></p>
 
-<h4>
-<a id="how-to-override" class="anchor" href="#how-to-override" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to override?</h4>
-
-<p>To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. </p>
-
-<h4>
-<a id="how-to-hide-an-endpoint" class="anchor" href="#how-to-hide-an-endpoint" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to hide an endpoint?</h4>
-
-<p>If you don't want an end point to be included, add <code>### NoDocs ###</code> in front of it 
-e.g.</p>
-
-<pre><code>### NoDocs ###
-GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-</code></pre>
-
-<h4>
-<a id="how-to-specify-body-content-in-a-post-endpoint" class="anchor" href="#how-to-specify-body-content-in-a-post-endpoint" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to specify body content in a POST endpoint</h4>
-
-<p>Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example</p>
-
-<pre><code>###  
-#  parameters:
-#    - name: body
-#      schema:
-#        $ref: '#/definitions/com.iheart.api.Track'
-###
-POST   /tracks       controller.Api.createTrack()
-</code></pre>
-
-<p>Again, play-swagger will generate the definition for com.iheart.api.Track case class</p>
-
-<h3>
-<a id="how-do-i-use-a-different-host-for-different-environment" class="anchor" href="#how-do-i-use-a-different-host-for-different-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>How do I use a different "host" for different environment?</h3>
-
-<p>The library returns play JsObject, you can change however you want like </p>
-
-<pre><code>val spec = ps.generate(routeDocuments) + ("host" -&gt; JsString(myHost)) 
-</code></pre>
-
-<h4>
-<a id="how-to-find-more-examples" class="anchor" href="#how-to-find-more-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to find more examples?</h4>
-
-<p>In the tests!
-/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala</p>
-
 <h1></h1>
 
 <h2>
@@ -261,6 +216,56 @@ http://localhost:9000/docs/swagger-ui/index.html?url=/docs/swagger.json</p>
 <p>If you have any questions/bug reports, please submit an issue on github. 
 With good unit tests coverage, it's pretty easy to add/modify this library as well. 
 Code contribution are more than welcome. Make sure that your code is tested and submit the pull request!    </p>
+
+<h1></h1>
+
+<h2>
+<a id="faq" class="anchor" href="#faq" aria-hidden="true"><span class="octicon octicon-link"></span></a>FAQ</h2>
+
+<h4>
+<a id="how-to-override" class="anchor" href="#how-to-override" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to override?</h4>
+
+<p>To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. </p>
+
+<h4>
+<a id="how-to-hide-an-endpoint" class="anchor" href="#how-to-hide-an-endpoint" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to hide an endpoint?</h4>
+
+<p>If you don't want an end point to be included, add <code>### NoDocs ###</code> in front of it 
+e.g.</p>
+
+<pre><code>### NoDocs ###
+GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+</code></pre>
+
+<h4>
+<a id="how-to-specify-body-content-in-a-post-endpoint" class="anchor" href="#how-to-specify-body-content-in-a-post-endpoint" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to specify body content in a POST endpoint</h4>
+
+<p>Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example</p>
+
+<pre><code>###  
+#  parameters:
+#    - name: body
+#      schema:
+#        $ref: '#/definitions/com.iheart.api.Track'
+###
+POST   /tracks       controller.Api.createTrack()
+</code></pre>
+
+<p>Again, play-swagger will generate the definition for com.iheart.api.Track case class</p>
+
+<h4>
+<a id="how-do-i-use-a-different-host-for-different-environment" class="anchor" href="#how-do-i-use-a-different-host-for-different-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>How do I use a different "host" for different environment?</h4>
+
+<p>The library returns play JsObject, you can change however you want like </p>
+
+<pre><code>val spec = ps.generate(routeDocuments) + ("host" -&gt; JsString(myHost)) 
+</code></pre>
+
+<h4>
+<a id="how-to-find-more-examples" class="anchor" href="#how-to-find-more-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to find more examples?</h4>
+
+<p>In the tests!
+/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
