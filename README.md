@@ -66,41 +66,6 @@ If not, you will have to write the definition yourself in the base swagger spec 
 The result swagger specs will look like:
   ![](http://amp-public-share.s3-website-us-east-1.amazonaws.com/shifu/play-swagger-sample.png)
 
-
-#### How to override?
-To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. 
-
-#### How to hide an endpoint?
-If you don't want an end point to be included, add `### NoDocs ###` in front of it 
-e.g.
-```
-### NoDocs ###
-GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-```
-
-#### How to specify body content in a POST endpoint 
-Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
-```
-###  
-#  parameters:
-#    - name: body
-#      schema:
-#        $ref: '#/definitions/com.iheart.api.Track'
-###
-POST   /tracks       controller.Api.createTrack()
-```
-Again, play-swagger will generate the definition for com.iheart.api.Track case class
-
-### How do I use a different "host" for different environment?
-The library returns play JsObject, you can change however you want like 
-```
-val spec = ps.generate(routeDocuments) + ("host" -> JsString(myHost)) 
-```
-
-
-#### How to find more examples?
-In the tests!
-/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
  
 ============================
 ## Get Started
@@ -203,3 +168,41 @@ If you have any questions/bug reports, please submit an issue on github.
 With good unit tests coverage, it's pretty easy to add/modify this library as well. 
 Code contribution are more than welcome. Make sure that your code is tested and submit the pull request!    
 
+
+===========================
+## FAQ
+
+#### How to override?
+To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. 
+
+#### How to hide an endpoint?
+If you don't want an end point to be included, add `### NoDocs ###` in front of it 
+e.g.
+```
+### NoDocs ###
+GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+```
+
+#### How to specify body content in a POST endpoint 
+Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
+```
+###  
+#  parameters:
+#    - name: body
+#      schema:
+#        $ref: '#/definitions/com.iheart.api.Track'
+###
+POST   /tracks       controller.Api.createTrack()
+```
+Again, play-swagger will generate the definition for com.iheart.api.Track case class
+
+#### How do I use a different "host" for different environment?
+The library returns play JsObject, you can change however you want like 
+```
+val spec = ps.generate(routeDocuments) + ("host" -> JsString(myHost)) 
+```
+
+
+#### How to find more examples?
+In the tests!
+/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
