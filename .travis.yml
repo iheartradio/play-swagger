@@ -18,7 +18,6 @@ cache:
   - $HOME/.sbt/boot/
 
 script:
-  - sbt clean coverage test &&
-    sbt coverageAggregate
+  - sbt clean coverage test 
 after_success:
   - sbt coveralls
