@@ -34,17 +34,19 @@ case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainMode
     definition(tpe)
   }
 
-  def allDefinitions(typeNames: List[String]): List[Definition] = {
+  def allDefinitions(typeNames: Seq[String]): List[Definition] = {
 
     def allRefferdDefs(defName: String, memo: List[Definition]): List[Definition] = {
       memo.find(_.name == defName) match {
         case Some(_) ⇒ memo
         case None ⇒
           val thisDef = definition(defName)
-          val refNames = thisDef.properties.collect {
-            case p if p.referenceType.isDefined ⇒ p.referenceType.get
-            case p if p.items.isDefined         ⇒ p.items.get
-          }.filter(modelQualifier.isModel)
+          val refNames = for {
+            p ← thisDef.properties
+            className ← p.referenceType orElse p.items
+            if modelQualifier.isModel(className)
+          } yield className
+
           refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) ⇒
             allRefferdDefs(refName, foundDefs)
           }

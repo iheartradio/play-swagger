@@ -25,17 +25,16 @@ case class SwaggerSpecGenerator(
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
 
-  private def itemsWrite = OWrites((os: Option[String]) ⇒
+  private def itemsWrite = OWrites { (os: Option[String]) ⇒
     os.fold(Json.obj()) { itemType: String ⇒
-      Json.obj(
-        "type" → "array",
-        "items" →
-          (if (modelQualifier.isModel(itemType))
-            refWrite.writes(itemType)
-          else
-            Json.obj("type" → itemType))
-      )
-    })
+      val items = if (modelQualifier.isModel(itemType))
+        refWrite.writes(itemType)
+      else
+        Json.obj("type" → itemType)
+
+      Json.obj("type" → "array", "items" → items)
+    }
+  }
 
   private val propFormat: Writes[SwaggerParameter] = (
     (__ \ 'name).write[String] ~
@@ -77,13 +76,18 @@ case class SwaggerSpecGenerator(
         paths(routesDocumentation, lines, subTag)
     }.reduce(_ ++ _)
     val allRefs = (pathsJson ++ baseJson) \\ "$ref"
-    val definitions = DefinitionGenerator(modelQualifier).allDefinitions(allRefs.
-      flatMap(_.asOpt[String]).
-      filter { s ⇒
-        val className = s.stripPrefix(referencePrefix)
-        modelQualifier.isModel(className)
-      }.map(_.drop(referencePrefix.length)).
-      toList)
+
+    val definitions: List[Definition] = {
+      val referredClasses: Seq[String] = for {
+        refJson ← allRefs
+        ref ← refJson.asOpt[String]
+
+        className = ref.stripPrefix(referencePrefix)
+        if modelQualifier.isModel(className)
+      } yield className
+
+      DefinitionGenerator(modelQualifier).allDefinitions(referredClasses)
+    }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
     val generatedTagsJson = JsArray(routesLines.keys.filterNot(_ == RoutesFileReader.rootRoute).map(t ⇒ Json.obj("name" → t)).toSeq)

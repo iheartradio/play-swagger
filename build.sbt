@@ -1,4 +1,3 @@
-import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 organization in ThisBuild := "com.iheart"
 
@@ -14,6 +13,6 @@ Publish.settings
 
 lazy val playSwagger = project in file(".")
 
-coverallsToken := Some("tVYHvi1dwcXx3XzTnEOCLjCneOei9wraz")
+Testing.settings
 
 Format.settings
