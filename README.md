@@ -2,7 +2,9 @@
 [![Build Status](https://travis-ci.org/iheartradio/play-swagger.svg)](https://travis-ci.org/iheartradio/play-swagger)
 [![Coverage Status](https://coveralls.io/repos/iheartradio/play-swagger/badge.svg?branch=master&service=github)](https://coveralls.io/github/iheartradio/play-swagger?branch=master)
 [![Stories in Ready](https://badge.waffle.io/iheartradio/play-swagger.svg?label=ready&title=Ready)](http://waffle.io/iheartradio/play-swagger)
-# Swagger API spec generator for Play 
+[ ![Download](https://api.bintray.com/packages/iheartradio/maven/play-swagger/images/download.svg) ](https://bintray.com/iheartradio/maven/play-swagger/_latestVersion)
+
+# Swagger API spec generator for Play
 
 A library that generates swagger specs from route files and case class reflection, no code annotation needed.  
  
@@ -79,7 +81,7 @@ add Swagger API dependency to your sbt
 ```scala
 resolvers += Resolver.jcenterRepo
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.6"
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.8"
 ```
 
 #### Step 2
