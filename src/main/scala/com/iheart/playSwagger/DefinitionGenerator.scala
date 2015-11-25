@@ -8,7 +8,7 @@ import scala.reflect.api
 
 import SwaggerParameterMapper.mapParam
 
-case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit cl: ClassLoader) {
+case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
 
   def definition(tpe: Type): Definition = {
     val fields = tpe.decls.collectFirst {
@@ -16,7 +16,7 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
     }.get.paramLists.head
 
     val properties = fields.map { field ⇒
-      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, domainNameSpace) //todo: find a better way to get the string representation of typeSignature
+      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
     }
 
     Definition(
@@ -34,19 +34,19 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
     definition(tpe)
   }
 
-  def allDefinitions(typeNames: List[String]): List[Definition] = {
+  def allDefinitions(typeNames: Seq[String]): List[Definition] = {
 
     def allRefferdDefs(defName: String, memo: List[Definition]): List[Definition] = {
       memo.find(_.name == defName) match {
         case Some(_) ⇒ memo
         case None ⇒
           val thisDef = definition(defName)
-          val refNames = thisDef.properties.collect {
-            case p if p.referenceType.isDefined ⇒ p.referenceType.get
-            case p if p.items.isDefined         ⇒ p.items.get
-          }.filter { refName ⇒
-            domainNameSpace.fold(false)(refName.startsWith(_))
-          }
+          val refNames = for {
+            p ← thisDef.properties
+            className ← p.referenceType orElse p.items
+            if modelQualifier.isModel(className)
+          } yield className
+
           refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) ⇒
             allRefferdDefs(refName, foundDefs)
           }
@@ -60,5 +60,5 @@ case class DefinitionGenerator(domainNameSpace: Option[String] = None)(implicit 
 }
 
 object DefinitionGenerator {
-  def apply(domainNameSpace: String)(implicit cl: ClassLoader): DefinitionGenerator = DefinitionGenerator(Some(domainNameSpace))
+  def apply(domainNameSpace: String)(implicit cl: ClassLoader): DefinitionGenerator = DefinitionGenerator(DomainModelQualifier(domainNameSpace))
 }
