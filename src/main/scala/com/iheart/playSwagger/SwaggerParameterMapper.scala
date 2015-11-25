@@ -2,7 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain.SwaggerParameter
 import org.joda.time.DateTime
-import play.api.libs.json.{ JsBoolean, JsNumber, JsValue, JsString }
+import play.api.libs.json._
 
 object SwaggerParameterMapper {
   def mapParam(name: String, typeAndOrDefaultValue: String, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
@@ -40,7 +40,7 @@ object SwaggerParameterMapper {
       SwaggerParameter(name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val param = (if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(name, optionalTpe))
+      val param = if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(name, optionalTpe)
       param.copy(required = false, default = defaultValueO)
     }
 
@@ -50,14 +50,17 @@ object SwaggerParameterMapper {
         case "Long"                  ⇒ swaggerParam("integer", Some("int64"))
         case "Double"                ⇒ swaggerParam("number", Some("double"))
         case "Float"                 ⇒ swaggerParam("number", Some("float"))
+        case "String"                ⇒ swaggerParam("string")
         case "org.jodaTime.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
         case "Any"                   ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
         case unknown                 ⇒ swaggerParam(unknown.toLowerCase())
       }).copy(default = defaultValueO, required = defaultValueO.isEmpty)
 
     if (isReference()) referenceParam(typeName)
-    else if (itemTypeO.isDefined) SwaggerParameter(name, items = itemTypeO)
-    else if (optionalTypeO.isDefined) optionalParam(optionalTypeO.get)
+    else if (optionalTypeO.isDefined)
+      optionalParam(optionalTypeO.get)
+    else if (itemTypeO.isDefined)
+      SwaggerParameter(name, items = itemTypeO)
     else generalParam
   }
 }
