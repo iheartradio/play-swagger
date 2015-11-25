@@ -17,5 +17,8 @@ cache:
   - $HOME/.ivy2/cache
   - $HOME/.sbt/boot/
 
-script: "sbt clean coverage test"
-after_success: "sbt coveralls"
+script:
+  - sbt clean coverage test &&
+    sbt coverageAggregate
+after_success:
+  - sbt coveralls
