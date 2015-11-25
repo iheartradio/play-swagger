@@ -11,10 +11,13 @@ import SwaggerParameterMapper.mapParam
 
 object SwaggerSpecGenerator {
   private val marker = "###"
-  def apply(domainNameSpace: String)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(Some(domainNameSpace))
+  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(DomainModelQualifier(domainNameSpaces: _*))
 }
 
-case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultPostBodyFormat: String = "application/json")(implicit cl: ClassLoader) {
+case class SwaggerSpecGenerator(
+  modelQualifier:        DomainModelQualifier = DomainModelQualifier(),
+  defaultPostBodyFormat: String               = "application/json"
+)(implicit cl: ClassLoader) {
 
   import SwaggerSpecGenerator.marker
 
@@ -27,7 +30,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
       Json.obj(
         "type" → "array",
         "items" →
-          (if (domainNameSpace.fold(false)(ns ⇒ itemType.startsWith(ns)))
+          (if (modelQualifier.isModel(itemType))
             refWrite.writes(itemType)
           else
             Json.obj("type" → itemType))
@@ -74,10 +77,12 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         paths(routesDocumentation, lines, subTag)
     }.reduce(_ ++ _)
     val allRefs = (pathsJson ++ baseJson) \\ "$ref"
-    val definitions = DefinitionGenerator(domainNameSpace).allDefinitions(allRefs.
+    val definitions = DefinitionGenerator(modelQualifier).allDefinitions(allRefs.
       flatMap(_.asOpt[String]).
-      filter(s ⇒ domainNameSpace.exists(ns ⇒ s.startsWith(referencePrefix + ns))).
-      map(_.drop(referencePrefix.length)).
+      filter { s ⇒
+        val className = s.stripPrefix(referencePrefix)
+        modelQualifier.isModel(className)
+      }.map(_.drop(referencePrefix.length)).
       toList)
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
@@ -160,7 +165,7 @@ case class SwaggerSpecGenerator(domainNameSpace: Option[String] = None, defaultP
         JsArray(paramsPattern.findFirstMatchIn(controllerDesc).map(_.group(1)).fold(Array[SwaggerParameter]()) { paramsString ⇒
           paramsString.split(",").map { param ⇒
             val Array(name, pType) = param.split(":")
-            mapParam(name, pType, domainNameSpace)
+            mapParam(name, pType, modelQualifier)
           }
         }.map { p ⇒
           val jo = Json.toJson(p)(propFormat).asInstanceOf[JsObject]

@@ -145,7 +145,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "student" → studentsLines
     )
 
-    lazy val json = SwaggerSpecGenerator(Some("com.iheart")).generateWithBase(routesDocumentation, routesLines, base)
+    lazy val json = SwaggerSpecGenerator("com.iheart").generateWithBase(routesDocumentation, routesLines, base)
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]

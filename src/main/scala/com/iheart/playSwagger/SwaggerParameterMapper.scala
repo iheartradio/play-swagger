@@ -5,7 +5,7 @@ import org.joda.time.DateTime
 import play.api.libs.json.{ JsBoolean, JsNumber, JsValue, JsString }
 
 object SwaggerParameterMapper {
-  def mapParam(name: String, typeAndOrDefaultValue: String, domainNameSpace: Option[String] = None): SwaggerParameter = {
+  def mapParam(name: String, typeAndOrDefaultValue: String, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
 
@@ -32,7 +32,7 @@ object SwaggerParameterMapper {
       } else None
     }
 
-    def isReference(tpeName: String = typeName): Boolean = domainNameSpace.fold(false)(tpeName.startsWith(_))
+    def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
     lazy val optionalTypeO = higherOrderType("Option", typeName)
     lazy val itemTypeO = collectionItemType(typeName)
 
