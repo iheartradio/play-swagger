@@ -23,6 +23,14 @@ class SwaggerParameterMapperSpec extends Specification {
         example = Option(JsString("any JSON value"))
       )
     }
+
+    "map Option[Seq[T]] to item type" >> {
+      mapParam("aField", "Option[Seq[String]]") === SwaggerParameter(
+        name = "aField",
+        required = false,
+        items = Some("String")
+      )
+    }
   }
 }
 

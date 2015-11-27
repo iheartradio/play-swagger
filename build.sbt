@@ -1,10 +1,6 @@
 
 organization in ThisBuild := "com.iheart"
 
-name := "play-swagger"
-
-version := "0.1.7"
-
 resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
 
 scalaVersion in ThisBuild := "2.11.7"

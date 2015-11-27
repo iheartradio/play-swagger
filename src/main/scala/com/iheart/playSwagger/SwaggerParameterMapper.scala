@@ -50,7 +50,6 @@ object SwaggerParameterMapper {
         case "Long"                  ⇒ swaggerParam("integer", Some("int64"))
         case "Double"                ⇒ swaggerParam("number", Some("double"))
         case "Float"                 ⇒ swaggerParam("number", Some("float"))
-        case "String"                ⇒ swaggerParam("string")
         case "org.jodaTime.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
         case "Any"                   ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
         case unknown                 ⇒ swaggerParam(unknown.toLowerCase())
