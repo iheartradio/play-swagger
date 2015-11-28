@@ -1,12 +1,9 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ SwaggerParameter, Definition }
-import org.joda.time.DateTime
+import com.iheart.playSwagger.Domain.Definition
+import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 
 import scala.reflect.runtime.universe._
-import scala.reflect.api
-
-import SwaggerParameterMapper.mapParam
 
 case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
 
