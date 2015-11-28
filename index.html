@@ -32,7 +32,8 @@
       <section>
         <p><a href="https://travis-ci.org/iheartradio/play-swagger"><img src="https://travis-ci.org/iheartradio/play-swagger.svg" alt="Build Status"></a>
 <a href="https://coveralls.io/github/iheartradio/play-swagger?branch=master"><img src="https://coveralls.io/repos/iheartradio/play-swagger/badge.svg?branch=master&amp;service=github" alt="Coverage Status"></a>
-<a href="http://waffle.io/iheartradio/play-swagger"><img src="https://badge.waffle.io/iheartradio/play-swagger.svg?label=ready&amp;title=Ready" alt="Stories in Ready"></a></p>
+<a href="http://waffle.io/iheartradio/play-swagger"><img src="https://badge.waffle.io/iheartradio/play-swagger.svg?label=ready&amp;title=Ready" alt="Stories in Ready"></a>
+<a href="https://bintray.com/iheartradio/maven/play-swagger/_latestVersion"> <img src="https://api.bintray.com/packages/iheartradio/maven/play-swagger/images/download.svg" alt="Download"> </a></p>
 
 <h1>
 <a id="swagger-api-spec-generator-for-play" class="anchor" href="#swagger-api-spec-generator-for-play" aria-hidden="true"><span class="octicon octicon-link"></span></a>Swagger API spec generator for Play</h1>
@@ -123,7 +124,7 @@ Then you just need to have a swagger UI instance to consumer that swagger spec. 
 
 <div class="highlight highlight-source-scala"><pre>resolvers <span class="pl-k">+</span><span class="pl-k">=</span> <span class="pl-en">Resolver</span>.jcenterRepo
 
-libraryDependencies <span class="pl-k">+</span><span class="pl-k">=</span>  <span class="pl-s"><span class="pl-pds">"</span>com.iheart<span class="pl-pds">"</span></span> <span class="pl-k">%%</span> <span class="pl-s"><span class="pl-pds">"</span>play-swagger<span class="pl-pds">"</span></span> <span class="pl-k">%</span> <span class="pl-s"><span class="pl-pds">"</span>0.1.6<span class="pl-pds">"</span></span></pre></div>
+libraryDependencies <span class="pl-k">+</span><span class="pl-k">=</span>  <span class="pl-s"><span class="pl-pds">"</span>com.iheart<span class="pl-pds">"</span></span> <span class="pl-k">%%</span> <span class="pl-s"><span class="pl-pds">"</span>play-swagger<span class="pl-pds">"</span></span> <span class="pl-k">%</span> <span class="pl-s"><span class="pl-pds">"</span>0.1.9<span class="pl-pds">"</span></span></pre></div>
 
 <h4>
 <a id="step-2" class="anchor" href="#step-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Step 2</h4>
@@ -137,10 +138,11 @@ Add a controller to your Play app that serves the swagger spec</p>
 <span class="pl-k">class</span> <span class="pl-en">ApiSpecs</span> <span class="pl-k">@</span><span class="pl-en">Inject</span>() (<span class="pl-v">router</span>: <span class="pl-en">Router</span>, <span class="pl-v">cached</span>: <span class="pl-en">Cached</span>) <span class="pl-k">extends</span> <span class="pl-e">Controller</span> {
   <span class="pl-k">implicit</span> <span class="pl-k">val</span> <span class="pl-en">cl</span> <span class="pl-k">=</span> getClass.getClassLoader
 
-  <span class="pl-c">// The root package of your domain classes, PlaySwagger will automatically generate definitions when it encounters class references in this package.</span>
-  <span class="pl-c">// In our case it would be "com.iheart"</span>
+  <span class="pl-c">// The root package of your domain classes, play-swagger will automatically generate definitions when it encounters class references in this package.</span>
+  <span class="pl-c">// In our case it would be "com.iheart", play-swagger supports multiple domain package names</span>
   <span class="pl-k">val</span> <span class="pl-en">domainPackage</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>YOUR.DOMAIN.PACKAGE<span class="pl-pds">"</span></span>  
-  <span class="pl-k">private</span> <span class="pl-k">lazy</span> <span class="pl-k">val</span> <span class="pl-en">generator</span> <span class="pl-k">=</span> <span class="pl-en">SwaggerSpecGenerator</span>(domainPackage)   
+  <span class="pl-k">val</span> <span class="pl-en">secondDomainPackage</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>YOUR.OtherDOMAIN.PACKAGE<span class="pl-pds">"</span></span>
+  <span class="pl-k">private</span> <span class="pl-k">lazy</span> <span class="pl-k">val</span> <span class="pl-en">generator</span> <span class="pl-k">=</span> <span class="pl-en">SwaggerSpecGenerator</span>(domainPackage, secondDomainPackage)
 
   <span class="pl-k">def</span> <span class="pl-en">specs</span> <span class="pl-k">=</span> cached(<span class="pl-s"><span class="pl-pds">"</span>swaggerDef<span class="pl-pds">"</span></span>) {  <span class="pl-c">//it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   </span>
     <span class="pl-en">Action</span> { _ <span class="pl-k">⇒</span>
@@ -225,7 +227,7 @@ Code contribution are more than welcome. Make sure that your code is tested and 
 <h4>
 <a id="how-to-override" class="anchor" href="#how-to-override" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to override?</h4>
 
-<p>To override any of the automatically generated field, you just need to write the same part in your comment or base swagger sepc file. </p>
+<p>To override any of the automatically generated field, you just need to write the same part in your comment or base swagger spec file. </p>
 
 <h4>
 <a id="how-to-hide-an-endpoint" class="anchor" href="#how-to-hide-an-endpoint" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to hide an endpoint?</h4>
