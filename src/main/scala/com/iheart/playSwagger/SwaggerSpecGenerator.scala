@@ -9,8 +9,11 @@ import org.yaml.snakeyaml.Yaml
 
 import SwaggerParameterMapper.mapParam
 
+import scala.annotation.tailrec
+
 object SwaggerSpecGenerator {
   private val marker = "###"
+
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(DomainModelQualifier(domainNameSpaces: _*))
 }
 
@@ -156,39 +159,16 @@ case class SwaggerSpecGenerator(
         } else params
       }
 
-      /**
-       * Given a list of string comments, find the docs that are hiding
-       * between two marker (###) tags
-       * @param list List Of Comment Strings
-       * @return
-       */
-      def filterCommentsFromDocs(list: List[String]): List[String] = {
-        // quit early because there is no nonsense above the first marker
-        var take = false
-        val output = list.filter { s ⇒
-          if (!take && s == marker) {
-            // don't get first marker
-            take = true
-            false
-          } else if (take && s == marker) {
-            // don't get last marker
-            take = false
-            false
-            // Take in between marker
-          } else if (take) true
-          else false
-        }
-
-        output
-      }
-
-      val commentDocLines = commentLines match {
-        case `marker` +: docs :+ `marker`  ⇒ docs
+      @tailrec
+      def getCommentLines(commentLines: List[String]): List[String] = commentLines match {
+        case `marker` +: docs :+ `marker` ⇒ docs
         case l: List[String] if l.nonEmpty ⇒
-          val result = filterCommentsFromDocs(l)
-          if (result.nonEmpty) result else Nil // Only return if docs were found
-        case _                             ⇒ Nil
+          val sliced = commentLines.slice(commentLines.indexOf(marker), commentLines.lastIndexOf(marker) + 1)
+          getCommentLines(sliced)
+        case _ ⇒ Nil
       }
+
+      val commentDocLines = getCommentLines(commentLines)
 
       val paramsFromController = {
         val paramsInPath = """\{(\w+)\}""".r.findAllMatchIn(path).map(_.group(1))
