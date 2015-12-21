@@ -14,7 +14,7 @@ object SwaggerSpecGenerator {
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(DomainModelQualifier(domainNameSpaces: _*))
 }
 
-case class SwaggerSpecGenerator(
+final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier = DomainModelQualifier(),
   defaultPostBodyFormat: String               = "application/json"
 )(implicit cl: ClassLoader) {
@@ -49,7 +49,7 @@ case class SwaggerSpecGenerator(
 
   private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)
 
-  private implicit val swesWriter = Writes[Seq[SwaggerParameter]] { ps ⇒
+  private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
     JsObject(ps.map(p ⇒ p.name → Json.toJson(p)))
   }
   private implicit val defFormat: Writes[Definition] = (
@@ -98,7 +98,7 @@ case class SwaggerSpecGenerator(
   private def mergeByName(base: JsArray, toMerge: JsArray): JsArray = {
     JsArray(base.value.map { bs ⇒
       val name = (bs \ "name").as[String]
-      findByName(toMerge, name).fold(bs) { f ⇒ bs.asInstanceOf[JsObject] deepMerge f }
+      findByName(toMerge, name).fold(bs) { f ⇒ bs.as[JsObject] deepMerge f }
     } ++ toMerge.value.filter { tm ⇒
       val name = (tm \ "name").as[String]
       findByName(base, name).isEmpty
@@ -114,7 +114,7 @@ case class SwaggerSpecGenerator(
       try {
         val ext = url.getFile.split("\\.").last
         ext match {
-          case "json"  ⇒ Json.parse(st).asInstanceOf[JsObject]
+          case "json"  ⇒ Json.parse(st).as[JsObject]
           case "yml"   ⇒ parseYaml(read(st).mkString("\n"))
           case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yaml. ")
         }
@@ -129,7 +129,7 @@ case class SwaggerSpecGenerator(
     val map = yaml.load(yamlStr).asInstanceOf[java.util.Map[String, Object]]
     val mapper = new ObjectMapper()
     val jsonString = mapper.writeValueAsString(map)
-    Json.parse(jsonString).asInstanceOf[JsObject]
+    Json.parse(jsonString).as[JsObject]
   }
 
   private[playSwagger] def paths(routesDocumentation: RoutesDocumentation, routesLines: List[String], tag: Option[Tag]): JsObject = {
@@ -142,7 +142,7 @@ case class SwaggerSpecGenerator(
 
     def tryParseJson(comment: String): Option[JsObject] = {
       if (comment.startsWith("{"))
-        Some(Json.parse(comment).asInstanceOf[JsObject])
+        Some(Json.parse(comment).as[JsObject])
       else None
     }
 
@@ -150,10 +150,10 @@ case class SwaggerSpecGenerator(
 
       def amendBodyParam(params: JsArray): JsArray = {
         val bodyParam = findByName(params, "body")
-        if (bodyParam.isDefined) {
-          val enhancedBodyParam = bodyParam.get + ("in" → JsString("body"))
+        bodyParam.fold(params) { param ⇒
+          val enhancedBodyParam = param + ("in" → JsString("body"))
           JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
-        } else params
+        }
       }
 
       val commentDocLines = commentLines match {
@@ -172,7 +172,7 @@ case class SwaggerSpecGenerator(
             mapParam(name, pType, modelQualifier)
           }
         }.map { p ⇒
-          val jo = Json.toJson(p)(propFormat).asInstanceOf[JsObject]
+          val jo = Json.toJson(p)(propFormat).as[JsObject]
           val in = if (paramsInPath.contains(p.name)) "path" else "query"
           jo + ("in" → JsString(in))
         })

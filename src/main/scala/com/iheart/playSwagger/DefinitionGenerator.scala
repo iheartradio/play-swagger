@@ -5,7 +5,7 @@ import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 
 import scala.reflect.runtime.universe._
 
-case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
+final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
 
   def definition(tpe: Type): Definition = {
     val fields = tpe.decls.collectFirst {
@@ -13,7 +13,7 @@ case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainMode
     }.get.paramLists.head
 
     val properties = fields.map { field ⇒
-      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
+      mapParam(field.name.decoded, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
     }
 
     Definition(
