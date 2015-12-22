@@ -6,13 +6,13 @@ object Domain {
   type Path = String
   type Method = String
 
-  case class Definition(
+  final case class Definition(
     name:        String,
     properties:  Seq[SwaggerParameter],
     description: Option[String]        = None
   )
 
-  case class SwaggerParameter(
+  final case class SwaggerParameter(
     name:          String,
     `type`:        Option[String]  = None,
     format:        Option[String]  = None,

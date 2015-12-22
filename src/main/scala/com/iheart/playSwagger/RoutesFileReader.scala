@@ -1,7 +1,8 @@
 package com.iheart.playSwagger
 
 import ResourceReader.read
-case class RoutesFileReader(implicit cl: ClassLoader) {
+
+final case class RoutesFileReader(implicit cl: ClassLoader) {
   type ResourceName = String
 
   def readAll(rootName: String = RoutesFileReader.rootRoute): Map[APIName, List[Line]] = readRoutes(rootName)
