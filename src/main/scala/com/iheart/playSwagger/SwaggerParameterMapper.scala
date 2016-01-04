@@ -46,13 +46,13 @@ object SwaggerParameterMapper {
 
     def generalParam =
       (typeName match {
-        case "Int"                   ⇒ swaggerParam("integer", Some("int32"))
-        case "Long"                  ⇒ swaggerParam("integer", Some("int64"))
-        case "Double"                ⇒ swaggerParam("number", Some("double"))
-        case "Float"                 ⇒ swaggerParam("number", Some("float"))
-        case "org.jodaTime.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
-        case "Any"                   ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
-        case unknown                 ⇒ swaggerParam(unknown.toLowerCase())
+        case "Int"                    ⇒ swaggerParam("integer", Some("int32"))
+        case "Long"                   ⇒ swaggerParam("integer", Some("int64"))
+        case "Double"                 ⇒ swaggerParam("number", Some("double"))
+        case "Float"                  ⇒ swaggerParam("number", Some("float"))
+        case "org.joda.time.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
+        case "Any"                    ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
+        case unknown                  ⇒ swaggerParam(unknown.toLowerCase())
       }).copy(default = defaultValueO, required = defaultValueO.isEmpty)
 
     if (isReference()) referenceParam(typeName)
