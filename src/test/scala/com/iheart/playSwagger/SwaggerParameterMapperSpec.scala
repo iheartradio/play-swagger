@@ -8,8 +8,8 @@ class SwaggerParameterMapperSpec extends Specification {
   "mapParam" >> {
     import SwaggerParameterMapper.mapParam
 
-    "map org.jodaTime.DateTime to integer with format epoch" >> {
-      mapParam("fieldWithDateTime", "org.jodaTime.DateTime") === SwaggerParameter(
+    "map org.joda.time.DateTime to integer with format epoch" >> {
+      mapParam("fieldWithDateTime", "org.joda.time.DateTime") === SwaggerParameter(
         name = "fieldWithDateTime",
         `type` = Option("integer"),
         format = Option("epoch")
