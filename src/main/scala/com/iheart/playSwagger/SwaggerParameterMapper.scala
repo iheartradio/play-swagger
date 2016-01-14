@@ -1,10 +1,10 @@
 package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain.SwaggerParameter
-import org.joda.time.DateTime
 import play.api.libs.json._
 
 object SwaggerParameterMapper {
+
   def mapParam(name: String, typeAndOrDefaultValue: String, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
@@ -18,16 +18,16 @@ object SwaggerParameterMapper {
     val parts = typeAndOrDefaultValue.split("\\?=")
 
     val typePart = parts.head.stripMargin
-    val typeName = typePart.replace("scala.", "").replace("java.lang.", "")
+    val typeName = typePart.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
 
     val defaultValueO: Option[JsValue] = {
       if (parts.length == 2) {
         val stringVal = parts.last.stripMargin
         Some(typeName match {
-          case "Int" | "Long"     ⇒ JsNumber(stringVal.toLong)
-          case "Double" | "Float" ⇒ JsNumber(stringVal.toDouble)
-          case "Boolean"          ⇒ JsBoolean(stringVal.toBoolean)
-          case _                  ⇒ JsString(stringVal)
+          case ci"Int" | ci"Long"                      ⇒ JsNumber(stringVal.toLong)
+          case ci"Double" | ci"Float" | ci"BigDecimal" ⇒ JsNumber(stringVal.toDouble)
+          case ci"Boolean"                             ⇒ JsBoolean(stringVal.toBoolean)
+          case _                                       ⇒ JsString(stringVal)
         })
       } else None
     }
@@ -46,13 +46,13 @@ object SwaggerParameterMapper {
 
     def generalParam =
       (typeName match {
-        case "Int"                    ⇒ swaggerParam("integer", Some("int32"))
-        case "Long"                   ⇒ swaggerParam("integer", Some("int64"))
-        case "Double"                 ⇒ swaggerParam("number", Some("double"))
-        case "Float"                  ⇒ swaggerParam("number", Some("float"))
-        case "org.joda.time.DateTime" ⇒ swaggerParam("integer", Some("epoch"))
-        case "Any"                    ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
-        case unknown                  ⇒ swaggerParam(unknown.toLowerCase())
+        case ci"Int"                     ⇒ swaggerParam("integer", Some("int32"))
+        case ci"Long"                    ⇒ swaggerParam("integer", Some("int64"))
+        case ci"Double" | ci"BigDecimal" ⇒ swaggerParam("number", Some("double"))
+        case ci"Float"                   ⇒ swaggerParam("number", Some("float"))
+        case ci"DateTime"                ⇒ swaggerParam("integer", Some("epoch"))
+        case ci"Any"                     ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value")))
+        case unknown                     ⇒ swaggerParam(unknown.toLowerCase())
       }).copy(default = defaultValueO, required = defaultValueO.isEmpty)
 
     if (isReference()) referenceParam(typeName)
@@ -62,4 +62,9 @@ object SwaggerParameterMapper {
       SwaggerParameter(name, items = itemTypeO)
     else generalParam
   }
+
+  implicit class CaseInsensitiveRegex(sc: StringContext) {
+    def ci = ("(?i)" + sc.parts.mkString).r
+  }
+
 }
