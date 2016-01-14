@@ -13,7 +13,7 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
     }.get.paramLists.head
 
     val properties = fields.map { field ⇒
-      mapParam(field.name.decoded, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
+      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
     }
 
     Definition(
