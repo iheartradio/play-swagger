@@ -32,8 +32,9 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
       ("GET", "/api/students/$name<.+>", "com.iheart.controllers.Students.get(name:String)"),
 
-      ("PUT", "/api/students/defaultValueParam", "com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)")
+      ("PUT", "/api/students/defaultValueParam", "com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)"),
 
+      ("GET", "/api/students", "com.iheart.controllers.Students.all()")
     )
     val liveMetaRoutesLines =
       """
@@ -80,49 +81,66 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
     val playerRoutesLines =
       """
-      |###
-      |#  summary: get player
-      |###
-      |GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
-      |
-      |GET     /player/:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
-      |
-      |###
-      |#  parameters:
-      |#    - name: body
-      |#      description: track information
-      |#      schema:
-      |#        $ref: '#/definitions/com.iheart.playSwagger.Track'
-      |###
-      |POST     /player/:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
-      |
-    """.stripMargin.split("\n").toList
+        |###
+        |#  summary: get player
+        |###
+        |GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
+        |
+        |GET     /player/:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
+        |
+        |###
+        |#  parameters:
+        |#    - name: body
+        |#      description: track information
+        |#      schema:
+        |#        $ref: '#/definitions/com.iheart.playSwagger.Track'
+        |###
+        |POST     /player/:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
+        |
+      """.stripMargin.split("\n").toList
 
     val resourceRoutesLines =
       """
-      |GET     /api/resource/   controllers.Resource.get()
-      |PUT     /api/resource/   controllers.Resource.put()
-      |POST    /api/resource/   controllers.Resource.post()
-      |DELETE  /api/resource/   controllers.Resource.delete()
-    """.stripMargin.split("\n").toList
+        |GET     /api/resource/   controllers.Resource.get()
+        |PUT     /api/resource/   controllers.Resource.put()
+        |POST    /api/resource/   controllers.Resource.post()
+        |DELETE  /api/resource/   controllers.Resource.delete()
+      """.stripMargin.split("\n").toList
 
     val customControllerLines =
       """
-      |GET     /api/customResource/    com.iheart.controllers.Resource.get()
-    """.stripMargin.split("\n").toList
+        |GET     /api/customResource/    com.iheart.controllers.Resource.get()
+      """.stripMargin.split("\n").toList
 
     val studentsLines =
       """
-      |###
-      |#  responses:
-      |#    200:
-      |#      schema:
-      |#        $ref: '#/definitions/com.iheart.playSwagger.Student'
-      |###
-      |GET     /api/students/:name    com.iheart.controllers.Students.get(name)
-      |
-      |PUT     /api/students/defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
-    """.stripMargin.split("\n").toList
+        |###
+        |#  responses:
+        |#    200:
+        |#      schema:
+        |#        $ref: '#/definitions/com.iheart.playSwagger.Student'
+        |###
+        |GET     /api/students/:name    com.iheart.controllers.Students.get(name)
+        |
+        |PUT     /api/students/defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
+      """.stripMargin.split("\n").toList
+
+    val commentedRoutes =
+      """
+        |# Routes
+        |# This file defines all application routes (Higher priority routes first)
+        |# ~~~~
+        |
+        |# commented out route
+        |#GET           /players/all                            controllers.PlayersController.all()
+        |
+        |###
+        |#  summary: Get All Students
+        |#  tags: [students]
+        |#  operationId: getAllStudents
+        |###
+        |GET           /api/students                            com.iheart.controllers.Students.all()
+      """.stripMargin.split("\n").toList
 
     val base = Json.parse(
       """
@@ -142,7 +160,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "player" → playerRoutesLines,
       "resource" → resourceRoutesLines,
       "customResource" → customControllerLines,
-      "student" → studentsLines
+      "student" → studentsLines,
+      "commentedRoutes" → commentedRoutes
     )
 
     lazy val json = SwaggerSpecGenerator("com.iheart").generateWithBase(routesDocumentation, routesLines, base)
@@ -153,6 +172,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
+    lazy val commentedRoutesJson = (pathJson \ "/api/students" \ "get").as[JsObject]
     lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
@@ -315,6 +335,12 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "set default value" >> {
         (paramJson \ "default").as[Boolean] === true
       }
+    }
+
+    "parse route with comments above swagger marker" >> {
+      (commentedRoutesJson \ "tags").as[JsArray] === Json.arr("students")
+      (commentedRoutesJson \ "summary").as[String] === "Get All Students"
+      (commentedRoutesJson \ "operationId").as[String] === "getAllStudents"
     }
   }
 

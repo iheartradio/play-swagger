@@ -9,8 +9,11 @@ import org.yaml.snakeyaml.Yaml
 
 import SwaggerParameterMapper.mapParam
 
+import scala.annotation.tailrec
+
 object SwaggerSpecGenerator {
   private val marker = "###"
+
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(DomainModelQualifier(domainNameSpaces: _*))
 }
 
@@ -156,10 +159,16 @@ final case class SwaggerSpecGenerator(
         }
       }
 
-      val commentDocLines = commentLines match {
+      @tailrec
+      def getCommentLines(commentLines: List[String]): List[String] = commentLines match {
         case `marker` +: docs :+ `marker` ⇒ docs
-        case _                            ⇒ Nil
+        case l: List[String] if l.nonEmpty ⇒
+          val sliced = commentLines.slice(commentLines.indexOf(marker), commentLines.lastIndexOf(marker) + 1)
+          getCommentLines(sliced)
+        case _ ⇒ Nil
       }
+
+      val commentDocLines = getCommentLines(commentLines)
 
       val paramsFromController = {
         val paramsInPath = """\{(\w+)\}""".r.findAllMatchIn(path).map(_.group(1))
