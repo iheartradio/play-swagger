@@ -1,0 +1,8 @@
+{
+  "tags": [
+    {
+       "name" : "player",
+       "description": "this is player api"
+    }
+  ]
+}

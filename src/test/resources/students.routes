@@ -1,0 +1,10 @@
+###
+#  responses:
+#    200:
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Student'
+###
+GET     /:name    com.iheart.controllers.Students.get(name)
+
+PUT     /defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
+

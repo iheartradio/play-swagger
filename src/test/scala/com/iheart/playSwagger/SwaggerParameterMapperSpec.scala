@@ -3,13 +3,14 @@ package com.iheart.playSwagger
 import org.specs2.mutable.Specification
 import play.api.libs.json.JsString
 import com.iheart.playSwagger.Domain.SwaggerParameter
+import play.routes.compiler.Parameter
 
 class SwaggerParameterMapperSpec extends Specification {
   "mapParam" >> {
     import SwaggerParameterMapper.mapParam
 
     "map org.joda.time.DateTime to integer with format epoch" >> {
-      mapParam("fieldWithDateTime", "org.joda.time.DateTime") === SwaggerParameter(
+      mapParam(Parameter("fieldWithDateTime", "org.joda.time.DateTime", None, None)) === SwaggerParameter(
         name = "fieldWithDateTime",
         `type` = Option("integer"),
         format = Option("epoch")
@@ -17,7 +18,7 @@ class SwaggerParameterMapperSpec extends Specification {
     }
 
     "map Any to any with example value" >> {
-      mapParam("fieldWithAny", "Any") === SwaggerParameter(
+      mapParam(Parameter("fieldWithAny", "Any", None, None)) === SwaggerParameter(
         name = "fieldWithAny",
         `type` = Option("any"),
         example = Option(JsString("any JSON value"))
@@ -25,7 +26,7 @@ class SwaggerParameterMapperSpec extends Specification {
     }
 
     "map Option[Seq[T]] to item type" >> {
-      mapParam("aField", "Option[Seq[String]]") === SwaggerParameter(
+      mapParam(Parameter("aField", "Option[Seq[String]]", None, None)) === SwaggerParameter(
         name = "aField",
         required = false,
         items = Some("String")

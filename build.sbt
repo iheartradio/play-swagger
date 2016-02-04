@@ -7,8 +7,11 @@ resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
 
 scalaVersion in ThisBuild := "2.11.7"
 
-libraryDependencies ++= Dependencies.playJson ++ 
-  Dependencies.test ++ 
+libraryDependencies ++=
+  Dependencies.playTest ++
+  Dependencies.playRoutesCompiler ++
+  Dependencies.playJson ++
+  Dependencies.test ++
   Dependencies.yaml
 
 Publish.settings

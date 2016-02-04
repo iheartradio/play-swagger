@@ -1,2 +1,8 @@
-->        /api                              api.Routes
-->        /doc                              doc.Routes
+
+###
+#  summary: get player
+###
+GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
+
+->      /                                        test.Routes
+
