@@ -2,6 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain.Definition
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
+import play.routes.compiler.Parameter
 
 import scala.reflect.runtime.universe._
 
@@ -13,7 +14,12 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
     }.get.paramLists.head
 
     val properties = fields.map { field ⇒
-      mapParam(field.name.decodedName.toString, field.typeSignature.dealias.toString, modelQualifier) //todo: find a better way to get the string representation of typeSignature
+      //TODO: find a better way to get the string representation of typeSignature
+      val name = field.name.decodedName.toString
+      val typeName = field.typeSignature.dealias.toString
+      // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
+      val param = Parameter(name, typeName, None, None)
+      mapParam(param, modelQualifier)
     }
 
     Definition(
@@ -33,7 +39,7 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
 
   def allDefinitions(typeNames: Seq[String]): List[Definition] = {
 
-    def allRefferdDefs(defName: String, memo: List[Definition]): List[Definition] = {
+    def allReferredDefs(defName: String, memo: List[Definition]): List[Definition] = {
       memo.find(_.name == defName) match {
         case Some(_) ⇒ memo
         case None ⇒
@@ -45,13 +51,13 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
           } yield className
 
           refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) ⇒
-            allRefferdDefs(refName, foundDefs)
+            allReferredDefs(refName, foundDefs)
           }
       }
     }
 
     typeNames.foldLeft(List.empty[Definition]) { (memo, typeName) ⇒
-      allRefferdDefs(typeName, memo)
+      allReferredDefs(typeName, memo)
     }
   }
 }

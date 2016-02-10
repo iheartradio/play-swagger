@@ -1,0 +1,38 @@
+###
+# {
+#   "summary" : "get recent tracks",
+#   "description" : " The Products endpoint returns information about the *Uber* products offered at a given location. The response includes the display name and other details about each product, and lists the products in the proper display order."
+# }
+###
+GET     /api/artist/:aid/playedTracks/recent           controllers.LiveMeta.playedByArtist(aid: Int, limit: Option[Int])
+
+###
+#  summary: last track
+#  description: big deal
+#  parameters:
+#    - name: sid
+#      description: station id
+#      format: int
+#  responses:
+#    200:
+#      description: Profile information for a user
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Track'
+###
+GET     /api/station/:sid/playedTracks/last             @controllers.LiveMeta.playedByStation(sid: Int)
+
+###
+#  summary: Add track
+#  parameters:
+#    - name: body
+#      description: track information
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Track'
+#  responses:
+#    200:
+#      description: success
+###
+POST     /api/station/playedTracks             controllers.LiveMeta.addPlayedTracks()
+
+### NoDocs ###
+GET      /api/station/hidden                   controllers.LiveMeta.hiddenEndPoint()

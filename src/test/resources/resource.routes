@@ -1,0 +1,4 @@
+GET     /   controllers.Resource.get()
+PUT     /   controllers.Resource.put()
+POST    /   controllers.Resource.post()
+DELETE  /   controllers.Resource.delete()

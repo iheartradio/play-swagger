@@ -11,141 +11,17 @@ case class Teacher(name: String)
 
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
+
   "integration" >> {
-    val routesDocumentation = Seq(
-      ("GET", "/api/artist/$aid<[^/]+>/playedTracks/recent", "controllers.LiveMeta.playedByArtist(aid:Int, limit:Option[Int])"),
 
-      ("GET", "/api/station/$sid<[^/]+>/playedTracks/last", "@controllers.LiveMeta@.playedByStation(sid:Int)"),
-      ("POST", "/api/station/playedTracks", "controllers.LiveMeta.addPlayedTracks()"),
-      ("GET", "/api/station/hidden", "controllers.LiveMeta.hiddenEndPoint()"),
+    lazy val defaultRoutesFile = SwaggerSpecGenerator("com.iheart").generate()
 
-      ("GET", "/api/player/$pid<.+>/context/$bid<.+>", "controllers.Player.getPlayer(pid:String, bid:String)"),
-      ("GET", "/api/player/$pid<.+>/tracks/search", "controllers.Player.searchTrack(pid:String, bid:String)"),
-      ("POST", "/api/player/$pid<.+>/playedTracks", "controllers.Player.addPlayedTracks(pid:String)"),
+    "Use default routes file when no argument is given" >> {
+      val json = defaultRoutesFile.get
+      (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
+    }
 
-      ("GET", "/api/resource/", "controllers.Resource.get()"),
-      ("PUT", "/api/resource/", "controllers.Resource.put()"),
-      ("POST", "/api/resource/", "controllers.Resource.post()"),
-      ("DELETE", "/api/resource/", "controllers.Resource.post()"),
-
-      ("GET", "/api/customResource/", "com.iheart.controllers.Resource.get()"),
-
-      ("GET", "/api/students/$name<.+>", "com.iheart.controllers.Students.get(name:String)"),
-
-      ("PUT", "/api/students/defaultValueParam", "com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)")
-
-    )
-    val liveMetaRoutesLines =
-      """
-        |###
-        |# {
-        |#   "summary" : "get recent tracks",
-        |#   "description" : " The Products endpoint returns information about the *Uber* products offered at a given location. The response includes the display name and other details about each product, and lists the products in the proper display order."
-        |# }
-        |###
-        |
-        |GET     /artist/:aid/playedTracks/recent           controllers.LiveMeta.playedByArtist(aid: Int, limit: Option[Int])
-        |
-        |###
-        |#  summary: last track
-        |#  description: big deal
-        |#  parameters:
-        |#    - name: sid
-        |#      description: station id
-        |#      format: int
-        |#  responses:
-        |#    200:
-        |#      description: Profile information for a user
-        |#      schema:
-        |#        $ref: '#/definitions/com.iheart.playSwagger.Track'
-        |###
-        |GET     /station/:sid/playedTracks/last             @controllers.LiveMeta@.playedByStation(sid: Int)
-        |
-        |###
-        |#  summary: Add track
-        |#  parameters:
-        |#    - name: body
-        |#      description: track information
-        |#      schema:
-        |#        $ref: '#/definitions/com.iheart.playSwagger.Track'
-        |#  responses:
-        |#    200:
-        |#      description: success
-        |###
-        |POST     /station/playedTracks             controllers.LiveMeta.addPlayedTracks()
-        |
-        |### NoDocs ###
-        |GET      /station/hidden                   controllers.LiveMeta.hiddenEndPoint()
-      """.stripMargin.split("\n").toList
-
-    val playerRoutesLines =
-      """
-      |###
-      |#  summary: get player
-      |###
-      |GET     /player/:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
-      |
-      |GET     /player/:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
-      |
-      |###
-      |#  parameters:
-      |#    - name: body
-      |#      description: track information
-      |#      schema:
-      |#        $ref: '#/definitions/com.iheart.playSwagger.Track'
-      |###
-      |POST     /player/:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
-      |
-    """.stripMargin.split("\n").toList
-
-    val resourceRoutesLines =
-      """
-      |GET     /api/resource/   controllers.Resource.get()
-      |PUT     /api/resource/   controllers.Resource.put()
-      |POST    /api/resource/   controllers.Resource.post()
-      |DELETE  /api/resource/   controllers.Resource.delete()
-    """.stripMargin.split("\n").toList
-
-    val customControllerLines =
-      """
-      |GET     /api/customResource/    com.iheart.controllers.Resource.get()
-    """.stripMargin.split("\n").toList
-
-    val studentsLines =
-      """
-      |###
-      |#  responses:
-      |#    200:
-      |#      schema:
-      |#        $ref: '#/definitions/com.iheart.playSwagger.Student'
-      |###
-      |GET     /api/students/:name    com.iheart.controllers.Students.get(name)
-      |
-      |PUT     /api/students/defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
-    """.stripMargin.split("\n").toList
-
-    val base = Json.parse(
-      """
-        |{
-        |  "tags": [
-        |    {
-        |       "name" : "player",
-        |       "description": "this is player api"
-        |    }
-        |  ]
-        |}
-      """.stripMargin
-    ).asInstanceOf[JsObject]
-
-    val routesLines = Map(
-      "liveMeta" → liveMetaRoutesLines,
-      "player" → playerRoutesLines,
-      "resource" → resourceRoutesLines,
-      "customResource" → customControllerLines,
-      "student" → studentsLines
-    )
-
-    lazy val json = SwaggerSpecGenerator("com.iheart").generateWithBase(routesDocumentation, routesLines, base)
+    lazy val json = SwaggerSpecGenerator("com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]
@@ -238,7 +114,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       (playerJson \ "summary").asOpt[String] === Some("get player")
     }
 
-    "generate tags for an end point" >> {
+    "generate tags for an endpoint" >> {
       (playerJson \ "tags").asOpt[Seq[String]] === Some(Seq("player"))
     }
 
@@ -316,6 +192,20 @@ class SwaggerSpecGeneratorSpec extends Specification {
         (paramJson \ "default").as[Boolean] === true
       }
     }
+
+    "handle multiple levels of includes" >> {
+      val tags = (pathJson \ "/level1/level2/level3" \ "get" \ "tags").asOpt[Seq[String]]
+      tags must beSome.which(_ == Seq("level2"))
+    }
+
+    "not contain tags that are empty" >> {
+      val tags = (json \ "tags").as[Seq[JsObject]]
+        .map(o ⇒ (o \ "name").as[String])
+      tags must not contain "no"
+    }
+
+    // TODO: routes order
+
   }
 
 }

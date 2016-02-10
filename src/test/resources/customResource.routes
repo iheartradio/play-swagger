@@ -1,0 +1,1 @@
+GET     /    com.iheart.controllers.Resource.get()

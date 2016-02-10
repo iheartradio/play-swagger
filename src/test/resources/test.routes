@@ -1,0 +1,12 @@
+
+->   /                     liveMeta.Routes
+->   /api/player           player.Routes
+->   /api/resource         resource.Routes
+->   /api/customResource   customResource.Routes
+->   /api/students         students.Routes
+
+->   /level1               level1.Routes
+
+->   /no-routes            no.Routes
+
+GET  /abc                  com.iheart.Application.test()

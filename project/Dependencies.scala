@@ -6,6 +6,14 @@ object Dependencies {
     val specs2 = "3.6.6"
   }
 
+  val playTest = Seq(
+    "com.typesafe.play" %% "play-test" % Versions.play % Test
+  )
+
+  val playRoutesCompiler = Seq(
+    "com.typesafe.play" %% "routes-compiler" % Versions.play
+  )
+
   val playJson = Seq(
     "com.typesafe.play" %% "play-json" % Versions.play % "provided"
   )
