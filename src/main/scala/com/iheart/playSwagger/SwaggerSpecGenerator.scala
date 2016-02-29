@@ -2,7 +2,7 @@ package com.iheart.playSwagger
 
 import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.iheart.playSwagger.Domain.{ Definition, SwaggerParameter }
+import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import play.api.libs.json._
 import ResourceReader.read
 import play.api.libs.functional.syntax._
@@ -11,7 +11,7 @@ import SwaggerParameterMapper.mapParam
 import scala.collection.immutable.ListMap
 import play.routes.compiler._
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 
 object SwaggerSpecGenerator {
   private val marker = "##"

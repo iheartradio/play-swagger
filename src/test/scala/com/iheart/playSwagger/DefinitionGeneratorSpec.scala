@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ Definition, SwaggerParameter }
+import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import org.specs2.mutable.Specification
 
 case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo)
