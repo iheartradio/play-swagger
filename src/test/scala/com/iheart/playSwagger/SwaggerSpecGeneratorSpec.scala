@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.{ JsValue, Json, JsArray, JsObject }
+import play.api.libs.json.{JsValue, Json, JsArray, JsObject}
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
