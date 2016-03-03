@@ -136,18 +136,9 @@ final case class SwaggerSpecGenerator(
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
 
-  private def itemsWrite = OWrites { (os: Option[String]) ⇒
-    os.fold(Json.obj()) { itemType: String ⇒
-      val items = if (modelQualifier.isModel(itemType))
-        refWrite.writes(itemType)
-      else
-        Json.obj("type" → itemType)
+  import play.api.libs.functional.syntax._
 
-      Json.obj("type" → "array", "items" → items)
-    }
-  }
-
-  private val propFormat: Writes[SwaggerParameter] = (
+  private lazy val propFormat: Writes[SwaggerParameter] = (
     (__ \ 'name).write[String] ~
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
@@ -155,8 +146,18 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    itemsWrite
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](propFormat.transform((js: JsValue) ⇒ transformItems(js)))
   )(unlift(SwaggerParameter.unapply))
+
+  private def transformItems(js: JsValue): JsValue = {
+    val filtered = js.as[JsObject] - "name"
+    val movedRef = (filtered \ "schema" \ "$ref").asOpt[JsValue].fold(filtered) {
+      (filtered - "schema") + "$ref" → _
+    }
+    (movedRef \ "items").asOpt[JsValue].fold(movedRef) {
+      movedRef + "items" → _
+    }
+  }
 
   private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)
 

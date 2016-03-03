@@ -25,11 +25,17 @@ class SwaggerParameterMapperSpec extends Specification {
       )
     }
 
+    //TODO: for sequences, should the nested required be ignored?
     "map Option[Seq[T]] to item type" >> {
       mapParam(Parameter("aField", "Option[Seq[String]]", None, None)) === SwaggerParameter(
         name = "aField",
         required = false,
-        items = Some("String")
+        `type` = Some("array"),
+        items = Some(SwaggerParameter(
+          name = "aField",
+          required = true,
+          `type` = Some("string")
+        ))
       )
     }
   }

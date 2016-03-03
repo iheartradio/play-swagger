@@ -8,7 +8,9 @@ object SwaggerParameterMapper {
 
   def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
 
-    def higherOrderType(higherOrder: String, typeName: String): Option[String] = s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
+    def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
+      s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
+    }
 
     def collectionItemType(typeName: String): Option[String] =
       List("Seq", "List", "Set", "Vector").map(higherOrderType(_, typeName)).reduce(_ orElse _)
@@ -30,8 +32,8 @@ object SwaggerParameterMapper {
     }
 
     def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
+
     lazy val optionalTypeO = higherOrderType("Option", typeName)
-    lazy val itemTypeO = collectionItemType(typeName)
 
     def referenceParam(referenceType: String) =
       SwaggerParameter(parameter.name, referenceType = Some(referenceType))
@@ -41,8 +43,8 @@ object SwaggerParameterMapper {
       param.copy(required = false, default = defaultValueO)
     }
 
-    def generalParam =
-      (typeName match {
+    def generalParam(tpe: String = typeName) =
+      (tpe match {
         case ci"Int"                     ⇒ swaggerParam("integer", Some("int32"))
         case ci"Long"                    ⇒ swaggerParam("integer", Some("int64"))
         case ci"Double" | ci"BigDecimal" ⇒ swaggerParam("number", Some("double"))
@@ -55,12 +57,22 @@ object SwaggerParameterMapper {
         required = defaultValueO.isEmpty
       )
 
+    lazy val itemTypeO = collectionItemType(typeName)
+
     if (isReference()) referenceParam(typeName)
     else if (optionalTypeO.isDefined)
       optionalParam(optionalTypeO.get)
     else if (itemTypeO.isDefined)
-      SwaggerParameter(parameter.name, items = itemTypeO)
-    else generalParam
+      // TODO: This could use a different type to represent ItemsObject(http://swagger.io/specification/#itemsObject),
+      // since the structure is not quite the same, and still has to be handled specially in a json transform (see propFormat in SwaggerSpecGenerator)
+      // However, that spec conflicts with example code elsewhere that shows other fields in the object, such as properties:
+      // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
+      generalParam("array").copy(
+        items = Some(
+          mapParam(parameter.copy(typeName = itemTypeO.get), modelQualifier)
+        )
+      )
+    else generalParam()
   }
 
   implicit class CaseInsensitiveRegex(sc: StringContext) {

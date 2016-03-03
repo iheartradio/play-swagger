@@ -44,9 +44,9 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
         case Some(_) ⇒ memo
         case None ⇒
           val thisDef = definition(defName)
-          val refNames = for {
+          val refNames: Seq[String] = for {
             p ← thisDef.properties
-            className ← p.referenceType orElse p.items
+            className ← p.referenceType orElse p.items.flatMap(_.referenceType)
             if modelQualifier.isModel(className)
           } yield className
 
