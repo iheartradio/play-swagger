@@ -8,7 +8,15 @@ case class ReffedFoo(name: String, refrefFoo: RefReffedFoo)
 case class RefReffedFoo(bar: String)
 
 case class FooWithSeq(seq: Seq[SeqItem])
+
 case class SeqItem(bar: String)
+
+case class FooWithSeq2(abc1: Seq[Bar.Bar], abc2: Seq[Seq[Bar.Foo]])
+
+object Bar {
+  type Bar = String
+  type Foo = Int
+}
 
 case class WithListOfPrimitive(seq: Seq[Int])
 
