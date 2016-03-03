@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.{JsValue, Json, JsArray, JsObject}
+import play.api.libs.json.{JsValue, JsArray, JsObject}
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
@@ -84,7 +84,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "read seq of primitive type" >> {
       val numberProps = (trackJson \ "properties" \ "numbers")
       (numberProps \ "type").asOpt[String] === Some("array")
-      (numberProps \ "items" \ "type").asOpt[String] === Some("Int")
+      (numberProps \ "items" \ "type").asOpt[String] === Some("integer")
     }
 
     "read definition from referenced referenceTypes" >> {
