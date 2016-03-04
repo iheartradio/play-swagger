@@ -81,7 +81,7 @@ add Swagger API dependency to your sbt
 ```scala
 resolvers += Resolver.jcenterRepo
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.10"  //find the latest version in the download badge at the top
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.2.0"  //find the latest version in the download badge at the top
 ```
 
 #### Step 2
@@ -149,7 +149,7 @@ Alternatively you can use swagger-ui webjar and have you play app serving the sw
 
 Add the following dependency
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.2"
+libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.4"
 ```
 
 Add the following to your route file
