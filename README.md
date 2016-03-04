@@ -103,7 +103,7 @@ class ApiSpecs @Inject() (cached: Cached) extends Controller {
   
   def specs = cached("swaggerDef") {  //it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   
      Action.async { _ ⇒
-        Future.fromTry(generator.generate()).map(Ok(_))
+        Future.fromTry(generator.generate()).map(Ok(_)) //generate() can also taking in an optional arg of the route file name. 
       }		      
   }
 
@@ -201,11 +201,18 @@ Again, play-swagger will generate the definition for com.iheart.api.Track case c
 
 #### How do I use a different "host" for different environment?
 The library returns play JsObject, you can change however you want like 
-```
+```scala
 val spec: Try[JsObject] = ps.generate().map(_ + ("host" -> JsString(myHost)))
 ```
 
 
+#### How to use a route file different from the default "routes"?
+```scala
+SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
+```
+
 #### How to find more examples?
 In the tests!
 /test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
+
+
