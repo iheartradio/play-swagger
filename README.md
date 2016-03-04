@@ -92,7 +92,7 @@ Add a controller to your Play app that serves the swagger spec
 
 ```scala
 
-class ApiSpecs @Inject() (router: Router, cached: Cached) extends Controller {
+class ApiSpecs @Inject() (cached: Cached) extends Controller {
   implicit val cl = getClass.getClassLoader
   
   // The root package of your domain classes, play-swagger will automatically generate definitions when it encounters class references in this package.
