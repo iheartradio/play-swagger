@@ -81,7 +81,7 @@ add Swagger API dependency to your sbt
 ```scala
 resolvers += Resolver.jcenterRepo
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.1.10"  //find the latest version in the download badge at the top
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.2.0"  //find the latest version in the download badge at the top
 ```
 
 #### Step 2
@@ -91,6 +91,7 @@ Here is how:
 Add a controller to your Play app that serves the swagger spec
 
 ```scala
+import play.api.libs.concurrent.Execution.Implicits._
 
 class ApiSpecs @Inject() (cached: Cached) extends Controller {
   implicit val cl = getClass.getClassLoader
@@ -102,7 +103,7 @@ class ApiSpecs @Inject() (cached: Cached) extends Controller {
   private lazy val generator = SwaggerSpecGenerator(domainPackage, secondDomainPackage)
   
   def specs = cached("swaggerDef") {  //it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   
-     Action.async { _ ⇒
+     Action.async { _ =>
         Future.fromTry(generator.generate()).map(Ok(_)) //generate() can also taking in an optional arg of the route file name. 
       }		      
   }
@@ -149,7 +150,7 @@ Alternatively you can use swagger-ui webjar and have you play app serving the sw
 
 Add the following dependency
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.2"
+libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.4"
 ```
 
 Add the following to your route file
