@@ -83,6 +83,10 @@ resolvers += Resolver.jcenterRepo
 
 libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.2.0"  //find the latest version in the download badge at the top
 ```
+For play 2.5 please use a special release build with play 2.5 binary. 
+```scala
+libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.2.1-PLAY2.5"  //find the latest version in the download badge at the top
+```
 
 #### Step 2
 Play swagger is just a library that generates a swagger spec json for you.
