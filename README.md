@@ -102,9 +102,9 @@ class ApiSpecs @Inject() (router: Router, cached: Cached) extends Controller {
   private lazy val generator = SwaggerSpecGenerator(domainPackage, secondDomainPackage)
   
   def specs = cached("swaggerDef") {  //it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   
-    Action { _ ⇒
-      Ok(generator.generate(router.documentation))
-    }
+     Action.async { _ ⇒
+        Future.fromTry(generator.generate()).map(Ok(_))
+      }		      
   }
 
 }
@@ -202,7 +202,7 @@ Again, play-swagger will generate the definition for com.iheart.api.Track case c
 #### How do I use a different "host" for different environment?
 The library returns play JsObject, you can change however you want like 
 ```
-val spec = ps.generate(routeDocuments) + ("host" -> JsString(myHost)) 
+val spec: Try[JsObject] = ps.generate().map(_ + ("host" -> JsString(myHost)))
 ```
 
 
