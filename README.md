@@ -91,6 +91,7 @@ Here is how:
 Add a controller to your Play app that serves the swagger spec
 
 ```scala
+import play.api.libs.concurrent.Execution.Implicits._
 
 class ApiSpecs @Inject() (cached: Cached) extends Controller {
   implicit val cl = getClass.getClassLoader
