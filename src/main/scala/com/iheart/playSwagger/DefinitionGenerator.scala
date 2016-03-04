@@ -8,6 +8,12 @@ import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
 
+  def dealiasParams(t: Type): Type = {
+    appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
+      dealiasParams(arg.dealias)
+    })
+  }
+
   def definition(tpe: Type): Definition = {
     val fields = tpe.decls.collectFirst {
       case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
@@ -16,7 +22,7 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
     val properties = fields.map { field ⇒
       //TODO: find a better way to get the string representation of typeSignature
       val name = field.name.decodedName.toString
-      val typeName = field.typeSignature.dealias.toString
+      val typeName = dealiasParams(field.typeSignature).toString
       // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
       val param = Parameter(name, typeName, None, None)
       mapParam(param, modelQualifier)

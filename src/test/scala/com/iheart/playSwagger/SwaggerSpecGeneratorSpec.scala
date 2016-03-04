@@ -204,6 +204,12 @@ class SwaggerSpecGeneratorSpec extends Specification {
       tags must not contain "no"
     }
 
+    "handle type aliases in post body" >> {
+      val properties = (definitionsJson \ "com.iheart.playSwagger.FooWithSeq2" \ "properties").as[JsObject]
+      (properties \ "abc1" \ "items" \ "type").as[String] === "string"
+      (properties \ "abc2" \ "items" \ "items" \ "type").as[String] === "integer"
+    }
+
     // TODO: routes order
 
   }

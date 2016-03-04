@@ -10,3 +10,12 @@
 ->   /no-routes            no.Routes
 
 GET  /abc                  com.iheart.Application.test()
+
+###
+#  summary: Creates a FooWithSeq
+#  responses:
+#    200:
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.FooWithSeq2'
+###
+POST /post-body            com.iheart.Application.postBody()
