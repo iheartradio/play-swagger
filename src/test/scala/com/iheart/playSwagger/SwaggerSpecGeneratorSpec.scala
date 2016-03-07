@@ -29,7 +29,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
-    lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
+    lazy val resourceJson = (pathJson \ "/api/resource").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
@@ -163,7 +163,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     }
 
     "parse controller with custom namespace" >> {
-      (pathJson \ "/api/customResource/" \ "get").asOpt[JsObject] must beSome[JsObject]
+      (pathJson \ "/api/customResource" \ "get").asOpt[JsObject] must beSome[JsObject]
     }
 
     "parse class referenced in option type" >> {
