@@ -226,10 +226,11 @@ final case class SwaggerSpecGenerator(
     if (s"$marker\\s*NoDocs\\s*$marker".r.findFirstIn(comments).isDefined) {
       None
     } else {
-      val path = "/" + (if (prefix.nonEmpty) prefix + "/" else prefix) + route.path.parts.map {
+      val inRoutePath = route.path.parts.map {
         case DynamicPart(name, _, _) ⇒ s"{$name}"
         case StaticPart(value)       ⇒ value
       }.mkString
+      val path = "/" + List(prefix, inRoutePath).filterNot(p ⇒ p.isEmpty || p == "/").mkString("/")
       val method = route.verb.value.toLowerCase
       Some(path → Json.obj(method → endPointSpec(route, tag)))
     }
