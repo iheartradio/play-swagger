@@ -32,7 +32,7 @@ final case class SwaggerSpecGenerator(
 
   val defaultRoutesFile = "routes"
 
-  def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = generateFromRoutesFile(routesFile = routesFile, base = base)
+  def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = generateFromRoutesFile(routesFile = routesFile, base = defaultBase)
 
   val routesExt = ".routes"
 
@@ -85,14 +85,23 @@ final case class SwaggerSpecGenerator(
     }
 
     // starts with empty prefix, assuming that the routesFile is the outermost (usually 'routes')
-    loop("", routesFile).map { results ⇒
-      val docs = results.map {
-        case (tag, (prefix, routes)) ⇒
-          //val subTag = if (tag == tagFromFile(routesFile)) None else Some(tag)
-          tag → paths(routes, prefix, Some(tag))
-      }.filter(_._2.keys.nonEmpty)
-      generateWithBase(docs, base)
-    }
+    loop("", routesFile).map(generateFromRoutes(_, base))
+  }
+
+  /**
+   * Generate directly from routes
+   *
+   * @param routes [[Route]]s compiled by Play routes compiler
+   * @param base
+   * @return
+   */
+  def generateFromRoutes(routes: ListMap[Tag, (String, Seq[Route])], base: JsObject = defaultBase): JsObject = {
+    val docs = routes.map {
+      case (tag, (prefix, routes)) ⇒
+        //val subTag = if (tag == tagFromFile(routesFile)) None else Some(tag)
+        tag → paths(routes, prefix, Some(tag))
+    }.filter(_._2.keys.nonEmpty)
+    generateWithBase(docs, base)
   }
 
   private[playSwagger] def generateWithBase(
@@ -170,7 +179,7 @@ final case class SwaggerSpecGenerator(
     (__ \ 'required).write[Seq[String]]
   )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
 
-  private def base = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
+  private def defaultBase = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
 
   private def mergeByName(base: JsArray, toMerge: JsArray): JsArray = {
     JsArray(base.value.map { bs ⇒
