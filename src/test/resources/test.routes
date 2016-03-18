@@ -9,6 +9,8 @@
 
 ->   /no-routes            no.Routes
 
+->   /aCustomerRouter      com.myCompany.Router
+
 GET  /abc                  com.iheart.Application.test()
 
 ###
