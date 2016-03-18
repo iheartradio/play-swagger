@@ -44,6 +44,7 @@ final case class SwaggerSpecGenerator(
     def tagFromFile(file: String) = file.replace(routesExt, "")
 
     def loop(path: String, routesFile: String): RoutesData = {
+
       // TODO: better error handling
       ResourceReader.read(routesFile).flatMap { lines ⇒
         val content = lines.mkString("\n")
@@ -72,12 +73,13 @@ final case class SwaggerSpecGenerator(
               val (prefix, routes) = acc(routerName)
               Success(acc + (routerName → (prefix, routes :+ route)))
             case (Success(acc), Include(prefix, router)) ⇒
-              val routerFile = router.replace(".Routes", ".routes")
-              val updated = if (path.nonEmpty) path + "/" + prefix else prefix
-              loop(updated, routerFile) match {
-                case Success(results)        ⇒ Success(acc ++ results)
-                case left @ Failure(results) ⇒ Failure(results)
-              }
+              val reference = router.replace(".Routes", ".routes")
+              val isIncludedRoutesFile = cl.getResource(reference) != null
+              if (isIncludedRoutesFile) {
+                val updated = if (path.nonEmpty) path + "/" + prefix else prefix
+                loop(updated, reference).map(acc ++ _)
+              } else Success(acc)
+
             case (l @ Failure(_), _) ⇒ l
           }
         })
