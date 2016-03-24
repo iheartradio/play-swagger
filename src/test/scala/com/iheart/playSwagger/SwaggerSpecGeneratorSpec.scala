@@ -111,7 +111,6 @@ class SwaggerSpecGeneratorSpec extends Specification {
       (javaEnumContainerJson.get \ "properties" \ "status" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
     }
 
-
     "definition property have no name" >> {
       (artistDefJson \ "properties" \ "age" \ "name").toOption must beEmpty
     }

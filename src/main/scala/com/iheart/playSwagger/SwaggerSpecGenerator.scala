@@ -163,9 +163,9 @@ final case class SwaggerSpecGenerator(
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
-      OWrites[A] { (a: A) =>
+      OWrites[A] { (a: A) ⇒
         if (a.isEmpty) Json.obj()
-        else JsPath.createObj(path -> writes.writes(a))
+        else JsPath.createObj(path → writes.writes(a))
       }
   }
 

@@ -8,7 +8,7 @@ import scala.util.Try
 
 object SwaggerParameterMapper {
 
-  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
+  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
       s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
@@ -34,7 +34,7 @@ object SwaggerParameterMapper {
     }
 
     def getJavaEnum(tpeName: String): Option[Class[java.lang.Enum[_]]] = {
-      Try(Class.forName(tpeName)).toOption.filter(_.isEnum).map(_.asInstanceOf[Class[java.lang.Enum[_]]])
+      Try(cl.loadClass(tpeName)).toOption.filter(_.isEnum).map(_.asInstanceOf[Class[java.lang.Enum[_]]])
     }
 
     def enumParam(tpeName: String) = {
@@ -70,8 +70,8 @@ object SwaggerParameterMapper {
 
     lazy val itemTypeO = collectionItemType(typeName)
 
-    if (getJavaEnum(typeName).isDefined)  enumParam(typeName)
-    else if(isReference()) referenceParam(typeName)
+    if (getJavaEnum(typeName).isDefined) enumParam(typeName)
+    else if (isReference()) referenceParam(typeName)
     else if (optionalTypeO.isDefined)
       optionalParam(optionalTypeO.get)
     else if (itemTypeO.isDefined)

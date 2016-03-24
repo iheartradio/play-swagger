@@ -8,6 +8,7 @@ import play.routes.compiler.Parameter
 class SwaggerParameterMapperSpec extends Specification {
   "mapParam" >> {
     import SwaggerParameterMapper.mapParam
+    implicit val cl = this.getClass.getClassLoader
 
     "map org.joda.time.DateTime to integer with format epoch" >> {
       mapParam(Parameter("fieldWithDateTime", "org.joda.time.DateTime", None, None)) === SwaggerParameter(
