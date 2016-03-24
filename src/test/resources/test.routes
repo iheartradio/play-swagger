@@ -21,3 +21,21 @@ GET  /abc                  com.iheart.Application.test()
 #        $ref: '#/definitions/com.iheart.playSwagger.FooWithSeq2'
 ###
 POST /post-body            com.iheart.Application.postBody()
+
+###
+#  parameters:
+#    - name: body
+#      description: polymorphic example
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.PolymorphicContainer'
+###
+POST     /somethingPolymorphic             controllers.Player.somethingPolymorphic()
+
+###
+#  parameters:
+#    - name: body
+#      description: java enum example
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.JavaEnumContainer'
+###
+POST     /somethingWithEnum                controllers.Player.somethingWithEnum()

@@ -157,8 +157,17 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](propFormat.transform((js: JsValue) ⇒ transformItems(js)))
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](propFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "enum").writeNullable[Seq[String]]
   )(unlift(SwaggerParameter.unapply))
+
+  implicit class PathAdditions(path: JsPath) {
+    def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
+      OWrites[A] { (a: A) =>
+        if (a.isEmpty) Json.obj()
+        else JsPath.createObj(path -> writes.writes(a))
+      }
+  }
 
   private def transformItems(js: JsValue): JsValue = {
     val filtered = js.as[JsObject] - "name"
