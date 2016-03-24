@@ -9,6 +9,11 @@ case class Artist(name: String, age: Int)
 case class Student(name: String, teacher: Option[Teacher])
 case class Teacher(name: String)
 
+case class PolymorphicContainer(item: PolymorphicItem)
+trait PolymorphicItem
+
+case class JavaEnumContainer(status: SampleJavaEnum)
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
@@ -34,6 +39,9 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
     lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
+    lazy val polymorphicContainerJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
+    lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
+    lazy val javaEnumContainerJson = (definitionsJson \ "com.iheart.playSwagger.JavaEnumContainer").asOpt[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
       (json \ "parameters").as[JsArray].value
@@ -91,6 +99,18 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
       (artistDefJson \ "properties" \ "age" \ "type").as[String] === "integer"
     }
+
+    "read trait with container" >> {
+      polymorphicContainerJson must beSome[JsObject]
+      (polymorphicContainerJson.get \ "properties" \ "item" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
+      polymorphicItemJson must beSome[JsObject]
+    }
+
+    "read java enum with container" >> {
+      javaEnumContainerJson must beSome[JsObject]
+      (javaEnumContainerJson.get \ "properties" \ "status" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+    }
+
 
     "definition property have no name" >> {
       (artistDefJson \ "properties" \ "age" \ "name").toOption must beEmpty

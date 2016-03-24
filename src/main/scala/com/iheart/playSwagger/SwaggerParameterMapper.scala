@@ -4,6 +4,8 @@ import com.iheart.playSwagger.Domain.SwaggerParameter
 import play.api.libs.json._
 import play.routes.compiler.Parameter
 
+import scala.util.Try
+
 object SwaggerParameterMapper {
 
   def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = DomainModelQualifier()): SwaggerParameter = {
@@ -15,8 +17,8 @@ object SwaggerParameterMapper {
     def collectionItemType(typeName: String): Option[String] =
       List("Seq", "List", "Set", "Vector").map(higherOrderType(_, typeName)).reduce(_ orElse _)
 
-    def swaggerParam(tp: String, format: Option[String] = None, required: Boolean = true) =
-      SwaggerParameter(parameter.name, `type` = Some(tp), format = format, required = required)
+    def swaggerParam(tp: String, format: Option[String] = None, required: Boolean = true, enum: Option[Seq[String]] = None) =
+      SwaggerParameter(parameter.name, `type` = Some(tp), format = format, required = required, enum = enum)
 
     val typeName = parameter.typeName.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
 
@@ -29,6 +31,15 @@ object SwaggerParameterMapper {
           case _                                       ⇒ JsString(value)
         }
       }
+    }
+
+    def getJavaEnum(tpeName: String): Option[Class[java.lang.Enum[_]]] = {
+      Try(Class.forName(tpeName)).toOption.filter(_.isEnum).map(_.asInstanceOf[Class[java.lang.Enum[_]]])
+    }
+
+    def enumParam(tpeName: String) = {
+      val enumConstants = getJavaEnum(tpeName).get.getEnumConstants.map(_.toString).toSeq
+      swaggerParam("string", enum = Option(enumConstants))
     }
 
     def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
@@ -59,7 +70,8 @@ object SwaggerParameterMapper {
 
     lazy val itemTypeO = collectionItemType(typeName)
 
-    if (isReference()) referenceParam(typeName)
+    if (getJavaEnum(typeName).isDefined)  enumParam(typeName)
+    else if(isReference()) referenceParam(typeName)
     else if (optionalTypeO.isDefined)
       optionalParam(optionalTypeO.get)
     else if (itemTypeO.isDefined)

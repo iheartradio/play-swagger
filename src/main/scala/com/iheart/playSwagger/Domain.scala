@@ -20,7 +20,8 @@ object Domain {
     default:       Option[JsValue]          = None,
     example:       Option[JsValue]          = None,
     referenceType: Option[String]           = None,
-    items:         Option[SwaggerParameter] = None
+    items:         Option[SwaggerParameter] = None,
+    enum:          Option[Seq[String]]      = None
   )
 }
 

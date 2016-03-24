@@ -17,7 +17,7 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
   def definition(tpe: Type): Definition = {
     val fields = tpe.decls.collectFirst {
       case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
-    }.get.paramLists.head
+    }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
     val properties = fields.map { field ⇒
       //TODO: find a better way to get the string representation of typeSignature
