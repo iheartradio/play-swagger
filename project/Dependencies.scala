@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   object Versions {
-    val play = "[2.3.0, 2.4.+)"
+    val play = "2.5.+"
     val specs2 = "3.6.6"
   }
 
