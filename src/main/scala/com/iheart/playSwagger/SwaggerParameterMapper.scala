@@ -50,7 +50,7 @@ object SwaggerParameterMapper {
       SwaggerParameter(parameter.name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val param = if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(parameter.copy(typeName = optionalTpe))
+      val param = if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier)
       param.copy(required = false, default = defaultValueO)
     }
 

@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import org.specs2.mutable.Specification
 
-case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo)
+case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo, seqReffedFoo: Seq[ReffedFoo], optionSeqReffedFoo: Option[Seq[ReffedFoo]])
 case class ReffedFoo(name: String, refrefFoo: RefReffedFoo)
 case class RefReffedFoo(bar: String)
 
@@ -44,7 +44,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       val result = DefinitionGenerator("com.iheart.playSwagger").definition[Foo].properties
 
-      result.length === 4
+      result.length === 6
 
       "with correct string property" >> {
         result.head === SwaggerParameter(name = "barStr", `type` = Some("string"))
@@ -60,6 +60,16 @@ class DefinitionGeneratorSpec extends Specification {
 
       "with reference type" >> {
         result(3) === SwaggerParameter(name = "reffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+      }
+
+      "with sequence of reference type" >> {
+        val itemsParam = SwaggerParameter(name = "seqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(4) === SwaggerParameter(name = "seqReffedFoo", `type` = Some("array"), items = Some(itemsParam))
+      }
+
+      "with optional sequence of reference type" >> {
+        val itemsParam = SwaggerParameter(name = "optionSeqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(5) === SwaggerParameter(name = "optionSeqReffedFoo", `type` = Some("array"), items = Some(itemsParam), required = false)
       }
 
     }
