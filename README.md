@@ -217,8 +217,8 @@ val spec: Try[JsObject] = ps.generate().map(_ + ("host" -> JsString(myHost)))
 SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 ```
 
-#### How to find more examples?
-In the tests!
-/test/scala/com.iheart.playSwagger/SwaggerSpecGeneratorSpec.scala
+#### Where to find more examples?
+In the [tests](/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
+
 
 
