@@ -29,6 +29,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val json = SwaggerSpecGenerator("com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
+    lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]
     lazy val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]
     lazy val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
@@ -80,7 +81,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     }
 
     "read schema of referenced type" >> {
-      (trackJson \ "properties" \ "artist" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
+      (trackJson \ "properties" \ "artist" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
     }
 
     "read seq of referenced type" >> {
@@ -102,7 +103,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
     "read trait with container" >> {
       polymorphicContainerJson must beSome[JsObject]
-      (polymorphicContainerJson.get \ "properties" \ "item" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
+      (polymorphicContainerJson.get \ "properties" \ "item" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
       polymorphicItemJson must beSome[JsObject]
     }
 
@@ -123,6 +124,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       val params = parametersOf(addTrackJson)
       params.length === 1
       (params.head \ "in").asOpt[String] === Some("body")
+      (params.head \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
     }
 
     "does not generate for end points marked as hidden" >> {
@@ -210,6 +212,15 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "set default value" >> {
         (paramJson \ "default").as[Boolean] === true
       }
+    }
+
+    "should contain schemas in responses" >> {
+      (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.FooWithSeq2")
+    }
+
+    "should contain schemas in requests" >> {
+      val paramJson = parametersOf(addTrackJson).head
+      (paramJson \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
     }
 
     "handle multiple levels of includes" >> {
