@@ -39,3 +39,17 @@ POST     /somethingPolymorphic             controllers.Player.somethingPolymorph
 #        $ref: '#/definitions/com.iheart.playSwagger.JavaEnumContainer'
 ###
 POST     /somethingWithEnum                controllers.Player.somethingWithEnum()
+
+###
+#  parameters:
+#    - name: body
+#      description: option example
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.AllOptional'
+#  responses:
+#    default:
+#      description: Something optional
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.AllOptional'
+###
+POST     /somethingOptional                controllers.Player.somethingOptional()

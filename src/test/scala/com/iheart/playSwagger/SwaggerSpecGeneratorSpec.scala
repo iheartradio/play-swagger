@@ -14,6 +14,8 @@ trait PolymorphicItem
 
 case class JavaEnumContainer(status: SampleJavaEnum)
 
+case class AllOptional(a: Option[String], b: Option[String])
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
@@ -36,6 +38,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
     lazy val resourceJson = (pathJson \ "/api/resource").as[JsObject]
+    lazy val allOptionalDefJson = (definitionsJson \ "com.iheart.playSwagger.AllOptional").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
@@ -221,6 +224,23 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "should contain schemas in requests" >> {
       val paramJson = parametersOf(addTrackJson).head
       (paramJson \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
+    }
+
+    "definition properties does not contain 'required' boolean field" >> {
+      definitionsJson.as[JsObject].values.forall { definition ⇒
+        (definition \ "properties").as[JsObject].values.forall { property ⇒
+          (property \ "required").toOption === None
+        }
+      }
+    }
+
+    "definitions exposes 'required' array if there are required properties" >> {
+      val requiredFields = Seq("name", "artist", "related", "numbers")
+      (trackJson \ "required").as[Seq[String]] must contain(allOf(requiredFields: _*).exactly)
+    }
+
+    "definitions does not expose 'required' array if there are no required properties" >> {
+      (allOptionalDefJson \ "required").asOpt[Seq[String]] === None
     }
 
     "handle multiple levels of includes" >> {
