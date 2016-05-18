@@ -162,7 +162,6 @@ final case class SwaggerSpecGenerator(
   )(unlift(SwaggerParameter.unapply))
 
   private lazy val defPropFormat: Writes[SwaggerParameter] = (
-    (__ \ 'name).write[String] ~
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
     (__ \ 'required).write[Boolean] ~
@@ -171,7 +170,7 @@ final case class SwaggerSpecGenerator(
     (__ \ "schema").writeNullable[String](refWrite) ~
     (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
     (__ \ "enum").writeNullable[Seq[String]]
-  )(unlift(SwaggerParameter.unapply))
+  )(p ⇒ (p.`type`, p.format, p.required, p.default, p.example, p.referenceType, p.items, p.enum))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
@@ -191,11 +190,10 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private implicit val propFormatInDef = defPropFormat.transform((__ \ 'name).prune(_).get)
-
   private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
-    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)))
+    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)(defPropFormat)))
   }
+
   private implicit val defFormat: Writes[Definition] = (
     (__ \ 'description).writeNullable[String] ~
     (__ \ 'properties).write[Seq[SwaggerParameter]] ~
