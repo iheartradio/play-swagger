@@ -163,13 +163,12 @@ final case class SwaggerSpecGenerator(
   private lazy val defPropFormat: Writes[SwaggerParameter] = (
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
-    (__ \ 'required).write[Boolean] ~
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "$ref").writeNullable[String] ~
     (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat) ~
     (__ \ "enum").writeNullable[Seq[String]]
-  )(p ⇒ (p.`type`, p.format, p.required, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
+  )(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
