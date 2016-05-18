@@ -185,8 +185,13 @@ final case class SwaggerSpecGenerator(
   private implicit val defFormat: Writes[Definition] = (
     (__ \ 'description).writeNullable[String] ~
     (__ \ 'properties).write[Seq[SwaggerParameter]] ~
-    (__ \ 'required).write[Seq[String]]
-  )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
+    (__ \ 'required).writeNullable[Seq[String]]
+  )((d: Definition) ⇒ (d.description, d.properties, requiredProperties(d.properties)))
+
+  private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
+    val required = properties.filter(_.required).map(_.name)
+    if (required.isEmpty) None else Some(required)
+  }
 
   private def defaultBase = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
 
