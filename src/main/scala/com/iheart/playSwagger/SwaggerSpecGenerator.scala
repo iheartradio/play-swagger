@@ -149,7 +149,7 @@ final case class SwaggerSpecGenerator(
 
   import play.api.libs.functional.syntax._
 
-  private lazy val propFormat: Writes[SwaggerParameter] = (
+  private lazy val paramFormat: Writes[SwaggerParameter] = (
     (__ \ 'name).write[String] ~
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
@@ -157,7 +157,19 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](propFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "enum").writeNullable[Seq[String]]
+  )(unlift(SwaggerParameter.unapply))
+
+  private lazy val defPropFormat: Writes[SwaggerParameter] = (
+    (__ \ 'name).write[String] ~
+    (__ \ 'type).writeNullable[String] ~
+    (__ \ 'format).writeNullable[String] ~
+    (__ \ 'required).write[Boolean] ~
+    (__ \ 'default).writeNullable[JsValue] ~
+    (__ \ 'example).writeNullable[JsValue] ~
+    (__ \ "schema").writeNullable[String](refWrite) ~
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
     (__ \ "enum").writeNullable[Seq[String]]
   )(unlift(SwaggerParameter.unapply))
 
@@ -179,7 +191,7 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)
+  private implicit val propFormatInDef = defPropFormat.transform((__ \ 'name).prune(_).get)
 
   private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
     JsObject(ps.map(p ⇒ p.name → Json.toJson(p)))
@@ -280,7 +292,7 @@ final case class SwaggerSpecGenerator(
         .fold(Seq.empty[SwaggerParameter])(_.map(mapParam(_, modelQualifier)))
 
       JsArray(params.map { p ⇒
-        val jo = Json.toJson(p)(propFormat).as[JsObject]
+        val jo = Json.toJson(p)(paramFormat).as[JsObject]
         val in = if (pathParams.contains(p.name)) "path" else "query"
         jo + ("in" → JsString(in))
       })
