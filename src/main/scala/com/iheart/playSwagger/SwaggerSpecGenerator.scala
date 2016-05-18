@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import play.api.libs.json._
 import ResourceReader.read
-import play.api.libs.functional.syntax._
 import org.yaml.snakeyaml.Yaml
 import SwaggerParameterMapper.mapParam
 import scala.collection.immutable.ListMap
@@ -157,7 +156,7 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "items").writeNullable[SwaggerParameter](defPropFormat) ~
     (__ \ "enum").writeNullable[Seq[String]]
   )(unlift(SwaggerParameter.unapply))
 
@@ -167,10 +166,10 @@ final case class SwaggerSpecGenerator(
     (__ \ 'required).write[Boolean] ~
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
-    (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "$ref").writeNullable[String] ~
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat) ~
     (__ \ "enum").writeNullable[Seq[String]]
-  )(p ⇒ (p.`type`, p.format, p.required, p.default, p.example, p.referenceType, p.items, p.enum))
+  )(p ⇒ (p.`type`, p.format, p.required, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
@@ -178,16 +177,6 @@ final case class SwaggerSpecGenerator(
         if (a.isEmpty) Json.obj()
         else JsPath.createObj(path → writes.writes(a))
       }
-  }
-
-  private def transformItems(js: JsValue): JsValue = {
-    val filtered = js.as[JsObject] - "name"
-    val movedRef = (filtered \ "schema" \ "$ref").asOpt[JsValue].fold(filtered) {
-      (filtered - "schema") + "$ref" → _
-    }
-    (movedRef \ "items").asOpt[JsValue].fold(movedRef) {
-      movedRef + "items" → _
-    }
   }
 
   private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
