@@ -14,6 +14,8 @@ trait PolymorphicItem
 
 case class JavaEnumContainer(status: SampleJavaEnum)
 
+case class AllOptional(a: Option[String], b: Option[String])
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
@@ -29,12 +31,14 @@ class SwaggerSpecGeneratorSpec extends Specification {
     lazy val json = SwaggerSpecGenerator("com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
+    lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]
     lazy val artistJson = (pathJson \ "/api/artist/{aid}/playedTracks/recent" \ "get").as[JsObject]
     lazy val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
     lazy val resourceJson = (pathJson \ "/api/resource").as[JsObject]
+    lazy val allOptionalDefJson = (definitionsJson \ "com.iheart.playSwagger.AllOptional").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
@@ -80,7 +84,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     }
 
     "read schema of referenced type" >> {
-      (trackJson \ "properties" \ "artist" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
+      (trackJson \ "properties" \ "artist" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
     }
 
     "read seq of referenced type" >> {
@@ -102,7 +106,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
     "read trait with container" >> {
       polymorphicContainerJson must beSome[JsObject]
-      (polymorphicContainerJson.get \ "properties" \ "item" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
+      (polymorphicContainerJson.get \ "properties" \ "item" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
       polymorphicItemJson must beSome[JsObject]
     }
 
@@ -123,6 +127,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       val params = parametersOf(addTrackJson)
       params.length === 1
       (params.head \ "in").asOpt[String] === Some("body")
+      (params.head \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
     }
 
     "does not generate for end points marked as hidden" >> {
@@ -210,6 +215,32 @@ class SwaggerSpecGeneratorSpec extends Specification {
       "set default value" >> {
         (paramJson \ "default").as[Boolean] === true
       }
+    }
+
+    "should contain schemas in responses" >> {
+      (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.FooWithSeq2")
+    }
+
+    "should contain schemas in requests" >> {
+      val paramJson = parametersOf(addTrackJson).head
+      (paramJson \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
+    }
+
+    "definition properties does not contain 'required' boolean field" >> {
+      definitionsJson.as[JsObject].values.forall { definition ⇒
+        (definition \ "properties").as[JsObject].values.forall { property ⇒
+          (property \ "required").toOption === None
+        }
+      }
+    }
+
+    "definitions exposes 'required' array if there are required properties" >> {
+      val requiredFields = Seq("name", "artist", "related", "numbers")
+      (trackJson \ "required").as[Seq[String]] must contain(allOf(requiredFields: _*).exactly)
+    }
+
+    "definitions does not expose 'required' array if there are no required properties" >> {
+      (allOptionalDefJson \ "required").asOpt[Seq[String]] === None
     }
 
     "handle multiple levels of includes" >> {

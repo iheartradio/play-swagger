@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import play.api.libs.json._
 import ResourceReader.read
-import play.api.libs.functional.syntax._
 import org.yaml.snakeyaml.Yaml
 import SwaggerParameterMapper.mapParam
 import scala.collection.immutable.ListMap
@@ -149,7 +148,7 @@ final case class SwaggerSpecGenerator(
 
   import play.api.libs.functional.syntax._
 
-  private lazy val propFormat: Writes[SwaggerParameter] = (
+  private lazy val paramFormat: Writes[SwaggerParameter] = (
     (__ \ 'name).write[String] ~
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
@@ -157,9 +156,19 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](propFormat.transform((js: JsValue) ⇒ transformItems(js))) ~
+    (__ \ "items").writeNullable[SwaggerParameter](defPropFormat) ~
     (__ \ "enum").writeNullable[Seq[String]]
   )(unlift(SwaggerParameter.unapply))
+
+  private lazy val defPropFormat: Writes[SwaggerParameter] = (
+    (__ \ 'type).writeNullable[String] ~
+    (__ \ 'format).writeNullable[String] ~
+    (__ \ 'default).writeNullable[JsValue] ~
+    (__ \ 'example).writeNullable[JsValue] ~
+    (__ \ "$ref").writeNullable[String] ~
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat) ~
+    (__ \ "enum").writeNullable[Seq[String]]
+  )(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
@@ -169,26 +178,20 @@ final case class SwaggerSpecGenerator(
       }
   }
 
-  private def transformItems(js: JsValue): JsValue = {
-    val filtered = js.as[JsObject] - "name"
-    val movedRef = (filtered \ "schema" \ "$ref").asOpt[JsValue].fold(filtered) {
-      (filtered - "schema") + "$ref" → _
-    }
-    (movedRef \ "items").asOpt[JsValue].fold(movedRef) {
-      movedRef + "items" → _
-    }
-  }
-
-  private implicit val propFormatInDef = propFormat.transform((__ \ 'name).prune(_).get)
-
   private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
-    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)))
+    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)(defPropFormat)))
   }
+
   private implicit val defFormat: Writes[Definition] = (
     (__ \ 'description).writeNullable[String] ~
     (__ \ 'properties).write[Seq[SwaggerParameter]] ~
-    (__ \ 'required).write[Seq[String]]
-  )((d: Definition) ⇒ (d.description, d.properties, d.properties.filter(_.required).map(_.name)))
+    (__ \ 'required).writeNullable[Seq[String]]
+  )((d: Definition) ⇒ (d.description, d.properties, requiredProperties(d.properties)))
+
+  private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
+    val required = properties.filter(_.required).map(_.name)
+    if (required.isEmpty) None else Some(required)
+  }
 
   private def defaultBase = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
 
@@ -280,7 +283,7 @@ final case class SwaggerSpecGenerator(
         .fold(Seq.empty[SwaggerParameter])(_.map(mapParam(_, modelQualifier)))
 
       JsArray(params.map { p ⇒
-        val jo = Json.toJson(p)(propFormat).as[JsObject]
+        val jo = Json.toJson(p)(paramFormat).as[JsObject]
         val in = if (pathParams.contains(p.name)) "path" else "query"
         jo + ("in" → JsString(in))
       })
