@@ -19,6 +19,35 @@ case class AllOptional(a: Option[String], b: Option[String])
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
+  "full path" >> {
+    val gen = SwaggerSpecGenerator()
+    "combine routePath with prefix" >> {
+      gen.fullPath("/p", "d") === "/p/d"
+    }
+
+    "ignore prefix when it's just a /" >> {
+      gen.fullPath("/", "d") === "/d"
+    }
+
+    "avoid double slash at the beginning" >> {
+      gen.fullPath("/", "/d") === "/d"
+    }
+
+    "avoid double slash at the middle" >> {
+      gen.fullPath("p/", "/d") === "/p/d"
+    }
+    
+    "allow internal double slash" >> {
+      gen.fullPath("p/", "/d//c") === "/p/d//c"
+    }
+
+  }
+
+}
+
+class SwaggerSpecGeneratorIntegrationSpec extends Specification {
+  implicit val cl = getClass.getClassLoader
+
   "integration" >> {
 
     lazy val defaultRoutesFile = SwaggerSpecGenerator("com.iheart").generate()

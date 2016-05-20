@@ -234,7 +234,7 @@ final case class SwaggerSpecGenerator(
     Json.parse(jsonString).as[JsObject]
   }
 
-  private[playSwagger] def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
+  private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
     JsObject {
       routes.flatMap(endPointEntry(_, prefix, tag))
         .groupBy(_._1) // Routes grouped by path
@@ -253,11 +253,18 @@ final case class SwaggerSpecGenerator(
         case DynamicPart(name, _, _) ⇒ s"{$name}"
         case StaticPart(value)       ⇒ value
       }.mkString
-      val path = "/" + List(prefix, inRoutePath).filterNot(p ⇒ p.isEmpty || p == "/").mkString("/")
       val method = route.verb.value.toLowerCase
-      Some(path → Json.obj(method → endPointSpec(route, tag)))
+      Some(fullPath(prefix, inRoutePath) → Json.obj(method → endPointSpec(route, tag)))
     }
   }
+
+  private[playSwagger] def fullPath(prefix: String, inRoutePath: String): String =
+    "/" +
+      List(
+        prefix.stripPrefix("/").stripSuffix("/"),
+        inRoutePath.stripPrefix("/")
+      ).filterNot(_.isEmpty).
+        mkString("/")
 
   // Multiple routes may have the same path, merge the objects instead of overwriting
 
