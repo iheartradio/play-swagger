@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.{JsValue, JsArray, JsObject}
+import play.api.libs.json.{JsArray, JsObject, JsString, JsValue}
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
@@ -36,7 +36,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     "avoid double slash at the middle" >> {
       gen.fullPath("p/", "/d") === "/p/d"
     }
-    
+
     "allow internal double slash" >> {
       gen.fullPath("p/", "/d//c") === "/p/d//c"
     }
@@ -287,6 +287,18 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val properties = (definitionsJson \ "com.iheart.playSwagger.FooWithSeq2" \ "properties").as[JsObject]
       (properties \ "abc1" \ "items" \ "type").as[String] === "string"
       (properties \ "abc2" \ "items" \ "items" \ "type").as[String] === "integer"
+    }
+
+    "accept parameter references" >> {
+      val parameters = (pathJson \ "/references/magic/echoMagic/{type}" \ "post" \ "parameters").as[Seq[JsObject]]
+
+      parameters must contain((entry: JsObject) ⇒
+        entry.value.get("$ref").contains(JsString("#/parameters/magic")))
+        .exactly(1.times)
+
+      parameters must contain((entry: JsObject) ⇒
+        entry.value.get("name").contains(JsString("notMagic")))
+        .exactly(1.times)
     }
 
     // TODO: routes order
