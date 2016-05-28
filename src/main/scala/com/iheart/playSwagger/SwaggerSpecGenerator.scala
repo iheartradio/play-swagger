@@ -200,8 +200,9 @@ final case class SwaggerSpecGenerator(
       val name = (bs \ "name").as[String]
       findByName(toMerge, name).fold(bs) { f ⇒ bs.as[JsObject] deepMerge f }
     } ++ toMerge.value.filter { tm ⇒
-      val name = (tm \ "name").as[String]
-      findByName(base, name).isEmpty
+      (tm \ "name").validate[String].fold({ errors ⇒ true }, { name ⇒
+        findByName(base, name).isEmpty
+      })
     })
   }
 

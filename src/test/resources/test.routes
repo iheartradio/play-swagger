@@ -11,6 +11,8 @@
 
 ->   /aCustomerRouter      com.myCompany.Router
 
+->   /references           referencing.Routes
+
 GET  /abc                  com.iheart.Application.test()
 
 ###
