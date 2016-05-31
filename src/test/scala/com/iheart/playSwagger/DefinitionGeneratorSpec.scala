@@ -86,7 +86,7 @@ class DefinitionGeneratorSpec extends Specification {
       result.properties.last.referenceType === None
     }
 
-    "read seqence items" >> {
+    "read sequence items" >> {
       val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithSeq")
       result.properties.head.items.get.referenceType === Some("com.iheart.playSwagger.SeqItem")
     }

@@ -1,0 +1,11 @@
+
+###
+#  summary: Echos the magic reference parameter
+#  parameters:
+#    - $ref: "#/parameters/magic"
+#    - name: notMagic
+#      description: This is not an important parameter
+###
+POST  /magic/echoMagic/:type        com.iheart.playSwagger.test.echoMagic(type, notMagic)
+
+
