@@ -50,14 +50,16 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
   "integration" >> {
 
-    lazy val defaultRoutesFile = SwaggerSpecGenerator("com.iheart").generate()
+    lazy val routes = Macros.all("src/test/resources/routes")
+    lazy val defaultRoutesFile = SwaggerSpecGenerator("com.iheart").generate(routes)
 
     "Use default routes file when no argument is given" >> {
-      val json = defaultRoutesFile.get
+      val json = defaultRoutesFile
       (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
     }
 
-    lazy val json = SwaggerSpecGenerator("com.iheart").generate("test.routes").get
+    lazy val testRoutes = Macros.all("src/test/resources/test.routes")
+    lazy val json = SwaggerSpecGenerator("com.iheart").generate(testRoutes)
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]

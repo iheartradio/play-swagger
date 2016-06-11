@@ -31,9 +31,33 @@ final case class SwaggerSpecGenerator(
 
   val defaultRoutesFile = "routes"
 
-  def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = generateFromRoutesFile(routesFile = routesFile, base = defaultBase)
-
   val routesExt = ".routes"
+
+  def generate(
+    routes: Routing,
+    base:   JsObject = defaultBase
+  ): JsObject = {
+    def tagFromFile(file: String) = file.replace(routesExt, "")
+
+    def loop(path: String, routes: Routing): ListMap[String, (String, Seq[Route])] = {
+      routes match {
+        case RouteFile(prefix, routesFile, routes) ⇒
+          val routerName = tagFromFile(routesFile)
+          val init = ListMap(routerName → (path → Seq.empty[Route]))
+          routes.foldLeft(init) {
+            case (acc, RouteDef(route)) ⇒
+              val (prefix, routes) = acc(routerName)
+              acc + (routerName → (prefix → (routes :+ route)))
+            case (acc, file @ RouteFile(prefix, router, routes)) ⇒
+              val updated = if (path.nonEmpty) path + "/" + prefix else prefix
+              acc ++ loop(updated, file)
+          }
+      }
+    }
+
+    // starts with empty prefix, assuming that the routesFile is the outermost (usually 'routes')
+    generateFromRoutes(loop("", routes), base)
+  }
 
   private[playSwagger] def generateFromRoutesFile(
     routesFile: String   = defaultRoutesFile,
@@ -66,11 +90,11 @@ final case class SwaggerSpecGenerator(
           Failure(new Exception(message))
         }, { rules ⇒
           val routerName = tagFromFile(routesFile)
-          val init: RoutesData = Success(ListMap(routerName → (path, Seq.empty)))
+          val init: RoutesData = Success(ListMap(routerName → (path → Seq.empty)))
           rules.foldLeft(init) {
             case (Success(acc), route: Route) ⇒
               val (prefix, routes) = acc(routerName)
-              Success(acc + (routerName → (prefix, routes :+ route)))
+              Success(acc + (routerName → (prefix → (routes :+ route))))
             case (Success(acc), Include(prefix, router)) ⇒
               val reference = router.replace(".Routes", ".routes")
               val isIncludedRoutesFile = cl.getResource(reference) != null
@@ -110,7 +134,7 @@ final case class SwaggerSpecGenerator(
     baseJson: JsObject                  = Json.obj()
   ): JsObject = {
     val pathsJson = paths.values.reduce(_ ++ _)
-    val allRefs = (pathsJson ++ baseJson) \\ "$ref"
+    val allRefs = (pathsJson ++ baseJson) \\ s"$$ref"
 
     val definitions: List[Definition] = {
       val referredClasses: Seq[String] = for {
@@ -144,7 +168,7 @@ final case class SwaggerSpecGenerator(
 
   private val referencePrefix = "#/definitions/"
 
-  private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
+  private val refWrite = OWrites((refType: String) ⇒ Json.obj(s"$$ref" → JsString(referencePrefix + refType)))
 
   import play.api.libs.functional.syntax._
 
@@ -165,7 +189,7 @@ final case class SwaggerSpecGenerator(
     (__ \ 'format).writeNullable[String] ~
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
-    (__ \ "$ref").writeNullable[String] ~
+    (__ \ s"$$ref").writeNullable[String] ~
     (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat) ~
     (__ \ "enum").writeNullable[Seq[String]]
   )(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
