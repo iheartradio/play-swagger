@@ -3,7 +3,8 @@ package com.iheart.playSwagger
 import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
 import org.specs2.mutable.Specification
 
-case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo, seqReffedFoo: Seq[ReffedFoo], optionSeqReffedFoo: Option[Seq[ReffedFoo]])
+case class DictType(key: String, value: String)
+case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo, seqReffedFoo: Seq[ReffedFoo], optionSeqReffedFoo: Option[Seq[ReffedFoo]], dictType: DictType)
 case class ReffedFoo(name: String, refrefFoo: RefReffedFoo)
 case class RefReffedFoo(bar: String)
 
@@ -27,6 +28,13 @@ object MyObject {
   type MyId = Int
   case class MyInnerClass(bar: String, id: MyId)
 }
+
+object ExcludingDomainQualifier extends DomainModelQualifier {
+  val parent = PrefixDomainModelQualifier("com.iheart.playSwagger")
+  val exclusions = Seq("com.iheart.playSwagger.DictType")
+  override def isModel(className: String): Boolean = parent.isModel(className) && !(exclusions contains className)
+}
+
 class DefinitionGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
 
@@ -44,7 +52,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       val result = DefinitionGenerator("com.iheart.playSwagger").definition[Foo].properties
 
-      result.length === 6
+      result.length === 7
 
       "with correct string property" >> {
         result.head === SwaggerParameter(name = "barStr", `type` = Some("string"))
@@ -105,7 +113,7 @@ class DefinitionGeneratorSpec extends Specification {
   }
 
   "allDefinitions" >> {
-    val allDefs = DefinitionGenerator("com.iheart.playSwagger").allDefinitions(List("com.iheart.playSwagger.Foo"))
+    val allDefs = DefinitionGenerator(ExcludingDomainQualifier).allDefinitions(List("com.iheart.playSwagger.Foo"))
     allDefs.length === 3
     allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo") must beSome[Definition]

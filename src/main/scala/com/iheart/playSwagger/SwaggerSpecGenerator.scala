@@ -14,11 +14,11 @@ import scala.util.{Try, Success, Failure}
 
 object SwaggerSpecGenerator {
   private val marker = "##"
-  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(DomainModelQualifier(domainNameSpaces: _*))
+  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
 }
 
 final case class SwaggerSpecGenerator(
-  modelQualifier:        DomainModelQualifier = DomainModelQualifier(),
+  modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String               = "application/json"
 )(implicit cl: ClassLoader) {
 
