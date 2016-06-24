@@ -2,10 +2,10 @@ package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
 
-class DomainModelQualifierSpec extends Specification {
+class PrefixDomainModelQualifierSpec extends Specification {
   "isModel with multiple packages" >> {
 
-    val dmq = DomainModelQualifier("com.a", "com.b")
+    val dmq = PrefixDomainModelQualifier("com.a", "com.b")
 
     "returns true if the class is in one of the packages" >> {
 
@@ -19,7 +19,7 @@ class DomainModelQualifierSpec extends Specification {
 
   "isModel with no packages" >> {
     "returns false" >> {
-      val dmq = DomainModelQualifier()
+      val dmq = PrefixDomainModelQualifier()
       dmq.isModel("com.c.foo") must beFalse
     }
   }

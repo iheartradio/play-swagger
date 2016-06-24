@@ -6,7 +6,7 @@ import play.routes.compiler.Parameter
 
 import scala.reflect.runtime.universe._
 
-final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader) {
+final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier())(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -69,5 +69,5 @@ final case class DefinitionGenerator(modelQualifier: DomainModelQualifier = Doma
 }
 
 object DefinitionGenerator {
-  def apply(domainNameSpace: String)(implicit cl: ClassLoader): DefinitionGenerator = DefinitionGenerator(DomainModelQualifier(domainNameSpace))
+  def apply(domainNameSpace: String)(implicit cl: ClassLoader): DefinitionGenerator = DefinitionGenerator(PrefixDomainModelQualifier(domainNameSpace))
 }

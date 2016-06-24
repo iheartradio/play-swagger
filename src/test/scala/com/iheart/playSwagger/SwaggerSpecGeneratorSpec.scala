@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
 import org.specs2.mutable.Specification
-import play.api.libs.json.{JsArray, JsObject, JsString, JsValue}
+import play.api.libs.json._
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
 case class Artist(name: String, age: Int)
@@ -50,7 +50,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
   "integration" >> {
 
-    lazy val defaultRoutesFile = SwaggerSpecGenerator("com.iheart").generate()
+    lazy val defaultRoutesFile = SwaggerSpecGenerator(ExcludingDomainQualifier).generate()
 
     "Use default routes file when no argument is given" >> {
       val json = defaultRoutesFile.get
@@ -75,6 +75,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val polymorphicContainerJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
     lazy val javaEnumContainerJson = (definitionsJson \ "com.iheart.playSwagger.JavaEnumContainer").asOpt[JsObject]
+    lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
       (json \ "parameters").as[JsArray].value
@@ -253,6 +254,16 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "should contain schemas in requests" >> {
       val paramJson = parametersOf(addTrackJson).head
       (paramJson \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
+    }
+
+    "excluded domain object should contain only spec from swagger.json" >> {
+      overriddenDictTypeJson === Json.obj(
+        "type" → "object",
+        "properties" → Json.obj(
+          "id" → Json.obj("type" → "string"),
+          "value" → Json.obj("type" → "string")
+        )
+      )
     }
 
     "definition properties does not contain 'required' boolean field" >> {

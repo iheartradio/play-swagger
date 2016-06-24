@@ -1,5 +1,9 @@
 package com.iheart.playSwagger
 
-final case class DomainModelQualifier(namespaces: String*) {
+trait DomainModelQualifier {
+  def isModel(className: String): Boolean
+}
+
+final case class PrefixDomainModelQualifier(namespaces: String*) extends DomainModelQualifier {
   def isModel(className: String): Boolean = namespaces exists className.startsWith
 }

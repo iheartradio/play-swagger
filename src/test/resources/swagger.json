@@ -4,5 +4,18 @@
        "name" : "player",
        "description": "this is player api"
     }
-  ]
+  ],
+  "definitions": {
+    "com.iheart.playSwagger.DictType": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

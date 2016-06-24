@@ -8,7 +8,7 @@ import scala.util.Try
 
 object SwaggerParameterMapper {
 
-  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = DomainModelQualifier())(implicit cl: ClassLoader): SwaggerParameter = {
+  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier())(implicit cl: ClassLoader): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
       s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
