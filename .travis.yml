@@ -18,6 +18,6 @@ cache:
   - $HOME/.sbt/boot/
 
 script:
-  - sbt clean coverage test 
+  - sbt clean sbtPlaySwagger/test playSwagger/coverage playSwagger/test
 after_success:
-  - sbt coveralls
+  - sbt playSwagger/coveralls

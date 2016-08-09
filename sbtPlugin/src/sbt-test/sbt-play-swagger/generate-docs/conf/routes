@@ -1,0 +1,9 @@
+
+###
+#  summary: Get the track metadata
+#  responses:
+#    200:
+#      schema:
+#        $ref: '#/definitions/namespace2.Track'
+###
+GET    /tracks/:trackId             controllers.Assets.versioned(path="/public/assets", trackId: Asset)
