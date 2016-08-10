@@ -4,12 +4,9 @@ import bintray.BintrayKeys._
 
 object Publish {
 
-  val bintraySettings = Seq(
+  val coreSettings = Seq(
     bintrayOrganization := Some("iheartradio"),
-    bintrayPackageLabels := Seq("play-framework", "swagger", "rest-api", "API", "documentation")
-  )
-
-  val publishingSettings = Seq(
+    bintrayPackageLabels := Seq("play-framework", "swagger", "rest-api", "API", "documentation"),
     publishMavenStyle := true,
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://iheartradio.github.io/play-swagger")),
@@ -19,5 +16,9 @@ object Publish {
     publishArtifact in Test := false
   )
 
-  val settings = bintraySettings ++ publishingSettings
+  val sbtPluginSettings = Seq(
+    licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+    publishMavenStyle := false,
+    bintrayOrganization in bintray := None
+  )
 }
