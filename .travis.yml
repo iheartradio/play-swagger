@@ -20,4 +20,4 @@ cache:
 script:
   - sbt clean sbtPlaySwagger/test playSwagger/coverage playSwagger/test
 after_success:
-  - sbt playSwagger/coveralls
+  - sbt playSwagger/coverageReport playSwagger/coveralls
