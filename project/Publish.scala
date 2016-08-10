@@ -19,6 +19,6 @@ object Publish {
   val sbtPluginSettings = Seq(
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     publishMavenStyle := false,
-    bintrayOrganization in bintray := None
+    bintrayOrganization := Some("iheartradio")
   )
 }
