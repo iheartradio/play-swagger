@@ -10,7 +10,7 @@ import sbt.{AutoPlugin, _}
 
 object SwaggerPlugin extends AutoPlugin {
   lazy val swaggerConfig = config("play-swagger").hide
-  lazy val playSwaggerVersion = read(getResource("com/iheart/play-swagger.version"), UTF_8)
+  lazy val playSwaggerVersion = com.iheart.playSwagger.BuildInfo.version
 
   object autoImport extends SwaggerKeys
 
