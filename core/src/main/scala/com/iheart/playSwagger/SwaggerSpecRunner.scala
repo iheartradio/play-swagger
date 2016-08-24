@@ -9,5 +9,5 @@ object SwaggerSpecRunner extends App {
   private def domainNameSpaceArgs = args.tail
   private def swaggerJson = SwaggerSpecGenerator(domainNameSpaceArgs: _*).generate().get.toString
 
-  Files.write(fileArg, swaggerJson.getBytes, StandardOpenOption.CREATE, StandardOpenOption.WRITE)
+  Files.write(fileArg, swaggerJson.getBytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
 }
