@@ -96,7 +96,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) /
 ```
 This adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
 
-This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/`
+This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`
 
 #### Step 2
 Add a base swagger.yml (or swagger.json) to your resources (for example, conf folder in the play application). This one needs to provide all the required fields according to swagger spec.
@@ -109,9 +109,6 @@ E.g.
     title: "Poweramp API"
     description: "Power your music"
     version: "1.0.0"
-  host: api2.iheart.com
-  schemes:
-    - "https"
   consumes:
     - application/json
   produces: 
