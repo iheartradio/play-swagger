@@ -2,7 +2,9 @@ package controllers
 
 import akka.actor.ActorSystem
 import javax.inject._
+import models.Message
 import play.api._
+import play.api.libs.json.Json
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
@@ -19,7 +21,7 @@ import scala.concurrent.duration._
  */
 @Singleton
 class AsyncController @Inject() (actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
-
+  implicit val fmt = Json.format[Message]
   /**
    * Create an Action that returns a plain text message after a delay
    * of 1 second.
@@ -29,12 +31,12 @@ class AsyncController @Inject() (actorSystem: ActorSystem)(implicit exec: Execut
    * a path of `/message`.
    */
   def message = Action.async {
-    getFutureMessage(1.second).map { msg => Ok(msg) }
+    getFutureMessage(1.second).map { msg => Ok(Json.toJson(msg)) }
   }
 
-  private def getFutureMessage(delayTime: FiniteDuration): Future[String] = {
-    val promise: Promise[String] = Promise[String]()
-    actorSystem.scheduler.scheduleOnce(delayTime) { promise.success("Hi!") }
+  private def getFutureMessage(delayTime: FiniteDuration): Future[Message] = {
+    val promise: Promise[Message] = Promise[Message]()
+    actorSystem.scheduler.scheduleOnce(delayTime) { promise.success(Message("Hi!")) }
     promise.future
   }
 

@@ -94,9 +94,16 @@ Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root 
 ```Scala
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
 ```
-This adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
 
-This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`
+Add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
+```Scala
+swaggerDomainNameSpaces := Seq("models")
+```
+
+This plugin adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
+
+This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`. You can change the target folder through a sbt setting `swaggerTarget`
+
 
 #### Step 2
 Add a base swagger.yml (or swagger.json) to your resources (for example, conf folder in the play application). This one needs to provide all the required fields according to swagger spec.

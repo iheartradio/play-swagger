@@ -14,4 +14,4 @@ libraryDependencies ++= Seq(
   "org.webjars" % "swagger-ui" % "2.2.0"  //play-swagger ui integration
 )
 
-
+swaggerDomainNameSpaces := Seq("models")

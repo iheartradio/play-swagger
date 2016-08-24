@@ -5,7 +5,13 @@ GET     /                           controllers.HomeController.index
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 
-# An example controller showing how to write asynchronous code
+###
+#  summary: Get a message
+#  responses:
+#    200:
+#      schema:
+#        $ref: '#/definitions/models.Message'
+###
 GET     /message                    controllers.AsyncController.message
 
 
