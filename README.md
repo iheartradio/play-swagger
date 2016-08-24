@@ -73,63 +73,34 @@ The result swagger specs will look like:
 ============================
 ## Get Started
 
-In short you need to create a controller that uses the library to generate the swagger spec and make it available as an endpoint.
-Then you just need to have a swagger UI instance to consumer that swagger spec. 
+In short you need to add sbt-play-swagger plugin which generates swagger.json on package time,
+then you just need to have a swagger UI instance to consumer that swagger spec.
+You can find the setup in the example project as well.
   
 
 #### Step 1
-add Swagger API dependency to your sbt
-```scala
-resolvers += Resolver.jcenterRepo
+For play2.5 add Swagger sbt plugin dependency to your plugins.sbt
 
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.4.0"  //find the latest version in the download badge at the top
-```
-For play 2.4 please use a special release build with play 2.4 binary. 
 ```scala
-libraryDependencies +=  "com.iheart" %% "play-swagger" % "0.4.0-PLAY2.4"  //find the latest version in the download badge at the top
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2")
 ```
+
+For play 2.4 please use a special release build with play 2.4 binary.
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2-PLAY2.4")
+
+```
+Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
+```Scala
+lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
+```
+This adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
+
+This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/`
 
 #### Step 2
-Play swagger is just a library that generates a swagger spec json for you.
-You can do anything you want with that json object (e.g. save it to a file), but the most common usage would be serving it in an endpoint in your play app.
-Here is how: 
-Add a controller to your Play app that serves the swagger spec
-
-```scala
-import play.api.libs.concurrent.Execution.Implicits._
-import com.iheart.playSwagger.SwaggerSpecGenerator
-
-class ApiSpecs @Inject() (cached: Cached) extends Controller {
-  implicit val cl = getClass.getClassLoader
-  
-  // The root package of your domain classes, play-swagger will automatically generate definitions when it encounters class references in this package.
-  // In our case it would be "com.iheart", play-swagger supports multiple domain package names
-  val domainPackage = "YOUR.DOMAIN.PACKAGE"  
-  val secondDomainPackage = "YOUR.OtherDOMAIN.PACKAGE"
-  private lazy val generator = SwaggerSpecGenerator(domainPackage, secondDomainPackage)
-  
-  def specs = cached("swaggerDef") {  //it would be beneficial to cache this endpoint as we do here, but it's not required if you don't expect much traffic.   
-     Action.async { _ =>
-        Future.fromTry(generator.generate()).map(Ok(_)) //generate() can also taking in an optional arg of the route file name. 
-      }		      
-  }
-
-}
-```
-
-#### Step 3
-add an end point to the routes file 
-```
-###
-# summary: swagger definition
-# description: for swagger UI to consume
-###
-GET   /docs/swagger.json         @controllers.swagger.ApiSpecs.specs
-
-```
-
-#### Step 4
 Add a base swagger.yml (or swagger.json) to your resources (for example, conf folder in the play application). This one needs to provide all the required fields according to swagger spec.
+
 E.g.
 ```yml
 ---
@@ -148,15 +119,15 @@ E.g.
 
 ```
 
-#### Step 5a
-Deploy a swagger ui and point to the swagger spec end point, or
+#### Step 3a
+Deploy a swagger ui and point to the swagger spec end point at 'assets/swagger.json', or
 
-#### Step 5b
+#### Step 3b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
 Add the following dependency
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "2.1.4"
+libraryDependencies += "org.webjars" % "swagger-ui" % "2.2.0"
 ```
 
 Add the following to your route file
@@ -166,10 +137,13 @@ GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/l
 
 ```
 
-Then you should be able to open the swagger ui at
-http://localhost:9000/docs/swagger-ui/index.html?url=/docs/swagger.json
+The sbt-play-swagger plugin will generate the swagger.json on packaging, so if you run `sbt start`,
+you should be able to open the swagger ui at
+http://localhost:9000/docs/swagger-ui/index.html?url=/assets/swagger.json
 
+Note that `sbt run` doesn't generate the swagger.json for you.
 
+Alternatively, you can create a controller that uses play-swagger lib to generate the json and serve it. See [here](docs/AlternativeSetup.md) for details
 
 ============================
 ## How to contribute
