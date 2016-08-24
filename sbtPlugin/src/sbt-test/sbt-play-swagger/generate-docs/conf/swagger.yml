@@ -1,0 +1,13 @@
+---
+  swagger: "2.0"
+  info:
+    title: "Poweramp API"
+    description: "Power your music"
+    version: "1.0.0"
+  host: api2.yours.com
+  schemes:
+    - "https"
+  consumes:
+    - application/json
+  produces:
+    - application/json
