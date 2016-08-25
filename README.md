@@ -95,14 +95,14 @@ Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
 ```
 
-Add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
+Also in build.sht add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
 ```Scala
 swaggerDomainNameSpaces := Seq("models")
 ```
 
 This plugin adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
 
-This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`.
+This plugin will generate the `swagger.json`and make it available under path `assets/swagger.json` on `sbt package` and `sbt run`.
 
 
 #### Step 2
@@ -184,7 +184,7 @@ POST   /tracks       controller.Api.createTrack()
 Again, play-swagger will generate the definition for com.iheart.api.Track case class
 
 #### How do I use a different "host" for different environment?
-The library returns play JsObject, you can change however you want like 
+Use the alternative setup. The library returns play JsObject, you can change however you want like 
 ```scala
 val spec: Try[JsObject] = ps.generate().map(_ + ("host" -> JsString(myHost)))
 ```
