@@ -20,5 +20,6 @@ project/plugins/project/
 .worksheet
 
 .idea
-
+.DS_Store
+example
 *.sw*
