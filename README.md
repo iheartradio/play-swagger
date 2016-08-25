@@ -102,7 +102,7 @@ swaggerDomainNameSpaces := Seq("models")
 
 This plugin adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
 
-This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`. You can change the target folder through a sbt setting `swaggerTarget`
+This plugin will generate the `swagger.json` in the packaged `public` folder for you on `sbt package`, which will make it available under path `assets/swagger.json`.
 
 
 #### Step 2
@@ -141,13 +141,12 @@ GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/l
 
 ```
 
-The sbt-play-swagger plugin will generate the swagger.json on packaging, so if you run `sbt start`,
+The sbt-play-swagger plugin will generate the swagger.json on `sbt run` or `sbt package`
 you should be able to open the swagger ui at
 http://localhost:9000/docs/swagger-ui/index.html?url=/assets/swagger.json
 
-Note that `sbt run` doesn't generate the swagger.json for you.
 
-Alternatively, you can create a controller that uses play-swagger lib to generate the json and serve it. See [here](docs/AlternativeSetup.md) for details
+Alternatively, you can create a controller that uses play-swagger lib to generate the json and serve it, this way you can manipulate the swagger.json at runtime. See [here](docs/AlternativeSetup.md) for details
 
 ============================
 ## How to contribute
@@ -198,6 +197,3 @@ SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 
 #### Where to find more examples?
 In the [tests](/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
-
-
-
