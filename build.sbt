@@ -24,7 +24,9 @@ lazy val playSwagger = project.in(file("core"))
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(Publish.sbtPluginSettings ++ Format.settings ++ ScriptedTesting.settings)
-  .settings(addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.6" % Provided))
+  .settings(
+    addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.6" % Provided),
+    addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.3.0" % Provided))
   .enablePlugins(BuildInfoPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version),

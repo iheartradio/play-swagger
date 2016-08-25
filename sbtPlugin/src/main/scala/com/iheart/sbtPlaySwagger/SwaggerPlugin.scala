@@ -1,12 +1,11 @@
 package com.iheart.sbtPlaySwagger
 
-import com.google.common.base.Charsets.UTF_8
-import com.google.common.io.Resources.{getResource, toString ⇒ read}
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbt.Attributed._
 import sbt.Keys._
 import sbt.{AutoPlugin, _}
+import com.typesafe.sbt.web.Import._
 
 object SwaggerPlugin extends AutoPlugin {
   lazy val swaggerConfig = config("play-swagger").hide
@@ -24,19 +23,25 @@ object SwaggerPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     ivyConfigurations += swaggerConfig,
+    //todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % swaggerConfig,
     swaggerDomainNameSpaces := Seq(),
-    swaggerTarget := "public/swagger.json",
+    swaggerTarget := target.value / "swagger",
+    swaggerFileName := "swagger.json",
+    swaggerRoutesFile := "routes",
     swagger <<= Def.task[File] {
-      (target.value / "swagger").mkdirs()
-      val file = target.value / "swagger" / "swagger.json"
-      val args = file.absolutePath +: swaggerDomainNameSpaces.value
+      (swaggerTarget.value).mkdirs()
+      val file = swaggerTarget.value / swaggerFileName.value
+      IO.delete(file)
+      val args = file.absolutePath +: swaggerRoutesFile.value +: swaggerDomainNameSpaces.value
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))
       file
     },
-    mappings in (Compile, packageBin) += (target.value / "swagger" / "swagger.json") → swaggerTarget.value,
+    unmanagedResourceDirectories in Assets += swaggerTarget.value,
+    mappings in (Compile, packageBin) += (swaggerTarget.value / swaggerFileName.value) → s"public/${swaggerFileName.value}", //include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
     packageBin in Universal <<= (packageBin in Universal).dependsOn(swagger),
+    run <<= (run in Compile).dependsOn(swagger),
     stage <<= stage.dependsOn(swagger)
   )
 }
