@@ -104,6 +104,8 @@ This plugin adds a sbt task `swagger`, with which you can generate the `swagger.
 
 This plugin will generate the `swagger.json`and make it available under path `assets/swagger.json` on `sbt package` and `sbt run`.
 
+Alternatively, you can create a controller that uses play-swagger lib to generate the json and serve it, this way you can manipulate the swagger.json at runtime. See [here](docs/AlternativeSetup.md) for details.
+
 
 #### Step 2
 Add a base swagger.yml (or swagger.json) to your resources (for example, conf folder in the play application). This one needs to provide all the required fields according to swagger spec.
@@ -146,8 +148,6 @@ you should be able to open the swagger ui at
 http://localhost:9000/docs/swagger-ui/index.html?url=/assets/swagger.json
 
 
-Alternatively, you can create a controller that uses play-swagger lib to generate the json and serve it, this way you can manipulate the swagger.json at runtime. See [here](docs/AlternativeSetup.md) for details
-
 ============================
 ## How to contribute
 
@@ -184,13 +184,19 @@ POST   /tracks       controller.Api.createTrack()
 Again, play-swagger will generate the definition for com.iheart.api.Track case class
 
 #### How do I use a different "host" for different environment?
-Use the alternative setup. The library returns play JsObject, you can change however you want like 
+Use the [alternative setup](docs/AlternativeSetup.md). The library returns play JsObject, you can change however you want like
 ```scala
 val spec: Try[JsObject] = ps.generate().map(_ + ("host" -> JsString(myHost)))
 ```
 
 
 #### How to use a route file different from the default "routes"?
+In build.sbt, add
+```Scala
+swaggerRoutesFile := "my-routes"
+```
+
+or if you took the [alternative setup](docs/AlternativeSetup.md)
 ```scala
 SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 ```

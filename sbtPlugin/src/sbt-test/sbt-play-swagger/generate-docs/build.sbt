@@ -9,23 +9,23 @@ scalaVersion := "2.11.7"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
-
+swaggerRoutesFile := "my-routes"
 
 TaskKey[Unit]("check") := {
   val expected =
-    """
+    s"""
       |{
       |   "paths":{
       |      "/tracks/{trackId}":{
       |         "get":{
       |            "tags":[
-      |               "routes"
+      |               "${swaggerRoutesFile.value}"
       |            ],
       |            "summary":"Get the track metadata",
       |            "responses":{
       |               "200":{
       |                  "schema":{
-      |                     "$ref":"#/definitions/namespace2.Track"
+      |                     "$$ref":"#/definitions/namespace2.Track"
       |                  }
       |               }
       |            },
@@ -71,12 +71,12 @@ TaskKey[Unit]("check") := {
       |               "type":"string"
       |            },
       |            "artist":{
-      |               "$ref":"#/definitions/namespace1.Artist"
+      |               "$$ref":"#/definitions/namespace1.Artist"
       |            },
       |            "related":{
       |               "type":"array",
       |               "items":{
-      |                  "$ref":"#/definitions/namespace1.Artist"
+      |                  "$$ref":"#/definitions/namespace1.Artist"
       |               }
       |            },
       |            "numbers":{
@@ -102,13 +102,13 @@ TaskKey[Unit]("check") := {
       |   },
       |   "tags":[
       |      {
-      |         "name":"routes"
+      |         "name":"${swaggerRoutesFile.value}"
       |      }
       |   ]
       |}
     """.stripMargin.split('\n').map(_.trim.filter(_ >= ' ')).mkString
 
-  val result = IO.read(target.value / "swagger" / "swagger.json")
+  val result = IO.read(swaggerTarget.value / swaggerFileName.value)
 
   if (result != expected) {
     sys.error(

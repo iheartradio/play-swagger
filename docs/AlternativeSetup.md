@@ -50,4 +50,5 @@ GET   /assets/swagger.json         @controllers.swagger.ApiSpecs.specs
 
 ```
 
-Follow Step 2 through Step 3 in the main README.md
+
+Then follow Step 2 through Step 3 in the sbt-play-swagger setup in the main README.md
