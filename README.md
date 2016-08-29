@@ -82,12 +82,12 @@ You can find the setup in the example project as well.
 For play2.5 add Swagger sbt plugin dependency to your plugins.sbt
 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0")
 ```
 
 For play 2.4 please use a special release build with play 2.4 binary.
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2-PLAY2.4")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0-PLAY2.4")
 
 ```
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
