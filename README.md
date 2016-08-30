@@ -162,6 +162,23 @@ Code contribution are more than welcome. Make sure that your code is tested and 
 #### How to override?
 To override any of the automatically generated field, you just need to write the same part in your comment or base swagger spec file. 
 
+#### How to override type mappings?
+To override the type mapping used for any type, specify a sequence of mappings in the build.sbt file
+```scala
+swaggerMappings := Seq(SwaggerMapping("java.time.LocalDate", "string", Some("date")),
+                       SwaggerMapping("java.time.Duration", "integer"))
+```
+
+Each mapping consists of the fully-qualified from type, the Swagger type, and an optional Swagger format. The preceding example would
+  result in output like this:
+   
+```json
+"fieldName": {
+   "type":"string",
+   "format":"date"
+}
+```
+
 #### How to hide an endpoint?
 If you don't want an end point to be included, add `### NoDocs ###` in front of it 
 e.g.

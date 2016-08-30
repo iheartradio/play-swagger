@@ -29,11 +29,14 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
     swaggerRoutesFile := "routes",
+    swaggerMappings := Seq(),
     swagger <<= Def.task[File] {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
-      val args = file.absolutePath +: swaggerRoutesFile.value +: swaggerDomainNameSpaces.value
+      val mappingString = swaggerMappings.value.map(_.toJson).mkString(", ")
+      val mappingJson = s"[ $mappingString ]"
+      val args: Seq[String] = file.absolutePath +: swaggerRoutesFile.value +: mappingJson +: swaggerDomainNameSpaces.value
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))
       file

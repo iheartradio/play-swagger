@@ -14,13 +14,13 @@ import scala.util.{Try, Success, Failure}
 
 object SwaggerSpecGenerator {
   private val marker = "##"
-  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader, mappings: Seq[SwaggerMapping]): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
 }
 
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String               = "application/json"
-)(implicit cl: ClassLoader) {
+)(implicit cl: ClassLoader, mappings: Seq[SwaggerMapping]) {
 
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -287,8 +287,11 @@ final case class SwaggerSpecGenerator(
         case d: DynamicPart ⇒ d.name
       }.toSet
 
-      val params = route.call.parameters
-        .fold(Seq.empty[SwaggerParameter])(_.map(mapParam(_, modelQualifier)))
+      val params = for {
+        paramList ← route.call.parameters.toSeq
+        param ← paramList
+        if param.fixed.isEmpty // Removes parameters the client cannot set
+      } yield mapParam(param, modelQualifier)
 
       JsArray(params.map { p ⇒
         val jo = Json.toJson(p)(paramFormat).as[JsObject]

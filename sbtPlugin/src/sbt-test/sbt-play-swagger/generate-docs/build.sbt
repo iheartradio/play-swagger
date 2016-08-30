@@ -1,3 +1,4 @@
+import com.iheart.sbtPlaySwagger.SwaggerMapping
 
 logLevel in update := sbt.Level.Warn
 
@@ -10,6 +11,9 @@ scalaVersion := "2.11.7"
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
 swaggerRoutesFile := "my-routes"
+
+swaggerMappings := Seq(SwaggerMapping("java.time.LocalDate", "string", Some("date")),
+                       SwaggerMapping("java.time.Duration", "integer"))
 
 TaskKey[Unit]("check") := {
   val expected =
@@ -31,12 +35,6 @@ TaskKey[Unit]("check") := {
       |            },
       |            "parameters":[
       |               {
-      |                  "name":"path",
-      |                  "type":"string",
-      |                  "required":true,
-      |                  "in":"query"
-      |               },
-      |               {
       |                  "name":"trackId",
       |                  "type":"asset",
       |                  "required":true,
@@ -55,11 +53,16 @@ TaskKey[Unit]("check") := {
       |            "age":{
       |               "type":"integer",
       |               "format":"int32"
+      |            },
+      |            "birthdate":{
+      |               "type":"string",
+      |               "format":"date"
       |            }
       |         },
       |         "required":[
       |            "name",
-      |            "age"
+      |            "age",
+      |            "birthdate"
       |         ]
       |      },
       |      "namespace2.Track":{
@@ -85,13 +88,17 @@ TaskKey[Unit]("check") := {
       |                  "type":"integer",
       |                  "format":"int32"
       |               }
+      |            },
+      |            "length":{
+      |               "type":"integer"
       |            }
       |         },
       |         "required":[
       |            "name",
       |            "artist",
       |            "related",
-      |            "numbers"
+      |            "numbers",
+      |            "length"
       |         ]
       |      }
       |   },
