@@ -287,8 +287,11 @@ final case class SwaggerSpecGenerator(
         case d: DynamicPart ⇒ d.name
       }.toSet
 
-      val params = route.call.parameters
-        .fold(Seq.empty[SwaggerParameter])(_.map(mapParam(_, modelQualifier)))
+      val params = for {
+        paramList ← route.call.parameters.toSeq
+        param ← paramList
+        if param.fixed.isEmpty // Removes parameters the client cannot set
+      } yield mapParam(param, modelQualifier)
 
       JsArray(params.map { p ⇒
         val jo = Json.toJson(p)(paramFormat).as[JsObject]

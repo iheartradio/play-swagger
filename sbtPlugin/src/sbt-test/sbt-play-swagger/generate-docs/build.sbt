@@ -31,12 +31,6 @@ TaskKey[Unit]("check") := {
       |            },
       |            "parameters":[
       |               {
-      |                  "name":"path",
-      |                  "type":"string",
-      |                  "required":true,
-      |                  "in":"query"
-      |               },
-      |               {
       |                  "name":"trackId",
       |                  "type":"asset",
       |                  "required":true,
