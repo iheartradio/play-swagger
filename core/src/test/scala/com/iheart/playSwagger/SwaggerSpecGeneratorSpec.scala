@@ -41,6 +41,10 @@ class SwaggerSpecGeneratorSpec extends Specification {
       gen.fullPath("p/", "/d//c") === "/p/d//c"
     }
 
+    "respect top level trailing slash" >> {
+      gen.fullPath("p/", "/") === "/p/"
+    }
+
   }
 
 }
@@ -66,7 +70,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
-    lazy val resourceJson = (pathJson \ "/api/resource").as[JsObject]
+    lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
     lazy val allOptionalDefJson = (definitionsJson \ "com.iheart.playSwagger.AllOptional").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
@@ -217,7 +221,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "parse controller with custom namespace" >> {
-      (pathJson \ "/api/customResource" \ "get").asOpt[JsObject] must beSome[JsObject]
+      (pathJson \ "/api/customResource/" \ "get").asOpt[JsObject] must beSome[JsObject]
     }
 
     "parse class referenced in option type" >> {
