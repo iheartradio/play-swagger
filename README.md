@@ -163,10 +163,15 @@ Code contribution are more than welcome. Make sure that your code is tested and 
 To override any of the automatically generated field, you just need to write the same part in your comment or base swagger spec file. 
 
 #### How to override type mappings?
-To override the type mapping used for any type, specify a sequence of mappings in the build.sbt file
-```scala
-swaggerMappings := Seq(SwaggerMapping("java.time.LocalDate", "string", Some("date")),
-                       SwaggerMapping("java.time.Duration", "integer"))
+To override the type mapping used for any type, create a swagger-settings.yml or swagger-settings.json in conf and add 
+an array of mappings. Each mapping consists of a fromType, a toType, and an optional format. For example
+```yaml
+mappings:
+  - fromType: java.time.LocalDate
+    toType: string
+    format: date
+  - fromType: java.time.Duration
+    toType: integer
 ```
 
 Each mapping consists of the fully-qualified from type, the Swagger type, and an optional Swagger format. The preceding example would
