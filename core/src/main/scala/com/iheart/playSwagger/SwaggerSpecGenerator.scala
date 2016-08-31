@@ -260,12 +260,8 @@ final case class SwaggerSpecGenerator(
   }
 
   private[playSwagger] def fullPath(prefix: String, inRoutePath: String): String =
-    "/" +
-      List(
-        prefix.stripPrefix("/").stripSuffix("/"),
-        inRoutePath.stripPrefix("/")
-      ).filterNot(_.isEmpty).
-        mkString("/")
+    "/" + Some(prefix.stripPrefix("/").stripSuffix("/")).filterNot(_.isEmpty)
+      .map(_ + "/").getOrElse("") + inRoutePath.stripPrefix("/")
 
   // Multiple routes may have the same path, merge the objects instead of overwriting
 
