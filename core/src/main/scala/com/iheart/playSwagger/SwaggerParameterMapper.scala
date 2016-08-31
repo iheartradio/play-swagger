@@ -10,7 +10,7 @@ object SwaggerParameterMapper {
 
   type MappingFunction = PartialFunction[String, SwaggerParameter]
 
-  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier())(implicit cl: ClassLoader, mappingOverrides: Seq[SwaggerMapping] = Seq()): SwaggerParameter = {
+  def mapParam(parameter: Parameter, modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(), mappingOverrides: Seq[SwaggerMapping] = Seq())(implicit cl: ClassLoader): SwaggerParameter = {
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
       s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
@@ -54,7 +54,10 @@ object SwaggerParameterMapper {
       SwaggerParameter(parameter.name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val param = if (isReference(optionalTpe)) referenceParam(optionalTpe) else mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier)
+      val param = if (isReference(optionalTpe))
+        referenceParam(optionalTpe)
+      else
+        mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier, mappingOverrides = mappingOverrides)
       param.copy(required = false, default = defaultValueO)
     }
 
@@ -65,12 +68,9 @@ object SwaggerParameterMapper {
         { case ci"Double" | ci"BigDecimal" ⇒ swaggerParam("number", Some("double")) },
         { case ci"Float" ⇒ swaggerParam("number", Some("float")) },
         { case ci"DateTime" ⇒ swaggerParam("integer", Some("epoch")) },
-        { case ci"Any" ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value"))) }
+        { case ci"Any" ⇒ swaggerParam("any").copy(example = Some(JsString("any JSON value"))) },
+        { case unknown ⇒ swaggerParam(unknown.toLowerCase()) }
       )
-
-      val default: MappingFunction = {
-        case unknown ⇒ swaggerParam(unknown.toLowerCase())
-      }
 
       val overrideMatchers: Seq[MappingFunction] = mappingOverrides.map(
         definition ⇒ {
@@ -80,7 +80,8 @@ object SwaggerParameterMapper {
         }
       )
 
-      (overrideMatchers ++ base).find(_.isDefinedAt(tpe)).getOrElse(default)(tpe).copy(
+      val mf: MappingFunction = (overrideMatchers ++ base).reduce(_ orElse _)
+      mf(tpe).copy(
         default = defaultValueO,
         required = defaultValueO.isEmpty
       )
@@ -99,7 +100,7 @@ object SwaggerParameterMapper {
       // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
       generalParam("array").copy(
         items = Some(
-          mapParam(parameter.copy(typeName = itemTypeO.get), modelQualifier)
+          mapParam(parameter.copy(typeName = itemTypeO.get), modelQualifier, mappingOverrides)
         )
       )
     else generalParam()
@@ -111,9 +112,3 @@ object SwaggerParameterMapper {
 
 }
 
-case class SwaggerMapping(fromType: String, toType: String, format: Option[String] = None)
-
-object SwaggerMapping {
-  implicit val format = Json.format[SwaggerMapping]
-  implicit val defaultMapping: Seq[SwaggerMapping] = Seq()
-}

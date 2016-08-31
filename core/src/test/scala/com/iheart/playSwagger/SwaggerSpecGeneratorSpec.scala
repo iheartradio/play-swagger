@@ -18,9 +18,9 @@ case class AllOptional(a: Option[String], b: Option[String])
 
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
+  val gen = SwaggerSpecGenerator()
 
   "full path" >> {
-    val gen = SwaggerSpecGenerator()
     "combine routePath with prefix" >> {
       gen.fullPath("/p", "d") === "/p/d"
     }
@@ -41,6 +41,25 @@ class SwaggerSpecGeneratorSpec extends Specification {
       gen.fullPath("p/", "/d//c") === "/p/d//c"
     }
 
+  }
+
+  "getCfgFile" >> {
+    "valid swagger-settings yml" >> {
+      val result = gen.readCfgFile[Settings]("swagger-settings.yml")
+      result must beSome[Settings]
+      val mappings = result.get.mappings
+      mappings.size mustEqual 2
+      mappings.head.fromType mustEqual "java.time.LocalDate"
+      mappings.head.toType mustEqual "string"
+      mappings.head.format must beSome("date")
+      mappings(1).fromType mustEqual "java.time.Duration"
+      mappings(1).toType mustEqual "integer"
+      mappings(1).format must beNone
+    }
+
+    "invalid swagger-settings yml" >> {
+      gen.readCfgFile[Settings]("swagger-settings_invalid.yml") must throwA[JsResultException]
+    }
   }
 
 }

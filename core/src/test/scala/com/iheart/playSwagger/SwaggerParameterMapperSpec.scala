@@ -20,46 +20,42 @@ class SwaggerParameterMapperSpec extends Specification {
 
     "override mapping to map DateTime to string with format date-time" >> {
       "single DateTime" >> {
-        implicit val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time")))
-        mapParam(Parameter("fieldWithDateTimeOverRide", "org.joda.time.DateTime", None, None)) == SwaggerParameter(
-          name = "fieldWithDateTimeOverRide",
-          `type` = Option("string"),
-          format = Option("date-time")
-        )
+        val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time")))
+        val parameter = mapParam(Parameter("fieldWithDateTimeOverRide", "org.joda.time.DateTime", None, None), mappingOverrides = mapOverride)
+        parameter.name mustEqual "fieldWithDateTimeOverRide"
+        parameter.`type` must beSome("string")
+        parameter.format must beSome("date-time")
       }
 
       "sequence of DateTimes" >> {
-        implicit val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time")))
-        mapParam(Parameter("seqWithDateTimeOverRide", "Option[Seq[org.joda.time.DateTime]]", None, None)) == SwaggerParameter(
-          name = "seqWithDateTimeOverRide",
-          required = false,
-          `type` = Some("array"),
-          items = Some(SwaggerParameter(
-            name = "seqWithDateTimeOverRide",
-            required = true,
-            `type` = Option("string"),
-            format = Option("date-time")
-          ))
-        )
+        val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time")))
+        val parameter = mapParam(Parameter("seqWithDateTimeOverRide", "Option[Seq[org.joda.time.DateTime]]", None, None), mappingOverrides = mapOverride)
+
+        parameter.name mustEqual "seqWithDateTimeOverRide"
+        parameter.required must beFalse
+        parameter.`type` must beSome("array")
+        parameter.items.isDefined must beTrue
+        parameter.items.get.name mustEqual "seqWithDateTimeOverRide"
+        parameter.items.get.required must beTrue
+        parameter.items.get.`type` must beSome("string")
+        parameter.items.get.format must beSome("date-time")
       }
     }
 
     "map java.util.Date to string with format date-time" >> {
-      implicit val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("java.util.Date", "string", Some("date-time")))
-      mapParam(Parameter("fieldWithDate", "java.util.Date", None, None)) == SwaggerParameter(
-        name = "fieldWithDate",
-        `type` = Option("string"),
-        format = Option("date-time")
-      )
+      val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("java.util.Date", "string", Some("date-time")))
+      val parameter = mapParam(Parameter("fieldWithDate", "java.util.Date", None, None), mappingOverrides = mapOverride)
+      parameter.name mustEqual "fieldWithDate"
+      parameter.`type` must beSome("string")
+      parameter.format must beSome("date-time")
     }
 
     "map java.time.LocalDate to string with no format" >> {
-      implicit val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("java.time.LocalDate", "string"))
-      mapParam(Parameter("fieldWithLocalDate", "java.time.LocalDate", None, None)) == SwaggerParameter(
-        name = "fieldWithLocalDate",
-        `type` = Option("string"),
-        format = None
-      )
+      val mapOverride: Seq[SwaggerMapping] = Seq(SwaggerMapping("java.time.LocalDate", "string"))
+      val parameter = mapParam(Parameter("fieldWithLocalDate", "java.time.LocalDate", None, None), mappingOverrides = mapOverride)
+      parameter.name mustEqual "fieldWithLocalDate"
+      parameter.`type` must beSome("string")
+      parameter.format must beNone
     }
 
     "map Any to any with example value" >> {
@@ -84,17 +80,15 @@ class SwaggerParameterMapperSpec extends Specification {
       )
     }
 
-    "map String to string" >> {
-      // Ensure the overrides don't mess anything up
-      implicit val mapOverride: Seq[SwaggerMapping] = Seq(
+    "map String to string without override interference" >> {
+      val mapOverride: Seq[SwaggerMapping] = Seq(
         SwaggerMapping("java.time.LocalDate", "string", Some("date")),
         SwaggerMapping("java.time.Duration", "integer")
       )
-      mapParam(Parameter("strField", "String", None, None)) === SwaggerParameter(
-        name = "strField",
-        `type` = Some("string"),
-        format = None
-      )
+      val parameter = mapParam(Parameter("strField", "String", None, None), mappingOverrides = mapOverride)
+      parameter.name mustEqual "strField"
+      parameter.`type` must beSome("string")
+      parameter.format must beNone
     }
   }
 }

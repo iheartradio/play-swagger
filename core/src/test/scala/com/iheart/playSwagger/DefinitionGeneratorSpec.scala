@@ -24,6 +24,8 @@ case class WithListOfPrimitive(seq: Seq[Int])
 case class FooWithOption(op: Option[OptionItem])
 case class OptionItem(bar: String)
 
+case class WithDate(someDate: org.joda.time.DateTime)
+
 object MyObject {
   type MyId = Int
   case class MyInnerClass(bar: String, id: MyId)
@@ -110,6 +112,22 @@ class DefinitionGeneratorSpec extends Specification {
       result.properties.head.referenceType must beSome("com.iheart.playSwagger.OptionItem")
     }
 
+    "with dates" >> {
+      "no override" >> {
+        val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.WithDate")
+        val prop = result.properties.head
+        prop.`type` must beSome("integer")
+        prop.format must beSome("epoch")
+
+      }
+      "with override" >> {
+        val settings = Settings(Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time"))))
+        val result = DefinitionGenerator("com.iheart", settings).definition("com.iheart.playSwagger.WithDate")
+        val prop = result.properties.head
+        prop.`type` must beSome("string")
+        prop.format must beSome("date-time")
+      }
+    }
   }
 
   "allDefinitions" >> {

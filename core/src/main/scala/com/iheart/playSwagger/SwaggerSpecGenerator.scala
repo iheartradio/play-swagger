@@ -14,13 +14,13 @@ import scala.util.{Try, Success, Failure}
 
 object SwaggerSpecGenerator {
   private val marker = "##"
-  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader, mappings: Seq[SwaggerMapping]): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
 }
 
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String               = "application/json"
-)(implicit cl: ClassLoader, mappings: Seq[SwaggerMapping]) {
+)(implicit cl: ClassLoader) {
 
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -120,7 +120,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, settings).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
@@ -193,7 +193,8 @@ final case class SwaggerSpecGenerator(
     if (required.isEmpty) None else Some(required)
   }
 
-  private def defaultBase = readBaseCfg("swagger.json") orElse readBaseCfg("swagger.yml") getOrElse Json.obj()
+  private def defaultBase: JsObject = readCfgFile[JsObject]("swagger.json") orElse readCfgFile[JsObject]("swagger.yml") getOrElse Json.obj()
+  private def settings: Settings = readCfgFile[Settings]("swagger-settings.json") orElse readCfgFile[Settings]("swagger-settings.yml") getOrElse Settings()
 
   private def mergeByName(base: JsArray, toMerge: JsArray): JsArray = {
     JsArray(base.value.map { bs ⇒
@@ -210,16 +211,16 @@ final case class SwaggerSpecGenerator(
     array.value.find(param ⇒ (param \ "name").asOpt[String].contains(name))
       .map(_.as[JsObject])
 
-  private def readBaseCfg(name: String): Option[JsObject] = {
+  private[playSwagger] def readCfgFile[T](name: String)(implicit fjs: Reads[T]): Option[T] = {
     Option(cl.getResource(name)).map { url ⇒
       val st = url.openStream()
       try {
         val ext = url.getFile.split("\\.").last
         ext match {
-          case "json"  ⇒ Json.parse(st).as[JsObject]
+          case "json"  ⇒ Json.parse(st).as[T]
           //TODO: improve error handling
           case "yml"   ⇒ parseYaml(read(st).get.mkString("\n"))
-          case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yaml. ")
+          case unknown ⇒ throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yml. ")
         }
       } finally {
         st.close()
@@ -227,12 +228,12 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private def parseYaml(yamlStr: String): JsObject = {
+  private def parseYaml[T](yamlStr: String)(implicit fjs: Reads[T]): T = {
     val yaml = new Yaml()
     val map = yaml.load(yamlStr).asInstanceOf[java.util.Map[String, Object]]
     val mapper = new ObjectMapper()
     val jsonString = mapper.writeValueAsString(map)
-    Json.parse(jsonString).as[JsObject]
+    Json.parse(jsonString).as[T]
   }
 
   private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
@@ -273,7 +274,7 @@ final case class SwaggerSpecGenerator(
 
     def tryParseYaml(comment: String): Option[JsObject] = {
       val pattern = "^\\w+:".r
-      pattern.findFirstIn(comment).map(_ ⇒ parseYaml(comment))
+      pattern.findFirstIn(comment).map(_ ⇒ parseYaml[JsObject](comment))
     }
 
     def tryParseJson(comment: String): Option[JsObject] = {

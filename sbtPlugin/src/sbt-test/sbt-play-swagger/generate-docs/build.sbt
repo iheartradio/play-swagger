@@ -1,5 +1,3 @@
-import com.iheart.sbtPlaySwagger.SwaggerMapping
-
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
@@ -11,9 +9,6 @@ scalaVersion := "2.11.7"
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
 swaggerRoutesFile := "my-routes"
-
-swaggerMappings := Seq(SwaggerMapping("java.time.LocalDate", "string", Some("date")),
-                       SwaggerMapping("java.time.Duration", "integer"))
 
 TaskKey[Unit]("check") := {
   val expected =
