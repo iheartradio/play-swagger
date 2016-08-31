@@ -1,4 +1,3 @@
-
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
@@ -49,11 +48,16 @@ TaskKey[Unit]("check") := {
       |            "age":{
       |               "type":"integer",
       |               "format":"int32"
+      |            },
+      |            "birthdate":{
+      |               "type":"string",
+      |               "format":"date"
       |            }
       |         },
       |         "required":[
       |            "name",
-      |            "age"
+      |            "age",
+      |            "birthdate"
       |         ]
       |      },
       |      "namespace2.Track":{
@@ -79,13 +83,17 @@ TaskKey[Unit]("check") := {
       |                  "type":"integer",
       |                  "format":"int32"
       |               }
+      |            },
+      |            "length":{
+      |               "type":"integer"
       |            }
       |         },
       |         "required":[
       |            "name",
       |            "artist",
       |            "related",
-      |            "numbers"
+      |            "numbers",
+      |            "length"
       |         ]
       |      }
       |   },

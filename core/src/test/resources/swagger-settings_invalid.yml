@@ -1,0 +1,6 @@
+---
+mappings:
+  - fromType: java.time.LocalDate
+    format: date
+  - fromType: java.time.Duration
+    toType: integer

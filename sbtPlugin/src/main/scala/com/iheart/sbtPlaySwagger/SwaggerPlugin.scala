@@ -33,7 +33,7 @@ object SwaggerPlugin extends AutoPlugin {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
-      val args = file.absolutePath +: swaggerRoutesFile.value +: swaggerDomainNameSpaces.value
+      val args: Seq[String] = file.absolutePath +: swaggerRoutesFile.value +: swaggerDomainNameSpaces.value
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))
       file
