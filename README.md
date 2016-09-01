@@ -186,7 +186,7 @@ For example
 ```
 
 Each mapping consists of the fully-qualified from type, the Swagger type, and an optional Swagger format. The preceding example would
-  result in output like this:
+  result in output for a field with type `java.time.LocalDate` like this:
    
 ```json
 "fieldName": {
