@@ -1,5 +1,6 @@
 package com.iheart.playSwagger
 
+import com.iheart.playSwagger.Domain.{CustomTypeMapping, CustomMappings}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -8,6 +9,10 @@ case class Artist(name: String, age: Int)
 
 case class Student(name: String, teacher: Option[Teacher])
 case class Teacher(name: String)
+
+case class Animal(name: String, keeper: Keeper)
+
+case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
@@ -48,21 +53,20 @@ class SwaggerSpecGeneratorSpec extends Specification {
   }
 
   "getCfgFile" >> {
-    "valid swagger-settings yml" >> {
-      val result = gen.readCfgFile[Settings]("swagger-settings.yml")
-      result must beSome[Settings]
-      val mappings = result.get.mappings
-      mappings.size mustEqual 2
-      mappings.head.fromType mustEqual "java.time.LocalDate"
-      mappings.head.toType mustEqual "string"
-      mappings.head.format must beSome("date")
-      mappings(1).fromType mustEqual "java.time.Duration"
-      mappings(1).toType mustEqual "integer"
-      mappings(1).format must beNone
+    implicit val cmf = Json.reads[CustomTypeMapping]
+    "valid swagger-custom-mappings yml" >> {
+      val result = gen.readCfgFile[CustomMappings]("swagger-custom-mappings.yml")
+      result must beSome[CustomMappings]
+      val mappings = result.get
+      mappings.size must be_>(2)
+      mappings.head.`type` mustEqual "java.time.LocalDate"
+      mappings.head.specAsParameter === List(Json.obj("type" → "string", "format" → "date"))
+      mappings.head.specAsProperty must beEmpty
+
     }
 
     "invalid swagger-settings yml" >> {
-      gen.readCfgFile[Settings]("swagger-settings_invalid.yml") must throwA[JsResultException]
+      gen.readCfgFile[CustomMappings]("swagger-custom-mappings_invalid.yml") must throwA[JsResultException]
     }
   }
 
@@ -339,6 +343,40 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       parameters must contain((entry: JsObject) ⇒
         entry.value.get("name").contains(JsString("notMagic")))
         .exactly(1.times)
+    }
+
+    "hide parameter set to ignore in the custom type mappings" >> {
+
+      val parameters = (pathJson \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
+      parameters.size === 1
+      parameters must contain((entry: JsObject) ⇒
+        entry.value.get("name").contains(JsString("aid")))
+        .exactly(1.times).not
+
+    }
+
+    "hide parameter set to ignore in the custom type mappings" >> {
+
+      val parameters = (pathJson \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
+      parameters.size === 1
+      parameters.head.value.get("name") === Some(JsString("zid"))
+      parameters.head.value.get("type") === Some(JsString("string"))
+      parameters.head.value.get("required") === Some(JsBoolean(true))
+    }
+
+    "generate definition reference according to custom type mappings" >> {
+
+      val properties = (definitionsJson \ "com.iheart.playSwagger.Animal" \ "properties").as[JsObject]
+      (properties \ "keeper" \ "$ref").as[String] === "#/definitions/Keeper"
+
+      (definitionsJson \ "com.iheart.playSwagger.Keeper").toOption must beEmpty
+    }
+
+    "custom type mappings in definition should be included in required" >> {
+
+      val required = (definitionsJson \ "com.iheart.playSwagger.Animal" \ "required").as[JsArray]
+
+      required.value must contain(JsString("keeper"))
     }
 
     // TODO: routes order

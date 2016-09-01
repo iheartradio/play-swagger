@@ -1,0 +1,5 @@
+---
+  - tpe: java.time.LocalDate
+    specAsParameter:
+      - type: string
+        format: date

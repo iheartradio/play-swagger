@@ -1,3 +1,7 @@
+import org.json4s._
+
+import org.json4s.native.JsonMethods._
+import org.json4s.native.JsonMethods
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
@@ -11,7 +15,9 @@ swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 swaggerRoutesFile := "my-routes"
 
 TaskKey[Unit]("check") := {
-  val expected =
+
+  def uniform(jsString: String): String = pretty(render(parse(jsString)))
+  val expected = uniform(
     s"""
       |{
       |   "paths":{
@@ -30,10 +36,10 @@ TaskKey[Unit]("check") := {
       |            },
       |            "parameters":[
       |               {
+      |                  "in":"path",
       |                  "name":"trackId",
       |                  "type":"asset",
-      |                  "required":true,
-      |                  "in":"path"
+      |                  "required":true
       |               }
       |            ]
       |         }
@@ -108,16 +114,32 @@ TaskKey[Unit]("check") := {
       |      }
       |   ]
       |}
-    """.stripMargin.split('\n').map(_.trim.filter(_ >= ' ')).mkString
+    """.stripMargin)
 
-  val result = IO.read(swaggerTarget.value / swaggerFileName.value)
+  val result = uniform(IO.read(swaggerTarget.value / swaggerFileName.value))
+
 
   if (result != expected) {
+    val rs = result.split('\n')
+    val ep = expected.split('\n')
+    val compare = rs.zip(ep).map {
+      case (resultLine, expectedLine) =>
+        if(resultLine != expectedLine)
+          "DIFF >>>>>>>>>>>\n" +
+          s"Result > $resultLine\n" +
+          s"Expect < $expectedLine"
+        else
+          s"Result > $resultLine"
+    }.mkString("\n")
+
+    val left = ep.takeRight(ep.size - rs.size).mkString("\n")
+
     sys.error(
       s"""Swagger.json is off.
-         |Result: $result
-         |Expected: $expected
-         |
+         $compare
+
+         >>>>> extra expected lines:
+         $left
        """.stripMargin)
   }
 }
