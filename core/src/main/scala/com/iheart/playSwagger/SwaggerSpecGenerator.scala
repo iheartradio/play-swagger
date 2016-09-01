@@ -300,7 +300,7 @@ final case class SwaggerSpecGenerator(
     def amendBodyParam(params: JsArray): JsArray = {
       val bodyParam = findByName(params, "body")
       bodyParam.fold(params) { param ⇒
-        val enhancedBodyParam = param + ("in" → JsString("body"))
+        val enhancedBodyParam = Json.obj("in" → JsString("body")) ++ param
         JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
       }
     }

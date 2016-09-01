@@ -183,6 +183,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (params.head \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Track")
     }
 
+    "generate body parameter without in if already provided" >> {
+      val params = parametersOf((pathJson \ "/iWantAQueryBody" \ "post").as[JsObject])
+      params.length === 1
+      (params.head \ "in").asOpt[String] === Some("query")
+    }
+
     "does not generate for end points marked as hidden" >> {
       (pathJson \ "/api/station/hidden" \ "get").toOption must beEmpty
     }
