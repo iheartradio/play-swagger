@@ -55,3 +55,12 @@ POST     /somethingWithEnum                controllers.Player.somethingWithEnum(
 #        $ref: '#/definitions/com.iheart.playSwagger.AllOptional'
 ###
 POST     /somethingOptional                controllers.Player.somethingOptional()
+
+
+###
+# parameters:
+#   - name: body
+#     in: query
+#     type: string
+###
+POST  /iWantAQueryBody                     controllers.Test.queryBodyHandler(body)
