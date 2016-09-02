@@ -82,12 +82,12 @@ You can find the setup in the example project as well.
 For play2.5 add Swagger sbt plugin dependency to your plugins.sbt
 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0")
 ```
 
 For play 2.4 please use a special release build with play 2.4 binary.
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.4.2-PLAY2.4")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0-PLAY2.4")
 
 ```
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
@@ -162,6 +162,38 @@ Code contribution are more than welcome. Make sure that your code is tested and 
 #### How to override?
 To override any of the automatically generated field, you just need to write the same part in your comment or base swagger spec file. 
 
+#### How to override type mappings?
+To override the type mapping used for any type, create a swagger-custom-mappings.yml or swagger-custom-mappings.json in conf and add
+an array of mappings. Each mapping consists of
+
+1. `type` the type for which the custom specs is
+1. `specAsParameter` a list of objects to be used when this type is used by a route path parameter or query string parameter. Being a list of json object allows you to expand a single parameter into multiple ones, but in other cases you just need to provide one json object. If you leave this one an empty array, the parameter with this type will be hidden. You must provide a list here, though.
+1. `specAsProperty`, a json object to be used when the type is used as a property in a definition. If you leave this one empty, play-swagger will try to use the first element in `specAsParameter`, please note that although most of the fields are common between the two types of spec, a couple of them aren't.
+
+For example
+```yaml
+---
+  - type: java.time.LocalDate
+    specAsParameter:
+      - type: string
+        format: date
+  - type: java.time.Duration
+    specAsParameter: []   #this hides the type from query and path parameter
+    specAsProperty:
+      $ref: "#/definitions/Duration"
+
+
+```
+
+The preceding example would result in output for a field with type `java.time.LocalDate` like this:
+   
+```json
+"fieldName": {
+   "type":"string",
+   "format":"date"
+}
+```
+
 #### How to hide an endpoint?
 If you don't want an end point to be included, add `### NoDocs ###` in front of it 
 e.g.
@@ -202,4 +234,4 @@ SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 ```
 
 #### Where to find more examples?
-In the [tests](/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
+In the [tests](/core/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!

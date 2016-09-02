@@ -3,12 +3,17 @@ organization in ThisBuild := "com.iheart"
 
 resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
 
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
-  .settings(
-    publishArtifact := false,
-    sourcesInBase := false
-  )
+  .settings(sourcesInBase := false)
+  .settings(noPublishSettings:_*)
 
 lazy val playSwagger = project.in(file("core"))
   .settings(Publish.coreSettings ++ Format.settings ++ Testing.settings)

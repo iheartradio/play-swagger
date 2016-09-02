@@ -1,0 +1,17 @@
+---
+  - type: java.time.LocalDate
+    specAsParameter:
+      - type: string
+        format: date
+  - type: java.time.Duration
+    specAsParameter:
+      - type: integer
+  - type: com.iheart.playSwagger.AnimalId
+    specAsParameter: []
+  - type: com.iheart.playSwagger.ZoneId
+    specAsParameter:
+      - type: string
+  - type: com.iheart.playSwagger.Keeper
+    specAsParameter: []
+    specAsProperty:
+      $ref: "#/definitions/Keeper"
