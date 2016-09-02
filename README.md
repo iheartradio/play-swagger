@@ -234,4 +234,4 @@ SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 ```
 
 #### Where to find more examples?
-In the [tests](/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
+In the [tests](/core/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
