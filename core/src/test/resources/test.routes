@@ -13,6 +13,8 @@
 
 ->   /references           referencing.Routes
 
+->   /zoo                  zoo.Routes
+
 GET  /abc                  com.iheart.Application.test()
 
 ###

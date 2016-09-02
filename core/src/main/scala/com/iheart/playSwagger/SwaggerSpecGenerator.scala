@@ -2,7 +2,7 @@ package com.iheart.playSwagger
 
 import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
+import com.iheart.playSwagger.Domain._
 import play.api.libs.json._
 import ResourceReader.read
 import org.yaml.snakeyaml.Yaml
@@ -14,14 +14,18 @@ import scala.util.{Try, Success, Failure}
 
 object SwaggerSpecGenerator {
   private val marker = "##"
+  val customMappingsFileName = "swagger-custom-mappings"
+  val baseSpecFileName = "swagger"
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+
+  case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
 }
 
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String               = "application/json"
 )(implicit cl: ClassLoader) {
-
+  import SwaggerSpecGenerator.{customMappingsFileName, baseSpecFileName, MissingBaseSpecException}
   // routes with their prefix
   type Routes = (String, Seq[Route])
 
@@ -120,7 +124,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier, settings).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, customMappings).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
@@ -148,7 +152,7 @@ final case class SwaggerSpecGenerator(
 
   import play.api.libs.functional.syntax._
 
-  private lazy val paramFormat: Writes[SwaggerParameter] = (
+  private lazy val genParamWrites: OWrites[GenSwaggerParameter] = (
     (__ \ 'name).write[String] ~
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
@@ -156,17 +160,43 @@ final case class SwaggerSpecGenerator(
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").writeNullable[SwaggerParameter](defPropFormat) ~
+    (__ \ "items").writeNullable[SwaggerParameter](propWrites) ~
     (__ \ "enum").writeNullable[Seq[String]]
-  )(unlift(SwaggerParameter.unapply))
+  )(unlift(GenSwaggerParameter.unapply))
 
-  private lazy val defPropFormat: Writes[SwaggerParameter] = (
+  private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
+    csp.specAsParameter match {
+      case head :: tail ⇒
+        val w = (
+          (__ \ 'name).write[String] ~
+          (__ \ 'required).write[Boolean] ~
+          (__ \ 'default).writeNullable[JsValue]
+        )(
+            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default)
+          )
+
+        (w.writes(csp) ++ head) :: tail
+      case Nil ⇒ Nil
+    }
+  }
+
+  private lazy val customPropWrites: Writes[CustomSwaggerParameter] = Writes { cwp ⇒
+    (__ \ 'default).writeNullable[JsValue].writes(cwp.default) ++
+      (cwp.specAsProperty orElse cwp.specAsParameter.headOption).getOrElse(Json.obj())
+  }
+
+  private lazy val propWrites: Writes[SwaggerParameter] = Writes {
+    case g: GenSwaggerParameter    ⇒ genPropWrites.writes(g)
+    case c: CustomSwaggerParameter ⇒ customPropWrites.writes(c)
+  }
+
+  private lazy val genPropWrites: Writes[GenSwaggerParameter] = (
     (__ \ 'type).writeNullable[String] ~
     (__ \ 'format).writeNullable[String] ~
     (__ \ 'default).writeNullable[JsValue] ~
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "$ref").writeNullable[String] ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](defPropFormat) ~
+    (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
     (__ \ "enum").writeNullable[Seq[String]]
   )(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
 
@@ -178,8 +208,8 @@ final case class SwaggerSpecGenerator(
       }
   }
 
-  private implicit val swesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
-    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)(defPropFormat)))
+  private implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
+    JsObject(ps.map(p ⇒ p.name → Json.toJson(p)(propWrites)))
   }
 
   private implicit val defFormat: Writes[Definition] = (
@@ -193,8 +223,16 @@ final case class SwaggerSpecGenerator(
     if (required.isEmpty) None else Some(required)
   }
 
-  private def defaultBase: JsObject = readCfgFile[JsObject]("swagger.json") orElse readCfgFile[JsObject]("swagger.yml") getOrElse Json.obj()
-  private def settings: Settings = readCfgFile[Settings]("swagger-settings.json") orElse readCfgFile[Settings]("swagger-settings.yml") getOrElse Settings()
+  private lazy val defaultBase: JsObject = readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
+
+  private lazy val customMappings: CustomMappings = {
+    implicit val csmFormat = Json.reads[CustomTypeMapping]
+    readYmlOrJson[CustomMappings](customMappingsFileName).getOrElse(Nil)
+  }
+
+  private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {
+    readCfgFile[T](s"$fileName.json") orElse readCfgFile[T](s"$fileName.yml")
+  }
 
   private def mergeByName(base: JsArray, toMerge: JsArray): JsArray = {
     JsArray(base.value.map { bs ⇒
@@ -230,7 +268,7 @@ final case class SwaggerSpecGenerator(
 
   private def parseYaml[T](yamlStr: String)(implicit fjs: Reads[T]): T = {
     val yaml = new Yaml()
-    val map = yaml.load(yamlStr).asInstanceOf[java.util.Map[String, Object]]
+    val map = yaml.load(yamlStr)
     val mapper = new ObjectMapper()
     val jsonString = mapper.writeValueAsString(map)
     Json.parse(jsonString).as[T]
@@ -288,12 +326,17 @@ final case class SwaggerSpecGenerator(
         paramList ← route.call.parameters.toSeq
         param ← paramList
         if param.fixed.isEmpty // Removes parameters the client cannot set
-      } yield mapParam(param, modelQualifier)
+      } yield mapParam(param, modelQualifier, customMappings)
 
-      JsArray(params.map { p ⇒
-        val jo = Json.toJson(p)(paramFormat).as[JsObject]
+      JsArray(params.flatMap { p ⇒
+        val jos: List[JsObject] = p match {
+          case gsp: GenSwaggerParameter    ⇒ List(genParamWrites.writes(gsp))
+          case csp: CustomSwaggerParameter ⇒ customParamWrites(csp)
+        }
+
         val in = if (pathParams.contains(p.name)) "path" else "query"
-        jo + ("in" → JsString(in))
+        val enhance = Json.obj("in" → in)
+        jos.map(enhance ++ _)
       })
     }
 

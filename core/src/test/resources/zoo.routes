@@ -1,0 +1,7 @@
+###
+#  responses:
+#    200:
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Animal'
+###
+GET     /zone/:zid/animals/:aid               controllers.Animals.search(zid: com.iheart.playSwagger.ZoneId, aid: com.iheart.playSwagger.AnimalId)

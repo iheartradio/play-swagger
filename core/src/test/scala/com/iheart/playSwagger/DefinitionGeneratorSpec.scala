@@ -1,7 +1,8 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{Definition, SwaggerParameter}
+import com.iheart.playSwagger.Domain._
 import org.specs2.mutable.Specification
+import play.api.libs.json.Json
 
 case class DictType(key: String, value: String)
 case class Foo(barStr: String, barInt: Int, barLong: Option[Long], reffedFoo: ReffedFoo, seqReffedFoo: Seq[ReffedFoo], optionSeqReffedFoo: Option[Seq[ReffedFoo]], dictType: DictType)
@@ -52,80 +53,87 @@ class DefinitionGeneratorSpec extends Specification {
 
     "generate properties" >> {
 
-      val result = DefinitionGenerator("com.iheart.playSwagger").definition[Foo].properties
+      val result = DefinitionGenerator("com.iheart.playSwagger", Nil).definition[Foo].properties
 
       result.length === 7
 
       "with correct string property" >> {
-        result.head === SwaggerParameter(name = "barStr", `type` = Some("string"))
+        result.head === GenSwaggerParameter(name = "barStr", `type` = Some("string"))
       }
 
       "with correct int32 property" >> {
-        result(1) === SwaggerParameter(name = "barInt", `type` = Some("integer"), format = Some("int32"))
+        result(1) === GenSwaggerParameter(name = "barInt", `type` = Some("integer"), format = Some("int32"))
       }
 
       "with correct long property" >> {
-        result(2) === SwaggerParameter(name = "barLong", `type` = Some("integer"), format = Some("int64"), required = false)
+        result(2) === GenSwaggerParameter(name = "barLong", `type` = Some("integer"), format = Some("int64"), required = false)
       }
 
       "with reference type" >> {
-        result(3) === SwaggerParameter(name = "reffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(3) === GenSwaggerParameter(name = "reffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
       }
 
       "with sequence of reference type" >> {
-        val itemsParam = SwaggerParameter(name = "seqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
-        result(4) === SwaggerParameter(name = "seqReffedFoo", `type` = Some("array"), items = Some(itemsParam))
+        val itemsParam = GenSwaggerParameter(name = "seqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(4) === GenSwaggerParameter(name = "seqReffedFoo", `type` = Some("array"), items = Some(itemsParam))
       }
 
       "with optional sequence of reference type" >> {
-        val itemsParam = SwaggerParameter(name = "optionSeqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
-        result(5) === SwaggerParameter(name = "optionSeqReffedFoo", `type` = Some("array"), items = Some(itemsParam), required = false)
+        val itemsParam = GenSwaggerParameter(name = "optionSeqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(5) === GenSwaggerParameter(name = "optionSeqReffedFoo", `type` = Some("array"), items = Some(itemsParam), required = false)
       }
 
     }
 
     "read class in Object" >> {
-      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
       result.properties.head.name === "bar"
     }
 
     "read alias type in Object" >> {
-      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.MyObject.MyInnerClass")
-      result.properties.last.name === "id"
-      result.properties.last.`type` === Some("integer")
-      result.properties.last.referenceType === None
+      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+
+      val last = result.properties.last.asInstanceOf[GenSwaggerParameter]
+      last.name === "id"
+      last.`type` === Some("integer")
+      last.referenceType === None
     }
 
     "read sequence items" >> {
-      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithSeq")
-      result.properties.head.items.get.referenceType === Some("com.iheart.playSwagger.SeqItem")
+      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.FooWithSeq")
+      result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].referenceType === Some("com.iheart.playSwagger.SeqItem")
     }
 
     "read primitive sequence items" >> {
-      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.WithListOfPrimitive")
-      result.properties.head.items.get.`type` === Some("integer")
+      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.WithListOfPrimitive")
+      result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].`type` === Some("integer")
 
     }
 
     "read Optional items " >> {
-      val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.FooWithOption")
-      result.properties.head.referenceType must beSome("com.iheart.playSwagger.OptionItem")
+      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.FooWithOption")
+      result.properties.head.asInstanceOf[GenSwaggerParameter].referenceType must beSome("com.iheart.playSwagger.OptionItem")
     }
 
     "with dates" >> {
       "no override" >> {
-        val result = DefinitionGenerator("com.iheart").definition("com.iheart.playSwagger.WithDate")
-        val prop = result.properties.head
+        val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.WithDate")
+        val prop = result.properties.head.asInstanceOf[GenSwaggerParameter]
         prop.`type` must beSome("integer")
         prop.format must beSome("epoch")
 
       }
       "with override" >> {
-        val settings = Settings(Seq(SwaggerMapping("org.joda.time.DateTime", "string", Some("date-time"))))
-        val result = DefinitionGenerator("com.iheart", settings).definition("com.iheart.playSwagger.WithDate")
-        val prop = result.properties.head
-        prop.`type` must beSome("string")
-        prop.format must beSome("date-time")
+        val customJson = List(Json.obj("type" → "string", "format" → "date-time"))
+        val mappings = List(
+          CustomTypeMapping(
+            `type` = "org.joda.time.DateTime",
+            specAsParameter = customJson
+          )
+        )
+        val result = DefinitionGenerator("com.iheart", mappings).definition("com.iheart.playSwagger.WithDate")
+        val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
+        prop.specAsParameter === customJson
       }
     }
   }
