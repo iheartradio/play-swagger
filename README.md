@@ -95,7 +95,7 @@ Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
 ```
 
-Also in build.sht add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
+Also in build.sbt add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
 ```Scala
 swaggerDomainNameSpaces := Seq("models")
 ```
