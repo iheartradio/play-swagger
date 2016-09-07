@@ -355,7 +355,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     }
 
-    "hide parameter set to ignore in the custom type mappings" >> {
+    "map parameter set according to the custom type mappings" >> {
 
       val parameters = (pathJson \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
       parameters.size === 1
