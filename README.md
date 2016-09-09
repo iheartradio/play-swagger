@@ -79,15 +79,15 @@ You can find the setup in the example project as well.
   
 
 #### Step 1
-For play2.5 add Swagger sbt plugin dependency to your plugins.sbt
+For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the releases tab](https://github.com/iheartradio/play-swagger/releases) for the latest versions)
 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.1")
 ```
 
 For play 2.4 please use a special release build with play 2.4 binary.
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.0-PLAY2.4")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.5.1-PLAY2.4")
 
 ```
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
@@ -95,7 +95,7 @@ Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
 ```
 
-Also in build.sht add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
+Also in build.sbt add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
 ```Scala
 swaggerDomainNameSpaces := Seq("models")
 ```

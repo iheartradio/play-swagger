@@ -23,6 +23,7 @@ object SwaggerPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     ivyConfigurations += swaggerConfig,
+    resolvers += Resolver.jcenterRepo,
     //todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % swaggerConfig,
     swaggerDomainNameSpaces := Seq(),
