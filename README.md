@@ -194,7 +194,7 @@ The preceding example would result in output for a field with type `java.time.Lo
 }
 ```
 
-### The spec is missing when built to a docker image using sbt-native-pakcager
+#### The spec is missing when built to a docker image using sbt-native-pakcager
 
 @mosche answered this one in #114
 > It's a bit unfortunate the way the docker plugin redefines stage. 
