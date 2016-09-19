@@ -1,8 +1,8 @@
 ---
-  - type: java.time.LocalDate
+  - type: java\.time\.LocalDate
     specAsParameter:
       - type: string
         format: date
-  - type: java.time.Duration
+  - type: java\.time\.Duration
     specAsParameter:
       - type: integer

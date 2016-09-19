@@ -59,7 +59,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       result must beSome[CustomMappings]
       val mappings = result.get
       mappings.size must be_>(2)
-      mappings.head.`type` mustEqual "java.time.LocalDate"
+      mappings.head.`type` mustEqual "java\\.time\\.LocalDate"
       mappings.head.specAsParameter === List(Json.obj("type" → "string", "format" → "date"))
       mappings.head.specAsProperty must beEmpty
 
