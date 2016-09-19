@@ -194,6 +194,15 @@ The preceding example would result in output for a field with type `java.time.Lo
 }
 ```
 
+### The spec is missing when built to a docker image using sbt-native-pakcager
+
+@mosche answered this one in #114
+> It's a bit unfortunate the way the docker plugin redefines stage. 
+However, the solution is pretty simple. Just add:
+```Scala
+(stage in Docker) <<= (stage in Docker).dependsOn(swagger)
+```
+
 #### How to hide an endpoint?
 If you don't want an end point to be included, add `### NoDocs ###` in front of it 
 e.g.
