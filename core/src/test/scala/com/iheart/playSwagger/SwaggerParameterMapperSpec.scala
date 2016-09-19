@@ -71,6 +71,22 @@ class SwaggerParameterMapperSpec extends Specification {
       )
     }
 
+    "map java enum to enum constants" >> {
+      mapParam(Parameter("javaEnum", "com.iheart.playSwagger.SampleJavaEnum", None, None)) === GenSwaggerParameter(
+        name = "javaEnum",
+        `type` = Option("string"),
+        enum = Option(Seq("DISABLED", "ACTIVE"))
+      )
+    }
+
+    "map scala enum to enum constants" >> {
+      mapParam(Parameter("scalaEnum", "com.iheart.playSwagger.SampleScalaEnum.Value", None, None)) === GenSwaggerParameter(
+        name = "scalaEnum",
+        `type` = Option("string"),
+        enum = Option(Seq("One", "Two"))
+      )
+    }
+
     //TODO: for sequences, should the nested required be ignored?
     "map Option[Seq[T]] to item type" >> {
       mapParam(Parameter("aField", "Option[Seq[String]]", None, None)) === GenSwaggerParameter(

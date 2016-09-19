@@ -17,7 +17,7 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
 
-case class JavaEnumContainer(status: SampleJavaEnum)
+case class EnumContainer(javaEnum: SampleJavaEnum, scalaEnum: SampleScalaEnum.SampleScalaEnum)
 
 case class AllOptional(a: Option[String], b: Option[String])
 
@@ -101,7 +101,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
     lazy val polymorphicContainerJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
-    lazy val javaEnumContainerJson = (definitionsJson \ "com.iheart.playSwagger.JavaEnumContainer").asOpt[JsObject]
+    lazy val enumContainerJson = (definitionsJson \ "com.iheart.playSwagger.EnumContainer").asOpt[JsObject]
     lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
@@ -168,8 +168,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "read java enum with container" >> {
-      javaEnumContainerJson must beSome[JsObject]
-      (javaEnumContainerJson.get \ "properties" \ "status" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "javaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+    }
+
+    "read scala enum with container" >> {
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "scalaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("One", "Two"))
     }
 
     "definition property have no name" >> {
