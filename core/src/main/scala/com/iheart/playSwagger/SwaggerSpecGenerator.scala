@@ -299,7 +299,7 @@ final case class SwaggerSpecGenerator(
   }
 
   private[playSwagger] def fullPath(prefix: String, inRoutePath: String): String =
-    if (prefix.endsWith("/") && inRoutePath == "/") //speical case for "/p/" , "/"
+    if (prefix.endsWith("/") && inRoutePath == "/") //special/case for "/p/" , "/"
       "/" + prefix.stripPrefix("/")
     else
       "/" + List(
