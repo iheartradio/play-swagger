@@ -2,8 +2,8 @@
 ### NoDocs ###
 GET     /                           controllers.HomeController.index
 
-# An example controller showing how to use dependency injection
-GET     /count                      controllers.CountController.count
+->      /math                       math.Routes
+
 
 ###
 #  summary: Get a message
