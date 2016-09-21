@@ -17,7 +17,7 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
 
-case class JavaEnumContainer(status: SampleJavaEnum)
+case class EnumContainer(javaEnum: SampleJavaEnum, scalaEnum: SampleScalaEnum.SampleScalaEnum)
 
 case class AllOptional(a: Option[String], b: Option[String])
 
@@ -46,8 +46,12 @@ class SwaggerSpecGeneratorSpec extends Specification {
       gen.fullPath("p/", "/d//c") === "/p/d//c"
     }
 
-    "respect top level trailing slash" >> {
+    "respect trailing slash from previous element when in route path is root /" >> {
       gen.fullPath("p/", "/") === "/p/"
+    }
+
+    "remove top level trailing slash" >> {
+      gen.fullPath("p", "/") === "/p"
     }
 
   }
@@ -59,7 +63,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
       result must beSome[CustomMappings]
       val mappings = result.get
       mappings.size must be_>(2)
-      mappings.head.`type` mustEqual "java.time.LocalDate"
+      mappings.head.`type` mustEqual "java\\.time\\.LocalDate"
       mappings.head.specAsParameter === List(Json.obj("type" → "string", "format" → "date"))
       mappings.head.specAsProperty must beEmpty
 
@@ -93,7 +97,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
     lazy val playerJson = (pathJson \ "/api/player/{pid}/context/{bid}" \ "get").as[JsObject]
     lazy val playerAddTrackJson = (pathJson \ "/api/player/{pid}/playedTracks" \ "post").as[JsObject]
-    lazy val resourceJson = (pathJson \ "/api/resource/").as[JsObject]
+    lazy val resourceJson = (pathJson \ "/api/resource").as[JsObject]
     lazy val allOptionalDefJson = (definitionsJson \ "com.iheart.playSwagger.AllOptional").as[JsObject]
     lazy val artistDefJson = (definitionsJson \ "com.iheart.playSwagger.Artist").as[JsObject]
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
@@ -101,7 +105,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
     lazy val polymorphicContainerJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
-    lazy val javaEnumContainerJson = (definitionsJson \ "com.iheart.playSwagger.JavaEnumContainer").asOpt[JsObject]
+    lazy val enumContainerJson = (definitionsJson \ "com.iheart.playSwagger.EnumContainer").asOpt[JsObject]
     lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
@@ -168,8 +172,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "read java enum with container" >> {
-      javaEnumContainerJson must beSome[JsObject]
-      (javaEnumContainerJson.get \ "properties" \ "status" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "javaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+    }
+
+    "read scala enum with container" >> {
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "scalaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("One", "Two"))
     }
 
     "definition property have no name" >> {
@@ -250,7 +259,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "parse controller with custom namespace" >> {
-      (pathJson \ "/api/customResource/" \ "get").asOpt[JsObject] must beSome[JsObject]
+      (pathJson \ "/api/customResource" \ "get").asOpt[JsObject] must beSome[JsObject]
     }
 
     "parse class referenced in option type" >> {

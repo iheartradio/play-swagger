@@ -3,6 +3,7 @@ package com.iheart.playSwagger
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
+import scala.reflect.runtime.universe
 
 import scala.util.Try
 
@@ -52,14 +53,9 @@ object SwaggerParameterMapper {
         enum = enum
       )
 
-    def getJavaEnum(tpeName: String): Option[Class[java.lang.Enum[_]]] = {
-      Try(cl.loadClass(tpeName)).toOption.filter(_.isEnum).map(_.asInstanceOf[Class[java.lang.Enum[_]]])
-    }
-
     val enumParamMF: MappingFunction = {
-      case tpe if getJavaEnum(tpe).isDefined ⇒
-        val enumConstants = getJavaEnum(tpe).get.getEnumConstants.map(_.toString).toSeq
-        genSwaggerParameter("string", enum = Option(enumConstants))
+      case JavaEnum(enumConstants)  ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case ScalaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
     }
 
     def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
@@ -141,6 +137,34 @@ object SwaggerParameterMapper {
 
   implicit class CaseInsensitiveRegex(sc: StringContext) {
     def ci = ("(?i)" + sc.parts.mkString).r
+  }
+
+  /**
+   * Unapply the type by name and return the Java enum constants if those exist.
+   */
+  private object JavaEnum {
+    def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
+      Try(cl.loadClass(tpeName)).toOption.filter(_.isEnum).map(_.getEnumConstants.map(_.toString))
+    }
+  }
+
+  /**
+   * Unapply the type by name and return the Scala enum constants if those exist.
+   */
+  private object ScalaEnum {
+    def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
+      if (tpeName.endsWith(".Value")) {
+        Try {
+          val mirror = universe.runtimeMirror(cl)
+          val module = mirror.reflectModule(mirror.staticModule(tpeName.stripSuffix(".Value")))
+          for {
+            enum ← Option(module.instance).toSeq if enum.isInstanceOf[Enumeration]
+            value ← enum.asInstanceOf[Enumeration].values.asInstanceOf[Iterable[Enumeration#Value]]
+          } yield value.toString
+        }.toOption.filterNot(_.isEmpty)
+      } else
+        None
+    }
   }
 
 }

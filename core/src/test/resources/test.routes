@@ -40,7 +40,7 @@ POST     /somethingPolymorphic             controllers.Player.somethingPolymorph
 #    - name: body
 #      description: java enum example
 #      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.JavaEnumContainer'
+#        $ref: '#/definitions/com.iheart.playSwagger.EnumContainer'
 ###
 POST     /somethingWithEnum                controllers.Player.somethingWithEnum()
 
