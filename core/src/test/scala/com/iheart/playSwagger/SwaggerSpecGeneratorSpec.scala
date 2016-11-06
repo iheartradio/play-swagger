@@ -388,6 +388,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       required.value must contain(JsString("keeper"))
     }
 
+    "add operation ids" >> {
+      (addTrackJson \ "operationId").as[String] ==== "addPlayedTracks"
+    }
+
     // TODO: routes order
 
   }
