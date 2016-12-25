@@ -13,6 +13,9 @@ case class FooWithSeq(seq: Seq[SeqItem])
 
 case class SeqItem(bar: String)
 
+case class FooWithWrappedStringProperties(required: WrappedString, optional: Option[WrappedString], seq: Seq[WrappedString])
+case class WrappedString(value: String)
+
 case class FooWithSeq2(abc1: Seq[Bar.Bar], abc2: Seq[Seq[Bar.Foo]])
 
 object Bar {
@@ -134,6 +137,40 @@ class DefinitionGeneratorSpec extends Specification {
         val result = DefinitionGenerator("com.iheart", mappings).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
         prop.specAsParameter === customJson
+      }
+    }
+
+    "with property overrides" >> {
+      val customJson = List(Json.obj("type" → "string"))
+      val customMapping = CustomTypeMapping(
+        `type` = "com.iheart.playSwagger.WrappedString",
+        specAsParameter = customJson
+      )
+      val generator = DefinitionGenerator("com.iheart", List(customMapping))
+      val definition = generator.definition[FooWithWrappedStringProperties]
+
+      "support simple property types" >> {
+        val requiredParam = definition.properties.find(_.name == "required").get
+        requiredParam must beAnInstanceOf[CustomSwaggerParameter]
+        val parameter = requiredParam.asInstanceOf[CustomSwaggerParameter]
+        parameter.required must beTrue
+        parameter.specAsParameter mustEqual customJson
+      }
+
+      "support optional property types" >> {
+        val optionalParam = definition.properties.find(_.name == "optional").get
+        optionalParam must beAnInstanceOf[CustomSwaggerParameter]
+        val parameter = optionalParam.asInstanceOf[CustomSwaggerParameter]
+        parameter.required must beFalse
+        parameter.specAsParameter mustEqual customJson
+      }
+
+      "support element overrides in seq" >> {
+        val seqParam = definition.properties.find(_.name == "seq").get
+        seqParam must beAnInstanceOf[GenSwaggerParameter]
+        seqParam.asInstanceOf[GenSwaggerParameter].items must beSome(beAnInstanceOf[CustomSwaggerParameter])
+        val items = seqParam.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[CustomSwaggerParameter]
+        items.specAsParameter mustEqual customJson
       }
     }
   }
