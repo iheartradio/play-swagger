@@ -141,6 +141,8 @@ Add the following to your route file
 ### NoDocs ###
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 
+### NoDocs ###
+GET   /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)
 ```
 
 The sbt-play-swagger plugin will generate the swagger.json on `sbt run` or `sbt package`

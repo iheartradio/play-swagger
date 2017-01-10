@@ -376,7 +376,11 @@ final case class SwaggerSpecGenerator(
 
     val parameterJson = if (mergedParams.value.nonEmpty) Json.obj("parameters" → mergedParams) else Json.obj()
 
-    val rawPathJson = tag.fold(Json.obj()) { t ⇒
+    val operationId = Json.obj(
+      "operationId" → route.call.method
+    )
+
+    val rawPathJson = operationId ++ tag.fold(Json.obj()) { t ⇒
       Json.obj("tags" → List(t))
     } ++ jsonFromComment.getOrElse(Json.obj()) ++ parameterJson
 

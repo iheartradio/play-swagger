@@ -23,6 +23,7 @@ TaskKey[Unit]("check") := {
       |   "paths":{
       |      "/tracks/{trackId}":{
       |         "get":{
+      |           "operationId":"versioned",
       |            "tags":[
       |               "${swaggerRoutesFile.value}"
       |            ],
