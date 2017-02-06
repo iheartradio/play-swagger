@@ -289,6 +289,28 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       }
     }
 
+    "parse param with default string value as optional field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParamString" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "strFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+
+        (paramJson \ "default").as[String] === "defaultValue"
+      }
+    }
+
     "should contain schemas in responses" >> {
       (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.FooWithSeq2")
     }

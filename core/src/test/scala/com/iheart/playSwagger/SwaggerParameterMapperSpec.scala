@@ -117,6 +117,15 @@ class SwaggerParameterMapperSpec extends Specification {
       parameter.asInstanceOf[GenSwaggerParameter].`type` must beSome("string")
       parameter.asInstanceOf[GenSwaggerParameter].format must beNone
     }
+
+    "map default field to to content without quotes for String" >> {
+      mapParam(Parameter("strField", "String", None, Some("defaultValue"))) === GenSwaggerParameter(
+        name = "strField",
+        `type` = Option("string"),
+        required = false,
+        default = Option(JsString("defaultValue"))
+      )
+    }
   }
 }
 

@@ -6,5 +6,6 @@
 ###
 GET     /:name    com.iheart.controllers.Students.get(name)
 
-PUT     /defaultValueParam   com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
+PUT     /defaultValueParam          com.iheart.controllers.DefaultValueParam.put(aFlag:Boolean ?= true)
+PUT     /defaultValueParamString    com.iheart.controllers.DefaultValueParam.put(strFlag:String ?= "defaultValue")
 

@@ -34,7 +34,11 @@ object SwaggerParameterMapper {
           case ci"Int" | ci"Long"                      ⇒ JsNumber(value.toLong)
           case ci"Double" | ci"Float" | ci"BigDecimal" ⇒ JsNumber(value.toDouble)
           case ci"Boolean"                             ⇒ JsBoolean(value.toBoolean)
-          case _                                       ⇒ JsString(value)
+          case ci"String" ⇒ {
+            val noquotes: String = "^(?:\"|\"\"\")?(.*?)(?:\"|\"\"\")?$".r.replaceAllIn(value, "$1")
+            JsString(noquotes)
+          }
+          case _ ⇒ JsString(value)
         }
       }
     }
