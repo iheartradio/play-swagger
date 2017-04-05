@@ -276,9 +276,14 @@ final case class SwaggerSpecGenerator(
 
   private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
     JsObject {
-      routes.flatMap(endPointEntry(_, prefix, tag))
-        .groupBy(_._1) // Routes grouped by path
-        .mapValues(_.map(_._2).reduce(_ deepMerge _))
+      val endPointEntries = routes.flatMap(route ⇒ endPointEntry(route, prefix, tag))
+
+      val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
+      import collection.mutable.LinkedHashMap
+      val lhm = LinkedHashMap(zgbp.toSeq sortBy (_._2.head._2): _*)
+      val gbp2 = lhm mapValues (_ map (_._1)) toSeq
+
+      gbp2.toSeq.map(x ⇒ (x._1, x._2.map(_._2).reduce(_ deepMerge _)))
     }
   }
 
