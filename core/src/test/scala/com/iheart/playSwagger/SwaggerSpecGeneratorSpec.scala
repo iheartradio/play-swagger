@@ -435,7 +435,29 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (addTrackJson \ "operationId").as[String] ==== "addPlayedTracks"
     }
 
-    // TODO: routes order
+    "should maintain route file order" >> {
+      // use students routes
+
+      val pathJsonObj = pathJson.as[JsObject]
+      val fieldKeys: Seq[String] = pathJsonObj.fields.map(_._1)
+      val fieldsWithIndexMap = fieldKeys.zipWithIndex.toMap
+
+      val first = fieldsWithIndexMap.get("/api/students/{name}")
+      val second = fieldsWithIndexMap.get("/api/students/defaultValueParam")
+      val third = fieldsWithIndexMap.get("/api/students/defaultValueParamString")
+      val fourth = fieldsWithIndexMap.get("/api/students/defaultValueParamString3")
+
+      // all paths must be retrieved
+      first must beSome[Int]
+      second must beSome[Int]
+      third must beSome[Int]
+      fourth must beSome[Int]
+
+      // must be in exact order with nothing inbetween 
+      second.get - first.get === 1
+      third.get - second.get === 1
+      fourth.get - third.get === 1
+    }
 
   }
 
