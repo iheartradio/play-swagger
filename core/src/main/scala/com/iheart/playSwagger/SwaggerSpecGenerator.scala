@@ -278,6 +278,7 @@ final case class SwaggerSpecGenerator(
     JsObject {
       val endPointEntries = routes.flatMap(route ⇒ endPointEntry(route, prefix, tag))
 
+      // maintain the routes order as per the original routing file
       val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
       import collection.mutable.LinkedHashMap
       val lhm = LinkedHashMap(zgbp.toSeq sortBy (_._2.head._2): _*)
