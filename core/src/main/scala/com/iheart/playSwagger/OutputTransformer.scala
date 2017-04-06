@@ -67,5 +67,5 @@ class PlaceholderVariablesTransformer(map: String ⇒ Option[String], pattern: R
 }
 
 final case class MapVariablesTransformer(map: Map[String, String]) extends PlaceholderVariablesTransformer(map.get)
-object EnvironmentVariablesTransformer extends PlaceholderVariablesTransformer((key: String) ⇒ Option(System.getenv(key)))
+class EnvironmentVariablesTransformer extends PlaceholderVariablesTransformer((key: String) ⇒ Option(System.getenv(key)))
 
