@@ -100,6 +100,13 @@ Also in build.sbt add domain package names for play-swagger to auto generate swa
 swaggerDomainNameSpaces := Seq("models")
 ```
 
+You can also use markup on your swagger files by providing OutputTransformers classes to the variable `swaggerOutputTransformers` on your build file.
+
+For example you can use environment variables by adding the configuration:
+```
+    swaggerOutputTransformers := Seq("com.iheart.playSwagger.EnvironmentVariablesTransformer")
+```
+
 This plugin adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
 
 This plugin will generate the `swagger.json`and make it available under path `assets/swagger.json` on `sbt package` and `sbt run`.
