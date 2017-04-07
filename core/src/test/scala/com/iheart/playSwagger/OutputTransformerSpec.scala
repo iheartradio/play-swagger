@@ -2,7 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import org.specs2.mutable.Specification
-import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
+import play.api.libs.json._
 
 import scala.util.{Failure, Success}
 
@@ -134,7 +134,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
       val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
       val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
 
-      (addTrackJson \ "parameters" \ (0) \ "description").as[String] === "Add tracks"
+      ((addTrackJson \ "parameters").as[JsArray].value.head \ "description").as[String] === "Add tracks"
       (stationJson \ "responses" \ "200" \ "description").as[String] === "Last track"
     }
   }
