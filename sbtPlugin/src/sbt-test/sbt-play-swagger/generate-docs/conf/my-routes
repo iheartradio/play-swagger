@@ -3,6 +3,7 @@
 #  summary: Get the track metadata
 #  responses:
 #    200:
+#      summary: ${PATH}
 #      schema:
 #        $ref: '#/definitions/namespace2.Track'
 ###

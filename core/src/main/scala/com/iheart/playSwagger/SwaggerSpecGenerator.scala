@@ -3,6 +3,7 @@ package com.iheart.playSwagger
 import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
+import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import play.api.libs.json._
 import ResourceReader.read
 import org.yaml.snakeyaml.Yaml
@@ -17,13 +18,17 @@ object SwaggerSpecGenerator {
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
+  }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
 }
 
 final case class SwaggerSpecGenerator(
-  modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
-  defaultPostBodyFormat: String               = "application/json"
+  modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
+  defaultPostBodyFormat: String                 = "application/json",
+  outputTransformers:    Seq[OutputTransformer] = Nil
 )(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{customMappingsFileName, baseSpecFileName, MissingBaseSpecException}
   // routes with their prefix
@@ -90,7 +95,12 @@ final case class SwaggerSpecGenerator(
     }
 
     // starts with empty prefix, assuming that the routesFile is the outermost (usually 'routes')
-    loop("", routesFile).map(generateFromRoutes(_, base))
+    loop("", routesFile).flatMap { data ⇒
+      val result: JsObject = generateFromRoutes(data, base)
+      val initial = SimpleOutputTransformer(Success[JsObject])
+      val mapper = outputTransformers.foldLeft[OutputTransformer](initial)(_ >=> _)
+      mapper(result)
+    }
   }
 
   /**
@@ -276,9 +286,15 @@ final case class SwaggerSpecGenerator(
 
   private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
     JsObject {
-      routes.flatMap(endPointEntry(_, prefix, tag))
-        .groupBy(_._1) // Routes grouped by path
-        .mapValues(_.map(_._2).reduce(_ deepMerge _))
+      val endPointEntries = routes.flatMap(route ⇒ endPointEntry(route, prefix, tag))
+
+      // maintain the routes order as per the original routing file
+      val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
+      import collection.mutable.LinkedHashMap
+      val lhm = LinkedHashMap(zgbp.toSeq sortBy (_._2.head._2): _*)
+      val gbp2 = lhm mapValues (_ map (_._1)) toSeq
+
+      gbp2.toSeq.map(x ⇒ (x._1, x._2.map(_._2).reduce(_ deepMerge _)))
     }
   }
 

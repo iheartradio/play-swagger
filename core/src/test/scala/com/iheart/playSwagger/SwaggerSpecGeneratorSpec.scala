@@ -289,6 +289,49 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       }
     }
 
+    "parse param with default triple quoted string value as optional field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParamString3" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "strFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+        (paramJson \ "default").as[String] === """defaultValue with triple quotes"""
+      }
+    }
+
+    "parse param with default string value as optional field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParamString" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "strFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+
+        (paramJson \ "default").as[String] === "defaultValue"
+      }
+    }
+
     "should contain schemas in responses" >> {
       (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.FooWithSeq2")
     }
@@ -392,7 +435,29 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (addTrackJson \ "operationId").as[String] ==== "addPlayedTracks"
     }
 
-    // TODO: routes order
+    "should maintain route file order" >> {
+      // use students routes
+
+      val pathJsonObj = pathJson.as[JsObject]
+      val fieldKeys: Seq[String] = pathJsonObj.fields.map(_._1)
+      val fieldsWithIndexMap = fieldKeys.zipWithIndex.toMap
+
+      val first = fieldsWithIndexMap.get("/api/students/{name}")
+      val second = fieldsWithIndexMap.get("/api/students/defaultValueParam")
+      val third = fieldsWithIndexMap.get("/api/students/defaultValueParamString")
+      val fourth = fieldsWithIndexMap.get("/api/students/defaultValueParamString3")
+
+      // all paths must be retrieved
+      first must beSome[Int]
+      second must beSome[Int]
+      third must beSome[Int]
+      fourth must beSome[Int]
+
+      // must be in exact order with nothing inbetween 
+      second.get - first.get === 1
+      third.get - second.get === 1
+      fourth.get - third.get === 1
+    }
 
   }
 

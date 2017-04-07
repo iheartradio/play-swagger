@@ -14,6 +14,10 @@ swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
 swaggerRoutesFile := "my-routes"
 
+swaggerOutputTransformers := Seq(envOutputTransformer)
+
+val pathVal = System.getenv("PATH")
+
 TaskKey[Unit]("check") := {
 
   def uniform(jsString: String): String = pretty(render(parse(jsString)))
@@ -30,6 +34,7 @@ TaskKey[Unit]("check") := {
       |            "summary":"Get the track metadata",
       |            "responses":{
       |               "200":{
+      |                  "summary": "$pathVal",
       |                  "schema":{
       |                     "$$ref":"#/definitions/namespace2.Track"
       |                  }
