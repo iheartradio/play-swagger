@@ -3,6 +3,7 @@ package com.iheart.playSwagger
 import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
+import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import play.api.libs.json._
 import ResourceReader.read
 import org.yaml.snakeyaml.Yaml
@@ -17,13 +18,17 @@ object SwaggerSpecGenerator {
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
   def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
+  }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
 }
 
 final case class SwaggerSpecGenerator(
-  modelQualifier:        DomainModelQualifier = PrefixDomainModelQualifier(),
-  defaultPostBodyFormat: String               = "application/json"
+  modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
+  defaultPostBodyFormat: String                 = "application/json",
+  outputTransformers:    Seq[OutputTransformer] = Nil
 )(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{customMappingsFileName, baseSpecFileName, MissingBaseSpecException}
   // routes with their prefix
@@ -90,7 +95,12 @@ final case class SwaggerSpecGenerator(
     }
 
     // starts with empty prefix, assuming that the routesFile is the outermost (usually 'routes')
-    loop("", routesFile).map(generateFromRoutes(_, base))
+    loop("", routesFile).flatMap { data ⇒
+      val result: JsObject = generateFromRoutes(data, base)
+      val initial = SimpleOutputTransformer(Success[JsObject])
+      val mapper = outputTransformers.foldLeft[OutputTransformer](initial)(_ >=> _)
+      mapper(result)
+    }
   }
 
   /**
