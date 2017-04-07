@@ -14,7 +14,7 @@ swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
 swaggerRoutesFile := "my-routes"
 
-swaggerOutputTransformers := Seq("com.iheart.playSwagger.EnvironmentVariablesTransformer")
+swaggerOutputTransformers := Seq(envOutputTransformer)
 
 val pathVal = System.getenv("PATH")
 
