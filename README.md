@@ -264,5 +264,17 @@ or if you took the [alternative setup](docs/AlternativeSetup.md)
 SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 ```
 
+#### How do I change the location of the swagger documentation in the packaged app?
+In build.sbt, add
+```scala
+swaggerTarget := "path/to/swagger/location"
+```
+
+#### How do I change the filename of the swagger documentation in the packaged app?
+In build.sbt, add
+```scala
+swaggerFileName := "customSwagger.json"
+```
+
 #### Where to find more examples?
 In the [tests](/core/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
