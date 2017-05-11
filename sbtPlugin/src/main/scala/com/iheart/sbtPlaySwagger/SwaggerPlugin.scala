@@ -31,7 +31,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerFileName := "swagger.json",
     swaggerRoutesFile := "routes",
     swaggerOutputTransformers := Seq(),
-    swagger <<= Def.task[File] {
+    swagger := Def.task[File] {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
@@ -40,12 +40,12 @@ object SwaggerPlugin extends AutoPlugin {
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))
       file
-    },
+    }.value,
     unmanagedResourceDirectories in Assets += swaggerTarget.value,
     mappings in (Compile, packageBin) += (swaggerTarget.value / swaggerFileName.value) → s"public/${swaggerFileName.value}", //include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
-    packageBin in Universal <<= (packageBin in Universal).dependsOn(swagger),
-    run <<= (run in Compile).dependsOn(swagger),
-    stage <<= stage.dependsOn(swagger)
+    packageBin in Universal := (packageBin in Universal).dependsOn(swagger).value,
+    run := (run in Compile).dependsOn(swagger).evaluated,
+    stage := stage.dependsOn(swagger).value
   )
 }
 
