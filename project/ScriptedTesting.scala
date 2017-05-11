@@ -11,6 +11,6 @@ object ScriptedTesting {
       "-Xmx1024M",
       "-Dplugin.version=" + version.value
     ),
-    test in Test <<= (test in Test).dependsOn(scripted.toTask(""))
+    test in Test := (test in Test).dependsOn(scripted.toTask("")).value
   )
 }
