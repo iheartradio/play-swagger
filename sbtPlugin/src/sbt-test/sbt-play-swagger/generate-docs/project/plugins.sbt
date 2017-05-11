@@ -1,7 +1,7 @@
 logLevel in update := sbt.Level.Warn
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.1")
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.3")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.6")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.14")
 
 {
   val pluginVersion = System.getProperty("plugin.version")
