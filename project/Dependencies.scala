@@ -2,8 +2,8 @@ import sbt._
 
 object Dependencies {
   object Versions {
-    val play = "2.5.3"
-    val specs2 = "3.6.6"
+    val play = "2.5.14"
+    val specs2 = "3.8.9"
   }
 
   val playTest = Seq(
