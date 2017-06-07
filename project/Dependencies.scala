@@ -2,7 +2,8 @@ import sbt._
 
 object Dependencies {
   object Versions {
-    val play = "2.6.0-M5"
+    val play = "2.6.0-RC2"
+    val playJson = "2.6.0-RC2"
     val specs2 = "3.8.9"
   }
 
@@ -15,11 +16,11 @@ object Dependencies {
   )
 
   val playJson = Seq(
-    "com.typesafe.play" %% "play-json" % Versions.play % "provided"
+    "com.typesafe.play" %% "play-json" % Versions.playJson % "provided"
   )
 
   val yaml = Seq(
-    "org.yaml" % "snakeyaml" % "1.16"
+    "org.yaml" % "snakeyaml" % "1.18"
   )
 
   val test = Seq(
