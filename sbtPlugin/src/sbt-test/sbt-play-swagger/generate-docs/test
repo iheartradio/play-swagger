@@ -6,13 +6,13 @@
 
 
 $ absent target/jar/public/swagger.json
-$ exec unzip -q target/scala-2.11/app_2.11-0.1-SNAPSHOT.jar -d target/jar
+> unzip1
 $ exists target/jar/public/swagger.json
 
 
 $ absent target/dist/jar/public/swagger.json
-$ exec unzip -q target/universal/app-0.1-SNAPSHOT.zip -d target/dist
-$ exec unzip -q target/dist/app-0.1-SNAPSHOT/lib/app.app-0.1-SNAPSHOT-sans-externalized.jar -d target/dist/jar
+> unzip2
+> unzip3
 $ exists target/dist/jar/public/swagger.json
 
 
@@ -20,6 +20,6 @@ $ exists target/dist/jar/public/swagger.json
 > stage
 
 $ absent target/jar/public/swagger.json
-$ exec unzip -q target/universal/stage/lib/app.app-0.1-SNAPSHOT-sans-externalized.jar -d target/jar
+> unzip4
 $ exists target/jar/public/swagger.json
 

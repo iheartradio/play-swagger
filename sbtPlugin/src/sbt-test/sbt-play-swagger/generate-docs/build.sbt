@@ -34,7 +34,7 @@ TaskKey[Unit]("check") := {
       |            "summary":"Get the track metadata",
       |            "responses":{
       |               "200":{
-      |                  "summary": "$pathVal",
+      |                  "summary": "${pathVal.replace("\\", "\\\\")}",
       |                  "schema":{
       |                     "$$ref":"#/definitions/namespace2.Track"
       |                  }
@@ -148,4 +148,28 @@ TaskKey[Unit]("check") := {
          $left
        """.stripMargin)
   }
+}
+
+TaskKey[Unit]("unzip1") := {
+  val from = new File("target/scala-2.11/app_2.11-0.1-SNAPSHOT.jar")
+  val to = new File("target/jar")
+  IO.unzip(from, to)
+}
+
+TaskKey[Unit]("unzip2") := {
+  val from = new File("target/universal/app-0.1-SNAPSHOT.zip")
+  val to = new File("target/dist")
+  IO.unzip(from, to)
+}
+
+TaskKey[Unit]("unzip3") := {
+  val from = new File("target/dist/app-0.1-SNAPSHOT/lib/app.app-0.1-SNAPSHOT-sans-externalized.jar")
+  val to = new File("target/dist/jar")
+  IO.unzip(from, to)
+}
+
+TaskKey[Unit]("unzip4") := {
+  val from = new File("target/universal/stage/lib/app.app-0.1-SNAPSHOT-sans-externalized.jar")
+  val to = new File("target/jar")
+  IO.unzip(from, to)
 }
