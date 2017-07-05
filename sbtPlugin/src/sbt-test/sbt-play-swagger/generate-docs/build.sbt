@@ -151,7 +151,7 @@ TaskKey[Unit]("check") := {
 }
 
 TaskKey[Unit]("unzip1") := {
-  val from = new File("target/scala-2.11/app_2.11-0.1-SNAPSHOT.jar")
+  val from = new File("target/scala-2.12/app_2.12-0.1-SNAPSHOT.jar")
   val to = new File("target/jar")
   IO.unzip(from, to)
 }

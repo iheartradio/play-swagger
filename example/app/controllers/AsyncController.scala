@@ -20,7 +20,7 @@ import scala.concurrent.duration._
  * asynchronous code.
  */
 @Singleton
-class AsyncController @Inject() (actorSystem: ActorSystem)(implicit exec: ExecutionContext) extends Controller {
+class AsyncController @Inject() (actorSystem: ActorSystem, components: ControllerComponents)(implicit exec: ExecutionContext) extends AbstractController(components) {
   implicit val fmt = Json.format[Message]
   /**
    * Create an Action that returns a plain text message after a delay
