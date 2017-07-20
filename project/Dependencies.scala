@@ -1,22 +1,34 @@
 import sbt._
+import Keys._
 
 object Dependencies {
   object Versions {
-    val play = "2.5.14"
     val specs2 = "3.8.9"
+    val play = Def.setting {
+      scalaBinaryVersion.value match {
+        case "2.12" => "2.6.1"
+        case _ => "2.5.14"
+      }
+    }
   }
 
-  val playTest = Seq(
-    "com.typesafe.play" %% "play-test" % Versions.play % Test
-  )
+  val playTest = Def.setting {
+    Seq(
+      "com.typesafe.play" %% "play-test" % Versions.play.value % Test
+    )
+  }
 
-  val playRoutesCompiler = Seq(
-    "com.typesafe.play" %% "routes-compiler" % Versions.play
-  )
+  val playRoutesCompiler = Def.setting {
+    Seq(
+      "com.typesafe.play" %% "routes-compiler" % Versions.play.value
+    )
+  }
 
-  val playJson = Seq(
-    "com.typesafe.play" %% "play-json" % Versions.play % "provided"
-  )
+  val playJson = Def.setting {
+    Seq(
+      "com.typesafe.play" %% "play-json" % Versions.play.value % "provided"
+    )
+  }
 
   val yaml = Seq(
     "org.yaml" % "snakeyaml" % "1.16"

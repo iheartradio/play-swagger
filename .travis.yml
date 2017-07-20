@@ -6,7 +6,7 @@ services:
    - docker
 
 scala:
-   - 2.11.7
+   - 2.11.11
    
 jdk:
    - oraclejdk8
@@ -18,7 +18,7 @@ cache:
   - $HOME/.sbt/boot/
 
 script:
-  - sbt clean sbtPlaySwagger/test
-  - sbt ';project playSwagger;clean;coverage;test'
+  - sbt scripted
+  - sbt ';+clean;coverage;+test'
 after_success:
-  - sbt ';project playSwagger;coverageReport;coveralls'
+  - sbt ';+coverageReport;+coveralls'
