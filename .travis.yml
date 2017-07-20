@@ -19,6 +19,6 @@ cache:
 
 script:
   - sbt scripted
-  - sbt ';+clean;coverage;+test'
+  - sbt ';+playSwagger/clean;playSwagger/coverage;+playSwagger/test'
 after_success:
-  - sbt ';+coverageReport;+coveralls'
+  - sbt ';+playSwagger/coverageReport;+playSwagger/coveralls'
