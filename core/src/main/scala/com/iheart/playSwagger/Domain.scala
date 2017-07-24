@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import play.api.libs.json.{JsObject, JsValue}
+import play.api.libs.json.{JsObject, JsPath, JsValue, Reads}
 import play.twirl.api.TemplateMagic.Default
 
 object Domain {
@@ -55,5 +55,15 @@ object Domain {
     specAsProperty:  Option[JsObject] = None,
     required:        Boolean          = true
   )
+
+  object CustomTypeMapping {
+    import play.api.libs.functional.syntax._
+    implicit val csmFormat: Reads[CustomTypeMapping] = (
+      (JsPath \ 'type).read[String] and
+      (JsPath \ 'specAsParameter).read[List[JsObject]] and
+      (JsPath \ 'specAsProperty).readNullable[JsObject] and
+      ((JsPath \ 'required).read[Boolean] orElse Reads.pure(true))
+    )(CustomTypeMapping.apply _)
+  }
 }
 
