@@ -122,7 +122,7 @@ object SwaggerParameterMapper {
             mapping.specAsParameter,
             mapping.specAsProperty,
             default = defaultValueO,
-            required = defaultValueO.isEmpty
+            required = defaultValueO.isEmpty && mapping.required
           )
       }
       mf

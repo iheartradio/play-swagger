@@ -57,7 +57,6 @@ class SwaggerSpecGeneratorSpec extends Specification {
   }
 
   "getCfgFile" >> {
-    implicit val cmf = Json.reads[CustomTypeMapping]
     "valid swagger-custom-mappings yml" >> {
       val result = gen.readCfgFile[CustomMappings]("swagger-custom-mappings.yml")
       result must beSome[CustomMappings]
