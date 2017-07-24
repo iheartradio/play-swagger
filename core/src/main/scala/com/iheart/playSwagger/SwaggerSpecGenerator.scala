@@ -236,7 +236,12 @@ final case class SwaggerSpecGenerator(
   private lazy val defaultBase: JsObject = readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
 
   private lazy val customMappings: CustomMappings = {
-    implicit val csmFormat = Json.reads[CustomTypeMapping]
+    implicit val csmFormat: Reads[CustomTypeMapping] = (
+      (JsPath \ 'type).read[String] and
+      (JsPath \ 'specAsParameter).read[List[JsObject]] and
+      (JsPath \ 'specAsProperty).readNullable[JsObject] and
+      ((JsPath \ 'required).read[Boolean] orElse Reads.pure(true))
+    )(CustomTypeMapping.apply _)
     readYmlOrJson[CustomMappings](customMappingsFileName).getOrElse(Nil)
   }
 

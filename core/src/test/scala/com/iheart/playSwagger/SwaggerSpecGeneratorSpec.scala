@@ -57,7 +57,13 @@ class SwaggerSpecGeneratorSpec extends Specification {
   }
 
   "getCfgFile" >> {
-    implicit val cmf = Json.reads[CustomTypeMapping]
+    import play.api.libs.functional.syntax._
+    implicit val csmFormat: Reads[CustomTypeMapping] = (
+      (JsPath \ 'type).read[String] and
+      (JsPath \ 'specAsParameter).read[List[JsObject]] and
+      (JsPath \ 'specAsProperty).readNullable[JsObject] and
+      ((JsPath \ 'required).read[Boolean] orElse Reads.pure(true))
+    )(CustomTypeMapping.apply _)
     "valid swagger-custom-mappings yml" >> {
       val result = gen.readCfgFile[CustomMappings]("swagger-custom-mappings.yml")
       result must beSome[CustomMappings]

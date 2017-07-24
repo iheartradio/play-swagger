@@ -52,7 +52,8 @@ object Domain {
   case class CustomTypeMapping(
     `type`:          String,
     specAsParameter: List[JsObject]   = Nil,
-    specAsProperty:  Option[JsObject] = None
+    specAsProperty:  Option[JsObject] = None,
+    required:        Boolean          = true
   )
 }
 
