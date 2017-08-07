@@ -113,7 +113,7 @@ Alternatively, you can create a controller that uses play-swagger lib to generat
 
 
 #### Step 2
-Add a base swagger.yml (or swagger.json) to your resources (for example, conf folder in the play application). This one needs to provide all the required fields according to swagger spec.
+Add a base `swagger.yml` (or `swagger.json`) to your `resources` folder (for example, conf folder in the play application). This file needs to provide all the required fields according to swagger spec.
 
 E.g.
 ```yml
