@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.Domain.{ CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter }
 import play.api.libs.json._
 import play.routes.compiler.Parameter
 import scala.reflect.runtime.universe
@@ -14,8 +14,7 @@ object SwaggerParameterMapper {
   def mapParam(
     parameter:      Parameter,
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-    customMappings: CustomMappings       = Nil
-  )(implicit cl: ClassLoader): SwaggerParameter = {
+    customMappings: CustomMappings       = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
 
     def removeKnownPrefixes(name: String) = name.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
 
@@ -50,16 +49,14 @@ object SwaggerParameterMapper {
     def genSwaggerParameter(
       tp:     String,
       format: Option[String]      = None,
-      enum:   Option[Seq[String]] = None
-    ) =
+      enum:   Option[Seq[String]] = None) =
       GenSwaggerParameter(
         parameter.name,
         `type` = Some(tp),
         format = format,
         required = defaultValueO.isEmpty,
         default = defaultValueO,
-        enum = enum
-      )
+        enum = enum)
 
     val enumParamMF: MappingFunction = {
       case JavaEnum(enumConstants)  ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
@@ -108,9 +105,7 @@ object SwaggerParameterMapper {
         // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
         updateGenParam(generalParamMF("array"))(_.copy(
           items = Some(
-            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings)
-          )
-        ))
+            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings))))
     }
 
     val customMappingMF: MappingFunction = customMappings.map { mapping ⇒
@@ -122,8 +117,7 @@ object SwaggerParameterMapper {
             mapping.specAsParameter,
             mapping.specAsProperty,
             default = defaultValueO,
-            required = defaultValueO.isEmpty && mapping.required
-          )
+            required = defaultValueO.isEmpty && mapping.required)
       }
       mf
     }.foldLeft[MappingFunction](PartialFunction.empty)(_ orElse _)
@@ -135,8 +129,7 @@ object SwaggerParameterMapper {
       customMappingMF,
       enumParamMF,
       referenceParamMF,
-      generalParamMF
-    ).reduce(_ orElse _)(typeName)
+      generalParamMF).reduce(_ orElse _)(typeName)
 
   }
 

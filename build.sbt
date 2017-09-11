@@ -1,9 +1,6 @@
 
 organization in ThisBuild := "com.iheart"
 
-resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
-
-
 lazy val noPublishSettings = Seq(
   publish := (),
   publishLocal := (),
@@ -24,14 +21,14 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playJson ++
       Dependencies.test ++
       Dependencies.yaml,
-    scalaVersion := "2.11.7"
+    scalaVersion := "2.11.11"
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(Publish.sbtPluginSettings ++ Format.settings ++ ScriptedTesting.settings)
   .settings(
-    addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.6" % Provided),
-    addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.3.0" % Provided))
+    addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.2.2" % Provided),
+    addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.4.3" % Provided))
   .enablePlugins(BuildInfoPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version),

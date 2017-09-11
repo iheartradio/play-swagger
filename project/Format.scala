@@ -4,9 +4,8 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
 object Format {
   lazy val settings = SbtScalariform.scalariformSettings ++ Seq(
-    ScalariformKeys.preferences in Compile  := formattingPreferences,
-    ScalariformKeys.preferences in Test     := formattingPreferences
-  )
+    ScalariformKeys.preferences in Compile := formattingPreferences,
+    ScalariformKeys.preferences in Test := formattingPreferences)
 
   def formattingPreferences = {
     import scalariform.formatter.preferences._

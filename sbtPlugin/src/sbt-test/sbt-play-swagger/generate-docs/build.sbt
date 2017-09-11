@@ -8,7 +8,7 @@ enablePlugins(PlayScala, SwaggerPlugin)
 
 name := "app"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
