@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{CustomMappings, SwaggerParameter, GenSwaggerParameter, Definition}
+import com.iheart.playSwagger.Domain.{ CustomMappings, SwaggerParameter, GenSwaggerParameter, Definition }
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
 
@@ -8,8 +8,7 @@ import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
   modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil
-)(implicit cl: ClassLoader) {
+  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -33,8 +32,7 @@ final case class DefinitionGenerator(
 
     Definition(
       name = tpe.typeSymbol.fullName,
-      properties = properties
-    )
+      properties = properties)
   }
 
   def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
@@ -76,9 +74,7 @@ final case class DefinitionGenerator(
 object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings
-  )(implicit cl: ClassLoader): DefinitionGenerator =
+    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings
-    )
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
 }
