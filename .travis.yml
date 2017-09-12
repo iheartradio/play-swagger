@@ -6,11 +6,10 @@ services:
    - docker
 
 scala:
-   - 2.11.7
+   - 2.11.11
    
 jdk:
    - oraclejdk8
-
 
 cache:
   directories:

@@ -1,14 +1,13 @@
 import org.json4s._
-
 import org.json4s.native.JsonMethods._
-import org.json4s.native.JsonMethods
+
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
 
 name := "app"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 

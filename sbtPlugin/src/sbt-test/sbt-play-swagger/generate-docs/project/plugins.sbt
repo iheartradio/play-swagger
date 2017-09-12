@@ -1,7 +1,7 @@
 logLevel in update := sbt.Level.Warn
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.6")
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.14")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.2.2")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.16")
 
 {
   val pluginVersion = System.getProperty("plugin.version")
@@ -10,6 +10,5 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.14")
                                   |Specify this property using the scriptedLaunchOpts -D.""".stripMargin)
   else addSbtPlugin("com.iheart" % "sbt-play-swagger" % pluginVersion)
 }
-
 
 libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.10"
