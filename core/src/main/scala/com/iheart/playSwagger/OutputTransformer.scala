@@ -3,10 +3,10 @@ package com.iheart.playSwagger
 import java.util.regex.Pattern
 
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import play.api.libs.json.{JsArray, JsString, JsValue, JsObject}
+import play.api.libs.json.{ JsArray, JsString, JsValue, JsObject }
 
 import scala.util.matching.Regex
-import scala.util.{Success, Failure, Try}
+import scala.util.{ Success, Failure, Try }
 
 /** Specialization of a Kleisli function (A => M[B])*/
 trait OutputTransformer extends (JsObject ⇒ Try[JsObject]) {

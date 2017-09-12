@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{CustomTypeMapping, CustomMappings}
+import com.iheart.playSwagger.Domain.{ CustomTypeMapping, CustomMappings }
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -345,9 +345,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
         "type" → "object",
         "properties" → Json.obj(
           "id" → Json.obj("type" → "string"),
-          "value" → Json.obj("type" → "string")
-        )
-      )
+          "value" → Json.obj("type" → "string")))
     }
 
     "definition properties does not contain 'required' boolean field" >> {
@@ -452,7 +450,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       third must beSome[Int]
       fourth must beSome[Int]
 
-      // must be in exact order with nothing inbetween 
+      // must be in exact order with nothing inbetween
       second.get - first.get === 1
       third.get - second.get === 1
       fourth.get - third.get === 1

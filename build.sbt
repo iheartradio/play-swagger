@@ -24,7 +24,7 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playJson ++
       Dependencies.test ++
       Dependencies.yaml,
-    scalaVersion := "2.11.7"
+    scalaVersion := "2.11.11"
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))

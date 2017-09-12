@@ -1,8 +1,8 @@
 package com.iheart.playSwagger
 
-import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.nio.file.{ Files, Paths, StandardOpenOption }
 
-import scala.util.{Success, Failure, Try}
+import scala.util.{ Success, Failure, Try }
 
 object SwaggerSpecRunner extends App {
   implicit def cl = getClass.getClassLoader

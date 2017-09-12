@@ -20,7 +20,7 @@ import filters.ExampleFilter
  */
 @Singleton
 class Filters @Inject() (
-  env: Environment,
+  env:           Environment,
   exampleFilter: ExampleFilter) extends HttpFilters {
 
   override val filters = {
