@@ -10,7 +10,7 @@ lazy val noPublishSettings = Seq(
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(sourcesInBase := false)
-  .settings(noPublishSettings:_*)
+  .settings(noPublishSettings: _*)
 
 lazy val playSwagger = project.in(file("core"))
   .settings(Publish.coreSettings ++ Format.settings ++ Testing.settings)
@@ -38,4 +38,11 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     sbtPlugin := true,
     scalaVersion := "2.10.6",
     scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated
+  ).settings(
+    scalaVersion := "2.12.2",
+    sbtVersion in Global := "1.0.1",
+    scalaCompilerBridgeSource := {
+      val sv = appConfiguration.value.provider.id.version
+      ("org.scala-sbt" % "compiler-interface" % sv % "component").sources
+    }
   )

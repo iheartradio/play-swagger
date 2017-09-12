@@ -11,4 +11,4 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.16")
   else addSbtPlugin("com.iheart" % "sbt-play-swagger" % pluginVersion)
 }
 
-libraryDependencies += "org.json4s" %% "json4s-native" % "3.5.3"
+libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.10"

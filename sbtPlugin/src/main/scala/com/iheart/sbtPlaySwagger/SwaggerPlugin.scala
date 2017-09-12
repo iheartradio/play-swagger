@@ -38,7 +38,7 @@ object SwaggerPlugin extends AutoPlugin {
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
         swaggerDomainNameSpaces.value.mkString(",") :: swaggerOutputTransformers.value.mkString(",") :: Nil
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
-      runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).foreach(sys.error)
+      runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log)
       file
     }.value,
     unmanagedResourceDirectories in Assets += swaggerTarget.value,

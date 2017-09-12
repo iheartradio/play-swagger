@@ -1,7 +1,6 @@
 import org.json4s._
-
 import org.json4s.native.JsonMethods._
-import org.json4s.native.JsonMethods
+
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
