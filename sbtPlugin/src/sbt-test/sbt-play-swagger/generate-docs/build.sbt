@@ -1,7 +1,6 @@
-import org.json4s._
+import spray.json._
+import DefaultJsonProtocol._
 
-import org.json4s.native.JsonMethods._
-import org.json4s.native.JsonMethods
 logLevel in update := sbt.Level.Warn
 
 enablePlugins(PlayScala, SwaggerPlugin)
@@ -20,7 +19,8 @@ val pathVal = System.getenv("PATH")
 
 TaskKey[Unit]("check") := {
 
-  def uniform(jsString: String): String = pretty(render(parse(jsString)))
+  def uniform(jsString: String): String = jsString.parseJson.prettyPrint
+
   val expected = uniform(
     s"""
       |{
