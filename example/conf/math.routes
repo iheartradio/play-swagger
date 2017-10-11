@@ -1,2 +1,2 @@
 # An example controller showing how to use dependency injection
-GET      /     controllers.math.CountController.count
+GET      /count     controllers.math.CountController.count
