@@ -11,7 +11,7 @@ import SwaggerParameterMapper.mapParam
 import scala.collection.immutable.ListMap
 import play.routes.compiler._
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 
 object SwaggerSpecGenerator {
   private val marker = "##"
@@ -28,9 +28,8 @@ object SwaggerSpecGenerator {
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String                 = "application/json",
-  outputTransformers:    Seq[OutputTransformer] = Nil
-)(implicit cl: ClassLoader) {
-  import SwaggerSpecGenerator.{customMappingsFileName, baseSpecFileName, MissingBaseSpecException}
+  outputTransformers:    Seq[OutputTransformer] = Nil)(implicit cl: ClassLoader) {
+  import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
   type Routes = (String, Seq[Route])
 
@@ -46,8 +45,7 @@ final case class SwaggerSpecGenerator(
 
   private[playSwagger] def generateFromRoutesFile(
     routesFile: String   = defaultRoutesFile,
-    base:       JsObject = Json.obj()
-  ): Try[JsObject] = {
+    base:       JsObject = Json.obj()): Try[JsObject] = {
 
     def tagFromFile(file: String) = file.replace(routesExt, "")
 
@@ -121,8 +119,7 @@ final case class SwaggerSpecGenerator(
 
   private[playSwagger] def generateWithBase(
     paths:    ListMap[String, JsObject],
-    baseJson: JsObject                  = Json.obj()
-  ): JsObject = {
+    baseJson: JsObject                  = Json.obj()): JsObject = {
     val pathsJson = paths.values.reduce(_ ++ _)
     val allRefs = (pathsJson ++ baseJson) \\ "$ref"
 
@@ -142,18 +139,15 @@ final case class SwaggerSpecGenerator(
     //TODO: remove hardcoded path
     val generatedTagsJson = JsArray(
       paths.keys
-      //.filterNot(_ == RoutesFileReader.rootRoute)
-      .map(tag ⇒ Json.obj("name" → tag)).toSeq
-    )
+        //.filterNot(_ == RoutesFileReader.rootRoute)
+        .map(tag ⇒ Json.obj("name" → tag)).toSeq)
 
     val tagsJson = mergeByName(generatedTagsJson, (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray()))
 
     Json.obj(
       "paths" → pathsJson,
-      "definitions" → definitionsJson
-    ).deepMerge(baseJson) + (
-        "tags" → tagsJson
-      )
+      "definitions" → definitionsJson).deepMerge(baseJson) + (
+        "tags" → tagsJson)
   }
 
   private val referencePrefix = "#/definitions/"
@@ -171,8 +165,7 @@ final case class SwaggerSpecGenerator(
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "schema").writeNullable[String](refWrite) ~
     (__ \ "items").writeNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]]
-  )(unlift(GenSwaggerParameter.unapply))
+    (__ \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
 
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
     csp.specAsParameter match {
@@ -180,10 +173,8 @@ final case class SwaggerSpecGenerator(
         val w = (
           (__ \ 'name).write[String] ~
           (__ \ 'required).write[Boolean] ~
-          (__ \ 'default).writeNullable[JsValue]
-        )(
-            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default)
-          )
+          (__ \ 'default).writeNullable[JsValue])(
+            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default))
 
         (w.writes(csp) ++ head) :: tail
       case Nil ⇒ Nil
@@ -207,8 +198,7 @@ final case class SwaggerSpecGenerator(
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "$ref").writeNullable[String] ~
     (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]]
-  )(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
+    (__ \ "enum").writeNullable[Seq[String]])(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
@@ -225,8 +215,7 @@ final case class SwaggerSpecGenerator(
   private implicit val defFormat: Writes[Definition] = (
     (__ \ 'description).writeNullable[String] ~
     (__ \ 'properties).write[Seq[SwaggerParameter]] ~
-    (__ \ 'required).writeNullable[Seq[String]]
-  )((d: Definition) ⇒ (d.description, d.properties, requiredProperties(d.properties)))
+    (__ \ 'required).writeNullable[Seq[String]])((d: Definition) ⇒ (d.description, d.properties, requiredProperties(d.properties)))
 
   private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
     val required = properties.filter(_.required).map(_.name)
@@ -319,8 +308,7 @@ final case class SwaggerSpecGenerator(
     else
       "/" + List(
         prefix.stripPrefix("/").stripSuffix("/"),
-        inRoutePath.stripPrefix("/")
-      ).filterNot(_.isEmpty).
+        inRoutePath.stripPrefix("/")).filterNot(_.isEmpty).
         mkString("/")
 
   // Multiple routes may have the same path, merge the objects instead of overwriting
@@ -392,8 +380,7 @@ final case class SwaggerSpecGenerator(
     val parameterJson = if (mergedParams.value.nonEmpty) Json.obj("parameters" → mergedParams) else Json.obj()
 
     val operationId = Json.obj(
-      "operationId" → route.call.method
-    )
+      "operationId" → route.call.method)
 
     val rawPathJson = operationId ++ tag.fold(Json.obj()) { t ⇒
       Json.obj("tags" → List(t))

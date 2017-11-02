@@ -2,7 +2,7 @@ package com.iheart.sbtPlaySwagger
 
 import java.io.File
 
-import sbt.{SettingKey, TaskKey}
+import sbt.{ SettingKey, TaskKey }
 
 trait SwaggerKeys {
   val swagger = TaskKey[File]("swagger", "generates the swagger API documentation")

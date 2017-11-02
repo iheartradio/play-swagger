@@ -131,9 +131,7 @@ class DefinitionGeneratorSpec extends Specification {
         val mappings = List(
           CustomTypeMapping(
             `type` = "org.joda.time.DateTime",
-            specAsParameter = customJson
-          )
-        )
+            specAsParameter = customJson))
         val result = DefinitionGenerator("com.iheart", mappings).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
         prop.specAsParameter === customJson
@@ -144,8 +142,7 @@ class DefinitionGeneratorSpec extends Specification {
       val customJson = List(Json.obj("type" → "string"))
       val customMapping = CustomTypeMapping(
         `type` = "com.iheart.playSwagger.WrappedString",
-        specAsParameter = customJson
-      )
+        specAsParameter = customJson)
       val generator = DefinitionGenerator("com.iheart", List(customMapping))
       val definition = generator.definition[FooWithWrappedStringProperties]
 

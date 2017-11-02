@@ -6,7 +6,7 @@ import models.Message
 import play.api._
 import play.api.libs.json.Json
 import play.api.mvc._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ ExecutionContext, Future, Promise }
 import scala.concurrent.duration._
 
 /**
@@ -31,7 +31,7 @@ class AsyncController @Inject() (actorSystem: ActorSystem, components: Controlle
    * a path of `/message`.
    */
   def message = Action.async {
-    getFutureMessage(1.second).map { msg => Ok(Json.toJson(msg)) }
+    getFutureMessage(1.second).map { msg ⇒ Ok(Json.toJson(msg)) }
   }
 
   private def getFutureMessage(delayTime: FiniteDuration): Future[Message] = {

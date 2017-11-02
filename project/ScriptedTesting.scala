@@ -9,8 +9,6 @@ object ScriptedTesting {
     scriptedBufferLog := false,
     scriptedLaunchOpts := scriptedLaunchOpts.value ++ Seq(
       "-Xmx1024M",
-      "-Dplugin.version=" + version.value
-    ),
-    test in Test := (test in Test).dependsOn(scripted.toTask("")).value
-  )
+      "-Dplugin.version=" + version.value),
+    test in Test := (test in Test).dependsOn(scripted.toTask("")).value)
 }
