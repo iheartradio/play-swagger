@@ -24,14 +24,14 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playJson ++
       Dependencies.test ++
       Dependencies.yaml,
-    scalaVersion := "2.12.2"
+    scalaVersion := "2.12.4"
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
-  .settings(Publish.sbtPluginSettings ++ Format.settings ++ ScriptedTesting.settings)
+  .settings(Publish.sbtPluginSettings ++ Format.settings)
   .settings(
-    addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.6" % Provided),
-    addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.4.0" % Provided))
+    addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.1" % Provided),
+    addSbtPlugin("com.typesafe.sbt" %% "sbt-web" % "1.4.3" % Provided))
   .enablePlugins(BuildInfoPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version),
@@ -39,6 +39,6 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     name := "sbt-play-swagger",
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
-    scalaVersion := "2.10.6",
+    scalaVersion := "2.12.4",
     scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated
   )
