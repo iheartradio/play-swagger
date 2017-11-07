@@ -8,7 +8,7 @@ import sbt.{ AutoPlugin, _ }
 import com.typesafe.sbt.web.Import._
 
 object SwaggerPlugin extends AutoPlugin {
-  lazy val swaggerConfig = config("play-swagger").hide
+  lazy val SwaggerConfig = config("play-swagger").hide
   lazy val playSwaggerVersion = com.iheart.playSwagger.BuildInfo.version
 
   object autoImport extends SwaggerKeys
@@ -19,13 +19,13 @@ object SwaggerPlugin extends AutoPlugin {
 
   import autoImport._
 
-  override def projectConfigurations: Seq[Configuration] = Seq(swaggerConfig)
+  override def projectConfigurations: Seq[Configuration] = Seq(SwaggerConfig)
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    ivyConfigurations += swaggerConfig,
+    ivyConfigurations += SwaggerConfig,
     resolvers += Resolver.jcenterRepo,
     //todo: remove hardcoded org name using BuildInfo
-    libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % swaggerConfig,
+    libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % SwaggerConfig,
     swaggerDomainNameSpaces := Seq(),
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
@@ -37,7 +37,7 @@ object SwaggerPlugin extends AutoPlugin {
       IO.delete(file)
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
         swaggerDomainNameSpaces.value.mkString(",") :: swaggerOutputTransformers.value.mkString(",") :: Nil
-      val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
+      val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
       runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).failed foreach (sys error _.getMessage)
       file
     }.value,
