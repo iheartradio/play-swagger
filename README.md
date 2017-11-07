@@ -92,7 +92,7 @@ addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
 
 For play 2.6 and sbt 1.0 please use 
 ```scala
-addSbtPlugin("com.iheart" %% "sbt-play-swagger" % "0.7.0")
+addSbtPlugin("com.iheart" %% "sbt-play-swagger" % "0.7.1")
 ```
 
 For play 2.4 please use a special release build with play 2.4 binary (No longer maintained after 0.6.0)
