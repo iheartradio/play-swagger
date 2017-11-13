@@ -8,4 +8,5 @@ case class Track(
   artist:  Artist,
   related: Seq[Artist],
   numbers: Seq[Int],
+  album:   Album,
   length:  java.time.Duration)
