@@ -4,6 +4,10 @@ In short you need to create a controller that uses the library to generate the s
 #### Step 1
 Follow the [Step 1](../README.md#step-1) from the main README.
 
+Note:
+  It is sufficient to only add Play swagger as a library dependency in your `build.sbt` rather than a plugin in this setup.
+  You'll need to add `Resolver.jcenterRepo` to your `resolvers`.
+
 #### Step 2
 Add a controller that uses  Play swagger as a library to generates a swagger spec json and serves it as an endpoint.
 
