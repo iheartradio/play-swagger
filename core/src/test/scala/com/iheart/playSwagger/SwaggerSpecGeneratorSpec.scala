@@ -460,7 +460,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "should retain $refs in 'swagger-custom-mappings'" >> {
-      (definitionsJson \ "com.iheart.playSwagger.Child").isDefined === true
+      (definitionsJson \ "com.iheart.playSwagger.Child").toOption.isDefined === true
     }
   }
 
