@@ -289,3 +289,18 @@ Then on your routes file or root swagger file you can use some markup like the o
 ```
 
 This way when the swagger file is parsed the markup `${API_HOST}` is going to be substituted by the content of the environent variable `API_HOST`.
+
+#### How to support OpenAPI/Swagger v3
+You can produce swagger files for v3 by setting the flag:
+```
+  swaggerV3 := true
+```
+
+Make sure you also update your swagger markup to specify that you are using OpenAPI v3:
+```
+  openapi: 3.0.0
+  info:
+    title: "API"
+    description: "REST API"
+    version: "1.0.0"
+```
