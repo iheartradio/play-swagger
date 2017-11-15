@@ -17,7 +17,9 @@ object SwaggerSpecGenerator {
   private val marker = "##"
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
-  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+  }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
   }
@@ -28,7 +30,8 @@ object SwaggerSpecGenerator {
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String                 = "application/json",
-  outputTransformers:    Seq[OutputTransformer] = Nil)(implicit cl: ClassLoader) {
+  outputTransformers:    Seq[OutputTransformer] = Nil,
+  swaggerV3:             Boolean                = false)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -152,13 +155,19 @@ final case class SwaggerSpecGenerator(
 
     val tagsJson = mergeByName(generatedTagsJson, (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray()))
 
-    Json.obj(
+    val pathsAndDefinitionsJson = Json.obj(
       "paths" → pathsJson,
-      "definitions" → definitionsJson).deepMerge(baseJson) + (
-        "tags" → tagsJson)
+      if (swaggerV3) {
+        "components" → Json.obj(
+          "schemas" -> definitionsJson)
+      } else {
+        "definitions" → definitionsJson
+      })
+
+    pathsAndDefinitionsJson.deepMerge(baseJson) + ("tags" → tagsJson)
   }
 
-  private val referencePrefix = "#/definitions/"
+  private def referencePrefix = if (swaggerV3) "#/components/schemas/" else "#/definitions/"
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
 
@@ -401,4 +410,3 @@ final case class SwaggerSpecGenerator(
     else rawPathJson
   }
 }
-

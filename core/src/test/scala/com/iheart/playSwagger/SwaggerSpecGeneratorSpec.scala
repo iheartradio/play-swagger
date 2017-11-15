@@ -90,7 +90,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
     }
 
-    lazy val json = SwaggerSpecGenerator("com.iheart").generate("test.routes").get
+    lazy val json = SwaggerSpecGenerator(false, "com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]
@@ -464,5 +464,14 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
   }
 
+  "integration v3" >> {
+    lazy val json = SwaggerSpecGenerator(true, "com.iheart").generate("testV3.routes").get
+    lazy val componentSchemasJson = json \ "components" \ "schemas"
+    lazy val trackJson = (componentSchemasJson \ "com.iheart.playSwagger.Track").as[JsObject]
+
+    "read definition from referenceTypes" >> {
+      (trackJson \ "properties" \ "name" \ "type").as[String] === "string"
+    }
+  }
 }
 

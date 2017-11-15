@@ -7,9 +7,10 @@ import scala.util.{ Success, Failure, Try }
 object SwaggerSpecRunner extends App {
   implicit def cl = getClass.getClassLoader
 
-  val (targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: Nil) = args.toList
+  val (targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: Nil) = args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
+    val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)
     val domainModelQualifier = PrefixDomainModelQualifier(domainNameSpaceArgs.split(","): _*)
     val transformersStrs: Seq[String] = if (outputTransformersArgs.isEmpty) Seq() else outputTransformersArgs.split(",")
     val transformers = transformersStrs.map { clazz ⇒
@@ -20,7 +21,10 @@ object SwaggerSpecRunner extends App {
         case Success(el) ⇒ el
       }
     }
-    SwaggerSpecGenerator(domainModelQualifier, outputTransformers = transformers).generate(routesFile).get.toString
+    SwaggerSpecGenerator(
+      domainModelQualifier,
+      outputTransformers = transformers,
+      swaggerV3 = swaggerV3).generate(routesFile).get.toString
   }
 
   Files.write(fileArg, swaggerJson.getBytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
