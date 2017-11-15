@@ -159,7 +159,7 @@ final case class SwaggerSpecGenerator(
     pathsAndDefinitionsJson.deepMerge(baseJson) + ("tags" → tagsJson)
   }
 
-  private val referencePrefix = "#/definitions/"
+  private def referencePrefix = if (swaggerV3) "#/components/schemas/" else "#/definitions/"
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
 

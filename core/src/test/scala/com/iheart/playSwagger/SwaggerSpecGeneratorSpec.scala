@@ -459,7 +459,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
   }
 
   "integration v3" >> {
-    lazy val json = SwaggerSpecGenerator(true, "com.iheart").generate("test.routes").get
+    lazy val json = SwaggerSpecGenerator(true, "com.iheart").generate("testV3.routes").get
     lazy val componentSchemasJson = json \ "components" \ "schemas"
     lazy val trackJson = (componentSchemasJson \ "com.iheart.playSwagger.Track").as[JsObject]
 

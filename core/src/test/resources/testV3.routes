@@ -1,51 +1,15 @@
-GET  /abc                  com.iheart.Application.test()
+###
+#  summary: get player
+###
+GET     /:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
 
-###
-#  summary: Creates a FooWithSeq
-#  responses:
-#    200:
-#      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.FooWithSeq2'
-###
-POST /post-body            com.iheart.Application.postBody()
+GET     /:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
 
 ###
 #  parameters:
 #    - name: body
-#      description: polymorphic example
+#      description: track information
 #      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.PolymorphicContainer'
+#        $ref: '#/components/schemas/com.iheart.playSwagger.Track'
 ###
-POST     /somethingPolymorphic             controllers.Player.somethingPolymorphic()
-
-###
-#  parameters:
-#    - name: body
-#      description: java enum example
-#      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.EnumContainer'
-###
-POST     /somethingWithEnum                controllers.Player.somethingWithEnum()
-
-###
-#  parameters:
-#    - name: body
-#      description: option example
-#      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.AllOptional'
-#  responses:
-#    default:
-#      description: Something optional
-#      schema:
-#        $ref: '#/definitions/com.iheart.playSwagger.AllOptional'
-###
-POST     /somethingOptional                controllers.Player.somethingOptional()
-
-
-###
-# parameters:
-#   - name: body
-#     in: query
-#     type: string
-###
-POST  /iWantAQueryBody                     controllers.Test.queryBodyHandler(body)
+POST     /:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
