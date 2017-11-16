@@ -466,6 +466,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "read definition from referenceTypes" >> {
       (trackJson \ "properties" \ "name" \ "type").as[String] === "string"
     }
+
+    "param data type values are in the correct location" >> {
+      val contextParams = json \ "paths" \ "/{pid}/context/{bid}" \ "get" \ "parameters"
+      val schema = contextParams \ 0 \ "schema"
+      (schema \ "type").as[String] === "string"
+      (schema \ "required").as[Boolean] === true
+    }
   }
 }
 

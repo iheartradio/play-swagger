@@ -6,10 +6,10 @@ GET     /:pid/context/:bid                controllers.Player.getPlayer(pid, bid)
 GET     /:pid/tracks/search               controllers.Player.searchTrack(pid, keyword)
 
 ###
-#  parameters:
-#    - name: body
-#      description: track information
-#      schema:
-#        $ref: '#/components/schemas/com.iheart.playSwagger.Track'
+#  requestBody:
+#    content:
+#      application/json:
+#        schema:
+#          $ref: '#/components/schemas/com.iheart.playSwagger.Track'
 ###
 POST     /:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
