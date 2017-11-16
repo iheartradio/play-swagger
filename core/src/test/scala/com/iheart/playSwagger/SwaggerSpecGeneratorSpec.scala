@@ -21,6 +21,9 @@ case class EnumContainer(javaEnum: SampleJavaEnum, scalaEnum: SampleScalaEnum.Sa
 
 case class AllOptional(a: Option[String], b: Option[String])
 
+trait Parent
+case class Child(name: String) extends Parent
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
   val gen = SwaggerSpecGenerator()
@@ -456,6 +459,9 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       fourth.get - third.get === 1
     }
 
+    "should retain $refs in 'swagger-custom-mappings'" >> {
+      (definitionsJson \ "com.iheart.playSwagger.Child").toOption.isDefined === true
+    }
   }
 
   "integration v3" >> {
