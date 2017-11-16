@@ -174,29 +174,18 @@ final case class SwaggerSpecGenerator(
   import play.api.libs.functional.syntax._
 
   private lazy val genParamWrites: OWrites[GenSwaggerParameter] = {
-    val commonFields = (__ \ 'name).write[String] ~
-        (__ \ "schema").writeNullable[String](refWrite)
+    val under = if (swaggerV3) __ \ "schema" else __
 
-
-    (if (swaggerV3) {
-      commonFields ~
-      (__ \ "schema" \ 'type).writeNullable[String] ~
-      (__ \ "schema" \ 'format).writeNullable[String] ~
-      (__ \ "schema" \ 'required).write[Boolean] ~
-      (__ \ "schema" \ 'default).writeNullable[JsValue] ~
-      (__ \ "schema" \ 'example).writeNullable[JsValue] ~
-      (__ \ "schema" \ "items").writeNullable[SwaggerParameter](propWrites) ~
-      (__ \ "schema" \ "enum").writeNullable[Seq[String]]
-    } else {
-      commonFields ~
-      (__ \ 'type).writeNullable[String] ~
-      (__ \ 'format).writeNullable[String] ~
-      (__ \ 'required).write[Boolean] ~
-      (__ \ 'default).writeNullable[JsValue] ~
-      (__ \ 'example).writeNullable[JsValue] ~
-      (__ \ "items").writeNullable[SwaggerParameter](propWrites) ~
-      (__ \ "enum").writeNullable[Seq[String]]
-    }) (unlift(GenSwaggerParameter.unapply))
+    (
+      (__ \ 'name).write[String] ~
+      (__ \ "schema").writeNullable[String](refWrite) ~
+      (under \ 'type).writeNullable[String] ~
+      (under \ 'format).writeNullable[String] ~
+      (under \ 'required).write[Boolean] ~
+      (under \ 'default).writeNullable[JsValue] ~
+      (under \ 'example).writeNullable[JsValue] ~
+      (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
+      (under \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
   }
 
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
