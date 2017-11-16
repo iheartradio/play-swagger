@@ -66,3 +66,13 @@ POST     /somethingOptional                controllers.Player.somethingOptional(
 #     type: string
 ###
 POST  /iWantAQueryBody                     controllers.Test.queryBodyHandler(body)
+
+###
+#  responses:
+#    default:
+#      description: Something optional
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.Parent'
+###
+GET  /iWantAChild                     controllers.Test.queryForChild
+

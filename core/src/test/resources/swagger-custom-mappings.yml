@@ -15,3 +15,7 @@
     specAsParameter: []
     specAsProperty:
       $ref: "#/definitions/Keeper"
+  - type: com\.iheart\.playSwagger\.Parent
+    specAsParameter: []
+    specAsProperty:
+      $ref: "#/definitions/com.iheart.playSwagger.Child"

@@ -124,7 +124,15 @@ final case class SwaggerSpecGenerator(
     paths:    ListMap[String, JsObject],
     baseJson: JsObject                  = Json.obj()): JsObject = {
     val pathsJson = paths.values.reduce(_ ++ _)
-    val allRefs = (pathsJson ++ baseJson) \\ "$ref"
+
+    val refKey = "$ref"
+    val mainRefs = (pathsJson ++ baseJson) \\ refKey
+    val customMappingRefs = for {
+      customMapping ← customMappings
+      mappingsJson = customMapping.specAsProperty.toSeq ++ customMapping.specAsParameter
+      ref ← mappingsJson.flatMap(_ \\ refKey)
+    } yield ref
+    val allRefs = mainRefs ++ customMappingRefs
 
     val definitions: List[Definition] = {
       val referredClasses: Seq[String] = for {
