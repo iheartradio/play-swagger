@@ -304,3 +304,5 @@ Make sure you also update your swagger markup to specify that you are using Open
     description: "REST API"
     version: "1.0.0"
 ```
+
+Also, for `$ref` fields you will want to prefix paths with `#/components/schemas/` instead of `#/definitions/`

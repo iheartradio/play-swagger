@@ -173,16 +173,20 @@ final case class SwaggerSpecGenerator(
 
   import play.api.libs.functional.syntax._
 
-  private lazy val genParamWrites: OWrites[GenSwaggerParameter] = (
-    (__ \ 'name).write[String] ~
-    (__ \ 'type).writeNullable[String] ~
-    (__ \ 'format).writeNullable[String] ~
-    (__ \ 'required).write[Boolean] ~
-    (__ \ 'default).writeNullable[JsValue] ~
-    (__ \ 'example).writeNullable[JsValue] ~
-    (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").writeNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
+  private lazy val genParamWrites: OWrites[GenSwaggerParameter] = {
+    val under = if (swaggerV3) __ \ "schema" else __
+
+    (
+      (__ \ 'name).write[String] ~
+      (__ \ "schema").writeNullable[String](refWrite) ~
+      (under \ 'type).writeNullable[String] ~
+      (under \ 'format).writeNullable[String] ~
+      (under \ 'required).write[Boolean] ~
+      (under \ 'default).writeNullable[JsValue] ~
+      (under \ 'example).writeNullable[JsValue] ~
+      (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
+      (under \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
+  }
 
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
     csp.specAsParameter match {
