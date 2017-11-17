@@ -475,9 +475,9 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "param data type values are in the correct location" >> {
       val contextParams = json \ "paths" \ "/{pid}/context/{bid}" \ "get" \ "parameters"
-      val schema = contextParams \ 0 \ "schema"
-      (schema \ "type").as[String] === "string"
-      (schema \ "required").as[Boolean] === true
+      val firstParam = contextParams \ 0
+      (firstParam \ "schema" \ "type").as[String] === "string"
+      (firstParam \ "required").as[Boolean] === true
     }
   }
 }

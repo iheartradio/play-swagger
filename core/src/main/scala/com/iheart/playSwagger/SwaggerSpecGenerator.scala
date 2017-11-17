@@ -181,7 +181,7 @@ final case class SwaggerSpecGenerator(
       (__ \ "schema").writeNullable[String](refWrite) ~
       (under \ 'type).writeNullable[String] ~
       (under \ 'format).writeNullable[String] ~
-      (under \ 'required).write[Boolean] ~
+      (__ \ 'required).write[Boolean] ~
       (under \ 'default).writeNullable[JsValue] ~
       (under \ 'example).writeNullable[JsValue] ~
       (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
