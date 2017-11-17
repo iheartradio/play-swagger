@@ -479,6 +479,16 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (firstParam \ "schema" \ "type").as[String] === "string"
       (firstParam \ "required").as[Boolean] === true
     }
+
+    "custom param data type values are in the correct location" >> {
+      val parameters = (json \ "paths" \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
+      parameters.size === 1
+
+      val firstParam = parameters.head
+      (firstParam \ "name").as[String] === "zid"
+      (firstParam \ "schema" \ "type").as[String] === "string"
+      (firstParam \ "required").as[Boolean] === true
+    }
   }
 }
 

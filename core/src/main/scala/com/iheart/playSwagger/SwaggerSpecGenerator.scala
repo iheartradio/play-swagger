@@ -191,13 +191,18 @@ final case class SwaggerSpecGenerator(
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
     csp.specAsParameter match {
       case head :: tail ⇒
+        def prefixForV3(input: JsObject): JsObject = {
+          if (swaggerV3) Json.obj("schema" -> input) else input
+        }
+
+        val under = if (swaggerV3) __ \ "schema" else __
         val w = (
           (__ \ 'name).write[String] ~
           (__ \ 'required).write[Boolean] ~
-          (__ \ 'default).writeNullable[JsValue])(
+          (under \ 'default).writeNullable[JsValue])(
             (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default))
 
-        (w.writes(csp) ++ head) :: tail
+        (w.writes(csp) ++ prefixForV3(head)) :: tail
       case Nil ⇒ Nil
     }
   }
