@@ -22,12 +22,12 @@ object Domain {
 
   final case class GenSwaggerParameter(
     name:          String,
+    referenceType: Option[String]           = None,
     `type`:        Option[String]           = None,
     format:        Option[String]           = None,
     required:      Boolean                  = true,
     default:       Option[JsValue]          = None,
     example:       Option[JsValue]          = None,
-    referenceType: Option[String]           = None,
     items:         Option[SwaggerParameter] = None,
     enum:          Option[Seq[String]]      = None) extends SwaggerParameter {
     def update(_required: Boolean, _default: Option[JsValue]) =

@@ -11,5 +11,6 @@ trait SwaggerKeys {
   val swaggerFileName = SettingKey[String]("swaggerFileName", "the swagger filename the swagger documentation in your packaged app.")
   val swaggerRoutesFile = SettingKey[String]("swaggerRoutesFile", "the root routes file with which play-swagger start to parse")
   val swaggerOutputTransformers = SettingKey[Seq[String]]("swaggerOutputTransformers", "list of output transformers for processing swagger file")
+  val swaggerV3 = SettingKey[Boolean]("swaggerV3", "whether to to produce output compatible with Swagger 3 (also knwon as OpenAPI 3)")
   val envOutputTransformer = "com.iheart.playSwagger.EnvironmentVariablesTransformer"
 }

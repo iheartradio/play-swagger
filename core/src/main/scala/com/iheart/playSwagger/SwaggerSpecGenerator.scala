@@ -17,7 +17,9 @@ object SwaggerSpecGenerator {
   private val marker = "##"
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
-  def apply(domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*))
+  def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+  }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
   }
@@ -28,7 +30,8 @@ object SwaggerSpecGenerator {
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String                 = "application/json",
-  outputTransformers:    Seq[OutputTransformer] = Nil)(implicit cl: ClassLoader) {
+  outputTransformers:    Seq[OutputTransformer] = Nil,
+  swaggerV3:             Boolean                = false)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -121,7 +124,15 @@ final case class SwaggerSpecGenerator(
     paths:    ListMap[String, JsObject],
     baseJson: JsObject                  = Json.obj()): JsObject = {
     val pathsJson = paths.values.reduce(_ ++ _)
-    val allRefs = (pathsJson ++ baseJson) \\ "$ref"
+
+    val refKey = "$ref"
+    val mainRefs = (pathsJson ++ baseJson) \\ refKey
+    val customMappingRefs = for {
+      customMapping ← customMappings
+      mappingsJson = customMapping.specAsProperty.toSeq ++ customMapping.specAsParameter
+      ref ← mappingsJson.flatMap(_ \\ refKey)
+    } yield ref
+    val allRefs = mainRefs ++ customMappingRefs
 
     val definitions: List[Definition] = {
       val referredClasses: Seq[String] = for {
@@ -144,39 +155,54 @@ final case class SwaggerSpecGenerator(
 
     val tagsJson = mergeByName(generatedTagsJson, (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray()))
 
-    Json.obj(
+    val pathsAndDefinitionsJson = Json.obj(
       "paths" → pathsJson,
-      "definitions" → definitionsJson).deepMerge(baseJson) + (
-        "tags" → tagsJson)
+      if (swaggerV3) {
+        "components" → Json.obj(
+          "schemas" -> definitionsJson)
+      } else {
+        "definitions" → definitionsJson
+      })
+
+    pathsAndDefinitionsJson.deepMerge(baseJson) + ("tags" → tagsJson)
   }
 
-  private val referencePrefix = "#/definitions/"
+  private def referencePrefix = if (swaggerV3) "#/components/schemas/" else "#/definitions/"
 
   private val refWrite = OWrites((refType: String) ⇒ Json.obj("$ref" → JsString(referencePrefix + refType)))
 
   import play.api.libs.functional.syntax._
 
-  private lazy val genParamWrites: OWrites[GenSwaggerParameter] = (
-    (__ \ 'name).write[String] ~
-    (__ \ 'type).writeNullable[String] ~
-    (__ \ 'format).writeNullable[String] ~
-    (__ \ 'required).write[Boolean] ~
-    (__ \ 'default).writeNullable[JsValue] ~
-    (__ \ 'example).writeNullable[JsValue] ~
-    (__ \ "schema").writeNullable[String](refWrite) ~
-    (__ \ "items").writeNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
+  private lazy val genParamWrites: OWrites[GenSwaggerParameter] = {
+    val under = if (swaggerV3) __ \ "schema" else __
+
+    (
+      (__ \ 'name).write[String] ~
+      (__ \ "schema").writeNullable[String](refWrite) ~
+      (under \ 'type).writeNullable[String] ~
+      (under \ 'format).writeNullable[String] ~
+      (__ \ 'required).write[Boolean] ~
+      (under \ 'default).writeNullable[JsValue] ~
+      (under \ 'example).writeNullable[JsValue] ~
+      (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
+      (under \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
+  }
 
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
     csp.specAsParameter match {
       case head :: tail ⇒
+        def withPrefix(input: JsObject): JsObject = {
+          if (swaggerV3) Json.obj("schema" -> input) else input
+        }
+
+        val under = if (swaggerV3) __ \ "schema" else __
         val w = (
           (__ \ 'name).write[String] ~
           (__ \ 'required).write[Boolean] ~
-          (__ \ 'default).writeNullable[JsValue])(
+          (under \ 'default).writeNullable[JsValue])(
             (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default))
 
-        (w.writes(csp) ++ head) :: tail
+        (w.writes(csp) ++ withPrefix(head)) :: tail
       case Nil ⇒ Nil
     }
   }
@@ -393,4 +419,3 @@ final case class SwaggerSpecGenerator(
     else rawPathJson
   }
 }
-

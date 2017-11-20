@@ -27,6 +27,7 @@ object SwaggerPlugin extends AutoPlugin {
     //todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % SwaggerConfig,
     swaggerDomainNameSpaces := Seq(),
+    swaggerV3 := false,
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
     swaggerRoutesFile := "routes",
@@ -36,7 +37,9 @@ object SwaggerPlugin extends AutoPlugin {
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
-        swaggerDomainNameSpaces.value.mkString(",") :: swaggerOutputTransformers.value.mkString(",") :: Nil
+        swaggerOutputTransformers.value.mkString(",") ::
+        swaggerV3.value.toString ::
+        Nil
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
       runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).failed foreach (sys error _.getMessage)
       file

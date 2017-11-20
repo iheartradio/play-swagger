@@ -87,12 +87,17 @@ addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.1-PLAY2.6")
 For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the releases tab](https://github.com/iheartradio/play-swagger/releases) for the latest versions)
 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.1")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2")
 ```
 
-For play 2.6 please use a special release build with play 2.6 binary.
+For play 2.6 and sbt 0.1.3 please use a special release build with play 2.6 binary.
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.1-PLAY2.6")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
+```
+
+For play 2.6 and sbt 1.0 please use 
+```scala
+addSbtPlugin("com.iheart" %% "sbt-play-swagger" % "0.7.1")
 ```
 
 For play 2.4 please use a special release build with play 2.4 binary (No longer maintained after 0.6.0)
@@ -257,7 +262,7 @@ SwaggerSpecGenerator(domainPackage).generate("myRoutes.routes")
 #### How do I change the location of the swagger documentation in the packaged app?
 In build.sbt, add
 ```scala
-swaggerTarget := "path/to/swagger/location"
+swaggerTarget := new File("path/to/swagger/location")
 ```
 
 #### How do I change the filename of the swagger documentation in the packaged app?
@@ -289,3 +294,20 @@ Then on your routes file or root swagger file you can use some markup like the o
 ```
 
 This way when the swagger file is parsed the markup `${API_HOST}` is going to be substituted by the content of the environent variable `API_HOST`.
+
+#### How to support OpenAPI/Swagger v3
+You can produce swagger files for v3 by setting the flag:
+```
+  swaggerV3 := true
+```
+
+Make sure you also update your swagger markup to specify that you are using OpenAPI v3:
+```
+  openapi: 3.0.0
+  info:
+    title: "API"
+    description: "REST API"
+    version: "1.0.0"
+```
+
+Also, for `$ref` fields you will want to prefix paths with `#/components/schemas/` instead of `#/definitions/`
