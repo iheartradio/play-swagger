@@ -37,6 +37,7 @@ object SwaggerPlugin extends AutoPlugin {
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
+        swaggerDomainNameSpaces.value.mkString(",") ::
         swaggerOutputTransformers.value.mkString(",") ::
         swaggerV3.value.toString ::
         Nil
