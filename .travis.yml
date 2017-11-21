@@ -18,6 +18,7 @@ cache:
   - $HOME/.sbt/boot/
 
 script:
+  - sbt clean sbtPlaySwagger/publishLocal
   - sbt clean sbtPlaySwagger/scripted
   - sbt ';project playSwagger;clean;coverage;test'
 after_success:
