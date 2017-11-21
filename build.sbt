@@ -40,5 +40,11 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
     scalaVersion := "2.12.4",
-    scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated
+    scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated,
+
+    scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+      Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+    },
+    scriptedBufferLog := false
   )
+
