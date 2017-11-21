@@ -18,6 +18,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 addSbtPlugin("org.irundaia.sbt" % "sbt-sassify" % "1.4.2")
 
 // play swagger plugin
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.1-PLAY2.6")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.7.3")
 
 
