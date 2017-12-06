@@ -1,9 +1,6 @@
 
 organization in ThisBuild := "com.iheart"
 
-resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
-
-
 lazy val noPublishSettings = Seq(
   publish := (),
   publishLocal := (),

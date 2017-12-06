@@ -13,6 +13,7 @@ object SwaggerParameterMapper {
 
   def mapParam(
     parameter:      Parameter,
+    caseType:       CaseType             = CamelCase,
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
     customMappings: CustomMappings       = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
 
@@ -51,7 +52,7 @@ object SwaggerParameterMapper {
       format: Option[String]      = None,
       enum:   Option[Seq[String]] = None) =
       GenSwaggerParameter(
-        parameter.name,
+        caseType.transform(parameter.name),
         `type` = Some(tp),
         format = format,
         required = defaultValueO.isEmpty,
@@ -69,7 +70,7 @@ object SwaggerParameterMapper {
       GenSwaggerParameter(parameter.name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val asRequired = mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier, customMappings = customMappings)
+      val asRequired = mapParam(parameter.copy(typeName = optionalTpe), caseType, modelQualifier = modelQualifier, customMappings = customMappings)
       asRequired.update(required = false, default = asRequired.default)
     }
 
@@ -105,7 +106,7 @@ object SwaggerParameterMapper {
         // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
         updateGenParam(generalParamMF("array"))(_.copy(
           items = Some(
-            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings))))
+            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), caseType, modelQualifier, customMappings))))
     }
 
     val customMappingMF: MappingFunction = customMappings.map { mapping ⇒

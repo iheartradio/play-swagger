@@ -8,7 +8,8 @@ import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
   modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader) {
+  mappings:       CustomMappings       = Nil,
+  caseType:       CaseType             = CamelCase)(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -27,7 +28,7 @@ final case class DefinitionGenerator(
       val typeName = dealiasParams(field.typeSignature).toString
       // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
       val param = Parameter(name, typeName, None, None)
-      mapParam(param, modelQualifier, mappings)
+      mapParam(param, caseType, modelQualifier, mappings)
     }
 
     Definition(
@@ -74,7 +75,8 @@ final case class DefinitionGenerator(
 object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+    customParameterTypeMappings: CustomMappings,
+    caseType:                    CaseType)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, caseType)
 }

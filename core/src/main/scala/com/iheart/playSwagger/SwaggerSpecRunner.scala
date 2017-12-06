@@ -2,12 +2,12 @@ package com.iheart.playSwagger
 
 import java.nio.file.{ Files, Paths, StandardOpenOption }
 
-import scala.util.{ Success, Failure, Try }
+import scala.util.{ Failure, Success, Try }
 
 object SwaggerSpecRunner extends App {
   implicit def cl = getClass.getClassLoader
 
-  val (targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: Nil) = args.toList
+  val (targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: swaggerDefinitionsCaseType :: Nil) = args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
     val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)
@@ -21,8 +21,15 @@ object SwaggerSpecRunner extends App {
         case Success(el) ⇒ el
       }
     }
+    val caseType = swaggerDefinitionsCaseType match {
+      case "camelCase"  ⇒ CamelCase
+      case "snakeCases" ⇒ SnakeCase
+      case _            ⇒ CamelCase
+    }
+
     SwaggerSpecGenerator(
       domainModelQualifier,
+      caseType,
       outputTransformers = transformers,
       swaggerV3 = swaggerV3).generate(routesFile).get.toString
   }

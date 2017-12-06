@@ -17,11 +17,17 @@ object SwaggerSpecGenerator {
   private val marker = "##"
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
+  def apply(caseType: CaseType, swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), caseType, swaggerV3 = swaggerV3)
+  }
   def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), CamelCase, swaggerV3 = swaggerV3)
+  }
+  def apply(caseType: CaseType, outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), caseType, outputTransformers = outputTransformers)
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), CamelCase, outputTransformers = outputTransformers)
   }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
@@ -29,6 +35,7 @@ object SwaggerSpecGenerator {
 
 final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
+  caseType:              CaseType               = CamelCase,
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
   swaggerV3:             Boolean                = false)(implicit cl: ClassLoader) {
@@ -142,7 +149,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier, customMappings).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, customMappings, caseType).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
@@ -361,7 +368,7 @@ final case class SwaggerSpecGenerator(
         paramList ← route.call.parameters.toSeq
         param ← paramList
         if param.fixed.isEmpty // Removes parameters the client cannot set
-      } yield mapParam(param, modelQualifier, customMappings)
+      } yield mapParam(param, caseType, modelQualifier, customMappings)
 
       JsArray(params.flatMap { p ⇒
         val jos: List[JsObject] = p match {

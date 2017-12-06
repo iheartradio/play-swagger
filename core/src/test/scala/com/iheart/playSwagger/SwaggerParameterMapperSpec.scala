@@ -128,6 +128,22 @@ class SwaggerParameterMapperSpec extends Specification {
         required = false,
         default = Option(JsString("defaultValue")))
     }
+    "map definition name to Camel Case type" >> {
+      mapParam(Parameter("fieldWithAny", "Any", None, None), CamelCase) === GenSwaggerParameter(
+        name = "fieldWithAny",
+        `type` = Option("any"),
+        example = Option(JsString("any JSON value")))
+    }
+    "map definition name to Snake Case type" >> {
+      mapParam(Parameter("fieldWithAny", "Any", None, None), SnakeCase) === GenSwaggerParameter(
+        name = "field_with_any",
+        `type` = Option("any"),
+        example = Option(JsString("any JSON value")))
+    }
+    "map definition name to Snake Case type not to Camel case" >> {
+      val param = mapParam(Parameter("fieldWithAny", "Any", None, None), SnakeCase)
+      param.name !== "fieldWithAny"
+    }
   }
 }
 
