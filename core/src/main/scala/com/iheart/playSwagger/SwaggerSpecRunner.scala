@@ -22,9 +22,9 @@ object SwaggerSpecRunner extends App {
       }
     }
     val caseType = swaggerDefinitionsCaseType match {
-      case "camelCase"  ⇒ CamelCase
-      case "snakeCases" ⇒ SnakeCase
-      case _            ⇒ CamelCase
+      case "camelCase"  ⇒ CamelcaseTransformer
+      case "snakeCases" ⇒ SnakecaseTransformer
+      case _            ⇒ NoTransformer
     }
 
     SwaggerSpecGenerator(

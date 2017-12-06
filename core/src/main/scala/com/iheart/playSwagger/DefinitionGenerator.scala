@@ -7,9 +7,9 @@ import play.routes.compiler.Parameter
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-  modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil,
-  caseType:       CaseType             = CamelCase)(implicit cl: ClassLoader) {
+  modelQualifier:  DomainModelQualifier       = PrefixDomainModelQualifier(),
+  mappings:        CustomMappings             = Nil,
+  nameTransformer: DefinitionNameTransformer  = NoTransformer)(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -28,7 +28,7 @@ final case class DefinitionGenerator(
       val typeName = dealiasParams(field.typeSignature).toString
       // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
       val param = Parameter(name, typeName, None, None)
-      mapParam(param, caseType, modelQualifier, mappings)
+      mapParam(param, nameTransformer, modelQualifier, mappings)
     }
 
     Definition(
@@ -76,7 +76,7 @@ object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
     customParameterTypeMappings: CustomMappings,
-    caseType:                    CaseType)(implicit cl: ClassLoader): DefinitionGenerator =
+    nameTransformer:             DefinitionNameTransformer)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, caseType)
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, nameTransformer)
 }

@@ -1,10 +1,14 @@
 package com.iheart.playSwagger
 
-sealed trait CaseType {
+trait DefinitionNameTransformer {
   def transform(str: String): String
 }
 
-case object CamelCase extends CaseType {
+case object NoTransformer extends DefinitionNameTransformer {
+  override def transform(str: String) = str
+}
+
+case object CamelcaseTransformer extends DefinitionNameTransformer {
   override def transform(str: String) = {
     (str.split("_").toList match {
       case head :: tail ⇒ head :: tail.map(_.capitalize)
@@ -13,7 +17,7 @@ case object CamelCase extends CaseType {
   }
 }
 
-case object SnakeCase extends CaseType {
+case object SnakecaseTransformer extends DefinitionNameTransformer {
   override def transform(str: String) = {
     str.foldLeft(new StringBuilder) {
       case (s, c) if Character.isUpperCase(c) ⇒

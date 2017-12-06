@@ -56,7 +56,7 @@ class DefinitionGeneratorSpec extends Specification {
 
     "generate properties" >> {
 
-      val result = DefinitionGenerator("com.iheart.playSwagger", Nil, CamelCase).definition[Foo].properties
+      val result = DefinitionGenerator("com.iheart.playSwagger", Nil, NoTransformer).definition[Foo].properties
 
       result.length === 7
 
@@ -89,12 +89,12 @@ class DefinitionGeneratorSpec extends Specification {
     }
 
     "read class in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+      val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
       result.properties.head.name === "bar"
     }
 
     "read alias type in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+      val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
 
       val last = result.properties.last.asInstanceOf[GenSwaggerParameter]
       last.name === "id"
@@ -103,24 +103,24 @@ class DefinitionGeneratorSpec extends Specification {
     }
 
     "read sequence items" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.FooWithSeq")
+      val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.FooWithSeq")
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].referenceType === Some("com.iheart.playSwagger.SeqItem")
     }
 
     "read primitive sequence items" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.WithListOfPrimitive")
+      val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.WithListOfPrimitive")
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].`type` === Some("integer")
 
     }
 
     "read Optional items " >> {
-      val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.FooWithOption")
+      val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.FooWithOption")
       result.properties.head.asInstanceOf[GenSwaggerParameter].referenceType must beSome("com.iheart.playSwagger.OptionItem")
     }
 
     "with dates" >> {
       "no override" >> {
-        val result = DefinitionGenerator("com.iheart", Nil, CamelCase).definition("com.iheart.playSwagger.WithDate")
+        val result = DefinitionGenerator("com.iheart", Nil, NoTransformer).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[GenSwaggerParameter]
         prop.`type` must beSome("integer")
         prop.format must beSome("epoch")
@@ -132,7 +132,7 @@ class DefinitionGeneratorSpec extends Specification {
           CustomTypeMapping(
             `type` = "org.joda.time.DateTime",
             specAsParameter = customJson))
-        val result = DefinitionGenerator("com.iheart", mappings, CamelCase).definition("com.iheart.playSwagger.WithDate")
+        val result = DefinitionGenerator("com.iheart", mappings, NoTransformer).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
         prop.specAsParameter === customJson
       }
@@ -143,7 +143,7 @@ class DefinitionGeneratorSpec extends Specification {
       val customMapping = CustomTypeMapping(
         `type` = "com.iheart.playSwagger.WrappedString",
         specAsParameter = customJson)
-      val generator = DefinitionGenerator("com.iheart", List(customMapping), CamelCase)
+      val generator = DefinitionGenerator("com.iheart", List(customMapping), NoTransformer)
       val definition = generator.definition[FooWithWrappedStringProperties]
 
       "support simple property types" >> {
