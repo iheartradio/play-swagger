@@ -27,7 +27,7 @@ object SwaggerPlugin extends AutoPlugin {
     //todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % swaggerConfig,
     swaggerDomainNameSpaces := Seq(),
-    swaggerDefinitionNameTransformer := "com.iheart.playSwagger.DefinitionNameTransformer",
+    swaggerDefinitionNameTransformer := "com.iheart.playSwagger.NoTransformer",
     swaggerV3 := false,
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
