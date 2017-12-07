@@ -12,10 +12,10 @@ object SwaggerParameterMapper {
   type MappingFunction = PartialFunction[String, SwaggerParameter]
 
   def mapParam(
-                parameter:       Parameter,
-                nameTransformer: DefinitionNameTransformer = CamelcaseTransformer,
-                modelQualifier:  DomainModelQualifier      = PrefixDomainModelQualifier(),
-                customMappings:  CustomMappings            = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
+    parameter:       Parameter,
+    nameTransformer: DefinitionNameTransformer = new NoTransformer,
+    modelQualifier:  DomainModelQualifier      = PrefixDomainModelQualifier(),
+    customMappings:  CustomMappings            = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
 
     def removeKnownPrefixes(name: String) = name.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
 

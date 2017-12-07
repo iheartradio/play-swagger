@@ -21,24 +21,24 @@ object SwaggerSpecGenerator {
     SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), nameTransformer, swaggerV3 = swaggerV3)
   }
   def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), CamelcaseTransformer, swaggerV3 = swaggerV3)
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), new NoTransformer, swaggerV3 = swaggerV3)
   }
   def apply(nameTransformer: DefinitionNameTransformer, outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), nameTransformer, outputTransformers = outputTransformers)
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), CamelcaseTransformer, outputTransformers = outputTransformers)
+    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), new NoTransformer, outputTransformers = outputTransformers)
   }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
 }
 
 final case class SwaggerSpecGenerator(
-                                       modelQualifier:        DomainModelQualifier      = PrefixDomainModelQualifier(),
-                                       nameTransformer:       DefinitionNameTransformer = CamelcaseTransformer,
-                                       defaultPostBodyFormat: String                    = "application/json",
-                                       outputTransformers:    Seq[OutputTransformer]    = Nil,
-                                       swaggerV3:             Boolean                   = false)(implicit cl: ClassLoader) {
+  modelQualifier:        DomainModelQualifier      = PrefixDomainModelQualifier(),
+  nameTransformer:       DefinitionNameTransformer = new NoTransformer,
+  defaultPostBodyFormat: String                    = "application/json",
+  outputTransformers:    Seq[OutputTransformer]    = Nil,
+  swaggerV3:             Boolean                   = false)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
   type Routes = (String, Seq[Route])

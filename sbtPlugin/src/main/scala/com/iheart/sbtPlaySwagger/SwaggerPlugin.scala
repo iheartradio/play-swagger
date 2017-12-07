@@ -27,7 +27,7 @@ object SwaggerPlugin extends AutoPlugin {
     //todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % swaggerConfig,
     swaggerDomainNameSpaces := Seq(),
-    swaggerDefinitionsCaseType := "camelCase",
+    swaggerDefinitionNameTransformer := "com.iheart.playSwagger.DefinitionNameTransformer",
     swaggerV3 := false,
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
@@ -41,7 +41,7 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerDomainNameSpaces.value.mkString(",") ::
         swaggerOutputTransformers.value.mkString(",") ::
         swaggerV3.value.toString ::
-        swaggerDefinitionsCaseType.value ::
+        swaggerDefinitionNameTransformer.value ::
         Nil
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))

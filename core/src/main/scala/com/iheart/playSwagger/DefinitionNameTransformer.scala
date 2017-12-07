@@ -4,11 +4,11 @@ trait DefinitionNameTransformer {
   def transform(str: String): String
 }
 
-case object NoTransformer extends DefinitionNameTransformer {
+final class NoTransformer extends DefinitionNameTransformer {
   override def transform(str: String) = str
 }
 
-case object CamelcaseTransformer extends DefinitionNameTransformer {
+final class CamelcaseTransformer extends DefinitionNameTransformer {
   override def transform(str: String) = {
     (str.split("_").toList match {
       case head :: tail ⇒ head :: tail.map(_.capitalize)
@@ -17,7 +17,7 @@ case object CamelcaseTransformer extends DefinitionNameTransformer {
   }
 }
 
-case object SnakecaseTransformer extends DefinitionNameTransformer {
+final class SnakecaseTransformer extends DefinitionNameTransformer {
   override def transform(str: String) = {
     str.foldLeft(new StringBuilder) {
       case (s, c) if Character.isUpperCase(c) ⇒
