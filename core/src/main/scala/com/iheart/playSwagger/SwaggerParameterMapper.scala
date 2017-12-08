@@ -52,7 +52,7 @@ object SwaggerParameterMapper {
       format: Option[String]      = None,
       enum:   Option[Seq[String]] = None) =
       GenSwaggerParameter(
-        nameTransformer.transform(parameter.name),
+        name = nameTransformer.transform(parameter.name),
         `type` = Some(tp),
         format = format,
         required = defaultValueO.isEmpty,
