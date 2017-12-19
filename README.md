@@ -306,3 +306,8 @@ Make sure you also update your swagger markup to specify that you are using Open
 ```
 
 Also, for `$ref` fields you will want to prefix paths with `#/components/schemas/` instead of `#/definitions/`
+
+
+#### Is play java supported? 
+
+Mostly. Auto definition generation for classes only works with Java classes that have all the fields in the first constructor. 
