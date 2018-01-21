@@ -85,7 +85,7 @@ For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the rele
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.4")
 ```
 
-For play 2.6 and sbt 0.1.3 please use a special release build with play 2.6 binary.
+For play 2.6 and sbt 0.13 please use a special release build with play 2.6 binary.
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
 ```
