@@ -3,7 +3,6 @@
   info:
     title: "My API"
     description: "My API is the best"
-    version: "1.0.0"
   consumes:
     - application/json
   produces:
