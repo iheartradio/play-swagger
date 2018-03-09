@@ -127,13 +127,13 @@ E.g.
   info: 
     title: "Poweramp API"
     description: "Power your music"
-    version: "1.0.0"
   consumes:
     - application/json
   produces: 
     - application/json
 
 ```
+Note that `info.version` is intentionally left out, playSwagger will automatically fillin the build version of the project. However if the version is set here it will be honored. You can also dynamically generate the version string in build file using the `swaggerAPIVersion` setting.   
 
 #### Step 3a
 Deploy a swagger ui and point to the swagger spec end point at 'assets/swagger.json', or
@@ -284,7 +284,6 @@ Then on your routes file or root swagger file you can use some markup like the o
   info:
     title: "API"
     description: "REST API"
-    version: "1.0.0"
   host: ${API_HOST}
 ```
 

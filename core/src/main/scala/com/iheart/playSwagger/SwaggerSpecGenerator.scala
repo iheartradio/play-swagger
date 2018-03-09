@@ -31,7 +31,8 @@ final case class SwaggerSpecGenerator(
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
-  swaggerV3:             Boolean                = false)(implicit cl: ClassLoader) {
+  swaggerV3:             Boolean                = false,
+  apiVersion:            Option[String]         = None)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -42,7 +43,12 @@ final case class SwaggerSpecGenerator(
 
   val defaultRoutesFile = "routes"
 
-  def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = generateFromRoutesFile(routesFile = routesFile, base = defaultBase)
+  def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = {
+
+    val base = apiVersion.fold(defaultBase)(
+      v ⇒ Json.obj("info" -> Json.obj("version" -> v)) deepMerge defaultBase)
+    generateFromRoutesFile(routesFile = routesFile, base = base)
+  }
 
   val routesExt = ".routes"
 
