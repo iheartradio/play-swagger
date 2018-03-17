@@ -8,6 +8,8 @@ import play.api.libs.json._
 import ResourceReader.read
 import org.yaml.snakeyaml.Yaml
 import SwaggerParameterMapper.mapParam
+import com.iheart.playSwagger.Descriptions.DescriptionProvider
+
 import scala.collection.immutable.ListMap
 import play.routes.compiler._
 
@@ -39,6 +41,8 @@ final case class SwaggerSpecGenerator(
   // Mapping of the tag, which is the file the routes were read from, and the optional prefix if it was
   // included from another router. ListMap is used to maintain the original definition order
   type RoutesData = Try[ListMap[Tag, Routes]]
+
+  implicit val descriptionProvider: DescriptionProvider = Descriptions.getProvider
 
   val defaultRoutesFile = "routes"
 
@@ -135,6 +139,7 @@ final case class SwaggerSpecGenerator(
     val allRefs = mainRefs ++ customMappingRefs
 
     val definitions: List[Definition] = {
+      implicit val descriptionProvider: Descriptions.DescriptionProvider = Descriptions.getProvider
       val referredClasses: Seq[String] = for {
         refJson ← allRefs
         ref ← refJson.asOpt[String]
@@ -185,7 +190,8 @@ final case class SwaggerSpecGenerator(
       (under \ 'default).writeNullable[JsValue] ~
       (under \ 'example).writeNullable[JsValue] ~
       (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
-      (under \ "enum").writeNullable[Seq[String]])(unlift(GenSwaggerParameter.unapply))
+      (under \ "enum").writeNullable[Seq[String]] ~
+      (__ \ "description").writeNullable[String])(unlift(GenSwaggerParameter.unapply))
   }
 
   private def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
@@ -209,6 +215,7 @@ final case class SwaggerSpecGenerator(
 
   private lazy val customPropWrites: Writes[CustomSwaggerParameter] = Writes { cwp ⇒
     (__ \ 'default).writeNullable[JsValue].writes(cwp.default) ++
+      (__ \ 'description).writeNullable[String].writes(cwp.description) ++
       (cwp.specAsProperty orElse cwp.specAsParameter.headOption).getOrElse(Json.obj())
   }
 
@@ -224,7 +231,8 @@ final case class SwaggerSpecGenerator(
     (__ \ 'example).writeNullable[JsValue] ~
     (__ \ "$ref").writeNullable[String] ~
     (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]])(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
+    (__ \ "enum").writeNullable[Seq[String]] ~
+    (__ \ "description").writeNullable[String])(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum, p.description))
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
@@ -361,7 +369,10 @@ final case class SwaggerSpecGenerator(
         paramList ← route.call.parameters.toSeq
         param ← paramList
         if param.fixed.isEmpty // Removes parameters the client cannot set
-      } yield mapParam(param, modelQualifier, customMappings)
+      } yield {
+        val description = descriptionProvider.getMethodParamDescription(route.call, paramList, param)
+        mapParam(param, modelQualifier, customMappings, description)
+      }
 
       JsArray(params.flatMap { p ⇒
         val jos: List[JsObject] = p match {

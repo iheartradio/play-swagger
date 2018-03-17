@@ -1,14 +1,16 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ CustomMappings, SwaggerParameter, GenSwaggerParameter, Definition }
+import com.iheart.playSwagger.Descriptions.DescriptionProvider
+import com.iheart.playSwagger.Domain.{ CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter }
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
   modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader) {
+  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader, descriptionProvider: DescriptionProvider) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -27,12 +29,15 @@ final case class DefinitionGenerator(
       val typeName = dealiasParams(field.typeSignature).toString
       // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
       val param = Parameter(name, typeName, None, None)
-      mapParam(param, modelQualifier, mappings)
+      val description = descriptionProvider.getParamDescription(tpe.typeSymbol, name)
+      mapParam(param, modelQualifier, mappings, description)
     }
 
+    val x: universe.Symbol = tpe.typeSymbol
     Definition(
       name = tpe.typeSymbol.fullName,
-      properties = properties)
+      properties = properties,
+      description = descriptionProvider.getTypeDescription(tpe.typeSymbol))
   }
 
   def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
@@ -74,7 +79,8 @@ final case class DefinitionGenerator(
 object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader, descriptionProvider: DescriptionProvider): DefinitionGenerator = {
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
+  }
 }

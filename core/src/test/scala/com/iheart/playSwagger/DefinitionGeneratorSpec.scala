@@ -1,5 +1,6 @@
 package com.iheart.playSwagger
 
+import com.iheart.playSwagger.Descriptions.DescriptionProviderImpl
 import com.iheart.playSwagger.Domain._
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
@@ -43,6 +44,7 @@ object ExcludingDomainQualifier extends DomainModelQualifier {
 
 class DefinitionGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
+  implicit val descriptionProvider: Descriptions.DescriptionProvider = Descriptions.Empty
 
   "definition" >> {
 
@@ -178,5 +180,43 @@ class DefinitionGeneratorSpec extends Specification {
     allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.Foo") must beSome[Definition]
+  }
+
+  "description provider" >> {
+    implicit val someDescriptionProvider = new DescriptionProviderImpl(Map(
+      "com.iheart.playSwagger.Foo" -> "Some document",
+      "com.iheart.playSwagger.Foo.barStr" -> "barStr document",
+      "com.iheart.playSwagger.FooWithWrappedStringProperties" -> "FooWithWrappedStringProperties document",
+      "com.iheart.playSwagger.FooWithWrappedStringProperties.required" -> "required document"))
+
+    "describe type" >> {
+      val v = DefinitionGenerator().definition[Foo]
+      v.name === "com.iheart.playSwagger.Foo"
+      v.description === Some("Some document")
+    }
+
+    "describe values" >> {
+      val result = DefinitionGenerator("com.iheart.playSwagger", Nil).definition[Foo].properties
+      val resultMap = result.map(r ⇒ {
+        r.name -> r
+      }).toMap
+
+      val v = resultMap("barStr")
+      v.description === Some("barStr document")
+    }
+
+    "with custom mapping" >> {
+      val customJson = List(Json.obj("type" → "string"))
+      val customMapping = CustomTypeMapping(
+        `type` = "com.iheart.playSwagger.WrappedString",
+        specAsParameter = customJson)
+      val generator = DefinitionGenerator("com.iheart", List(customMapping))
+      val resultMap = generator.definition[FooWithWrappedStringProperties].properties.map(r ⇒ {
+        r.name -> r
+      }).toMap
+
+      val v = resultMap("required")
+      v.description === Some("required document")
+    }
   }
 }

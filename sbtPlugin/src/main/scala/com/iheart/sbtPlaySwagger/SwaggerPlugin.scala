@@ -32,6 +32,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerFileName := "swagger.json",
     swaggerRoutesFile := "routes",
     swaggerOutputTransformers := Seq(),
+    swaggerDescriptionFile := None,
     swagger := Def.task[File] {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
@@ -40,7 +41,10 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerDomainNameSpaces.value.mkString(",") ::
         swaggerOutputTransformers.value.mkString(",") ::
         swaggerV3.value.toString ::
-        Nil
+        Nil ++ swaggerDescriptionFile.value.map { f ⇒
+          Seq(
+            "--description-file", f.getAbsolutePath)
+        }.getOrElse(Nil)
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(swaggerConfig.name))
       toError(runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log))
       file
