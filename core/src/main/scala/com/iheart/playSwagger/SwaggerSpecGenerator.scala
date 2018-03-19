@@ -205,8 +205,9 @@ final case class SwaggerSpecGenerator(
         val w = (
           (__ \ 'name).write[String] ~
           (__ \ 'required).write[Boolean] ~
-          (under \ 'default).writeNullable[JsValue])(
-            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default))
+          (under \ 'default).writeNullable[JsValue] ~
+          (__ \ 'description).writeNullable[String])(
+            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default, c.description))
 
         (w.writes(csp) ++ withPrefix(head)) :: tail
       case Nil ⇒ Nil

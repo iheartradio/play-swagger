@@ -2,7 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Descriptions.DescriptionProviderImpl
 import org.specs2.mutable.Specification
-import play.routes.compiler.{HandlerCall, Parameter}
+import play.routes.compiler.{ HandlerCall, Parameter }
 
 class DescriptionsSpec extends Specification {
 
@@ -12,7 +12,7 @@ class DescriptionsSpec extends Specification {
     "com.example.FooController.bar(Option[Date])#date" -> "date document 3")
   val descriptionProvider = new DescriptionProviderImpl(descriptionMap)
   "DescriptionProviderImpl" >> {
-    "getMethodParamDescription should use parameterList from HandlerCall." >> {
+    "getMethodParameterDescriptionProvider should use parameterList from HandlerCall." >> {
       val p1 = Parameter("date", "Date", None, None)
       val hc = new HandlerCall(
         "com.example", "FooController", true, "foo", Some(Seq(
@@ -20,7 +20,7 @@ class DescriptionsSpec extends Specification {
       val func = descriptionProvider.getMethodParameterDescriptionProvider(hc)
       func(p1) === Some("date document 1")
     }
-    "getMethodParamDescription should remove package from parameters" >> {
+    "getMethodParameterDescriptionProvider should remove package from parameters" >> {
       val p1 = Parameter("date", "java.time.Date", None, None)
       val hc1 = new HandlerCall(
         "com.example", "FooController", true, "bar", Some(Seq(
