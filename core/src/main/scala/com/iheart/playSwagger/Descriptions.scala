@@ -12,8 +12,31 @@ object Descriptions {
 
   trait DescriptionProvider {
     def getTypeDescription(sym: universe.Symbol): Option[String]
+
     def getParamDescription(sym: universe.Symbol, param: String): Option[String]
-    def getMethodParamDescription(call: HandlerCall, paramList: Seq[Parameter], param: Parameter): Option[String]
+
+    def getMethodParameterDescriptionProvider(call: HandlerCall): Parameter ⇒ Option[String]
+  }
+
+  /**
+   * Option[java.time.Date] => ["Option", "[", "java.time.Date", "]"]
+   *
+   * @param all
+   * @param typeName
+   * @return
+   */
+  def splitTypeName(all: Seq[String], typeName: String): Seq[String] = {
+    if (typeName.isEmpty) {
+      all
+    } else {
+      val part: String = typeName.head match {
+        case '[' | ']' ⇒
+          typeName.takeWhile(ch ⇒ ch == '[' || ch == ']')
+        case _ ⇒
+          typeName.takeWhile(ch ⇒ ch != '[' && ch != ']')
+      }
+      splitTypeName(all :+ part, typeName.substring(part.length))
+    }
   }
 
   class DescriptionProviderImpl(private val map: Map[String, String]) extends DescriptionProvider {
@@ -27,14 +50,24 @@ object Descriptions {
       map.get(key)
     }
 
-    override def getMethodParamDescription(call: HandlerCall, paramList: Seq[Parameter], param: Parameter): Option[String] = {
+    override def getMethodParameterDescriptionProvider(call: HandlerCall): Parameter ⇒ Option[String] = {
+      val paramList = call.parameters.getOrElse(Nil)
       val method = Seq(
         call.packageName,
         call.controller,
         call.method).mkString(".")
-      val params = paramList.map(_.typeName).mkString(",")
-      val key = s"$method($params)#${param.name}"
-      map.get(key)
+      val params = paramList.map(p ⇒ {
+        (splitTypeName(Nil, p.typeName) map { typeName ⇒
+          typeName.lastIndexOf(".") match {
+            case -1 ⇒ typeName
+            case n  ⇒ typeName.takeRight(typeName.length - n - 1)
+          }
+        }).mkString
+      }).mkString(",")
+      val methodKey = s"$method($params)"
+
+      def _provide(p: Parameter): Option[String] = map.get(s"$methodKey#${p.name}")
+      _provide
     }
   }
 
@@ -65,7 +98,8 @@ object Descriptions {
 
     override def getParamDescription(sym: universe.Symbol, param: String): Option[String] = None
 
-    override def getMethodParamDescription(call: HandlerCall, paramList: Seq[Parameter], param: Parameter): Option[String] = None
+    override def getMethodParameterDescriptionProvider(call: HandlerCall): Parameter ⇒ Option[String] =
+      _ ⇒ None
   }
 
   final val Empty = new EmptyDescriptionProviderImpl

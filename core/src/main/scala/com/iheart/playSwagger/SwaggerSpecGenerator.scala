@@ -360,6 +360,8 @@ final case class SwaggerSpecGenerator(
       else None
     }
 
+    val parameterDescription = descriptionProvider.getMethodParameterDescriptionProvider(route.call)
+
     val paramsFromController = {
       val pathParams = route.path.parts.collect {
         case d: DynamicPart ⇒ d.name
@@ -370,7 +372,7 @@ final case class SwaggerSpecGenerator(
         param ← paramList
         if param.fixed.isEmpty // Removes parameters the client cannot set
       } yield {
-        val description = descriptionProvider.getMethodParamDescription(route.call, paramList, param)
+        val description = parameterDescription(param)
         mapParam(param, modelQualifier, customMappings, description)
       }
 
