@@ -39,6 +39,8 @@ This allows newly added endpoints to be automatically included in swagger with s
 ```
  ###
  #  summary: create a card 
+ #  tags:
+ #    - Card Endpoints
  #  responses:
  #    200:
  #      description: success
