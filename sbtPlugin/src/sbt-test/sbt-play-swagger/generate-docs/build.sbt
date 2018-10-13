@@ -7,7 +7,7 @@ enablePlugins(PlayScala, SwaggerPlugin)
 
 name := "app"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.11.12"
 
 version := "1.0.1-BETA1"
 
