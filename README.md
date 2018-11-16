@@ -270,6 +270,12 @@ In build.sbt, add
 swaggerFileName := "customSwagger.json"
 ```
 
+#### How to output formatted json in swagger documentation file?
+In build.sbt, add
+```scala
+swaggerPrettyJson := true
+```
+
 #### Where to find more examples?
 In the [tests](/core/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
 

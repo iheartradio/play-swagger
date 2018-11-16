@@ -15,4 +15,6 @@ trait SwaggerKeys {
   val envOutputTransformer = "com.iheart.playSwagger.EnvironmentVariablesTransformer"
 
   val swaggerAPIVersion = SettingKey[String]("swaggerAPIVersion", "Version of the API")
+
+  val swaggerPrettyJson = SettingKey[Boolean]("swaggerPrettyJson", "True, if needs to pretty print Swagger's documentation")
 }
