@@ -81,6 +81,11 @@ You can find the setup in the example project as well.
   
 
 #### Step 1
+For play2.6 add Swagger sbt plugin dependency to your plugins.sbt
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.1-PLAY2.6")
+```
+
 For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the releases tab](https://github.com/iheartradio/play-swagger/releases) for the latest versions)
 
 For Play 2.5

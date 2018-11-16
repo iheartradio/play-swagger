@@ -7,9 +7,9 @@ enablePlugins(PlayScala, SwaggerPlugin)
 
 name := "app"
 
-scalaVersion := "2.11.12"
-
 version := "1.0.1-BETA1"
+
+scalaVersion := "2.12.2"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
@@ -154,7 +154,7 @@ TaskKey[Unit]("check") := {
 }
 
 TaskKey[Unit]("unzip1") := {
-  val from = new File(s"target/scala-2.11/app_2.11-${version.value}.jar")
+  val from = new File(s"target/scala-2.12/app_2.12-${version.value}.jar")
   val to = new File("target/jar")
   IO.unzip(from, to)
 }
