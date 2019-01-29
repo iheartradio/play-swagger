@@ -432,7 +432,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "add operation ids" >> {
-      (addTrackJson \ "operationId").as[String] ==== "addPlayedTracks"
+      (addTrackJson \ "operationId").as[String] ==== "LiveMetaaddPlayedTracks"
     }
 
     "should maintain route file order" >> {
