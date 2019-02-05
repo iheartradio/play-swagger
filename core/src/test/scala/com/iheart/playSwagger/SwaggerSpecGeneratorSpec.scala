@@ -442,6 +442,9 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val fieldKeys: Seq[String] = pathJsonObj.fields.map(_._1)
       val fieldsWithIndexMap = fieldKeys.zipWithIndex.toMap
 
+      println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+      println(fieldsWithIndexMap.mkString("\n"))
+      println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
       val first = fieldsWithIndexMap.get("/api/students/{name}")
       val second = fieldsWithIndexMap.get("/api/students/defaultValueParam")
       val third = fieldsWithIndexMap.get("/api/students/defaultValueParamString")
@@ -453,7 +456,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       third must beSome[Int]
       fourth must beSome[Int]
 
-      // must be in exact order with nothing inbetween
+      // must be in exact order with nothing in between
       second.get - first.get === 1
       third.get - second.get === 1
       fourth.get - third.get === 1
