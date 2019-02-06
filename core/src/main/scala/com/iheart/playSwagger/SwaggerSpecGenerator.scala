@@ -132,7 +132,7 @@ final case class SwaggerSpecGenerator(
   private[playSwagger] def generateWithBase(
     paths:    ListMap[String, JsObject],
     baseJson: JsObject                  = Json.obj()): JsObject = {
-    val pathsJson = paths.values.reduce(_ ++ _)
+    val pathsJson = paths.values.reduce((acc, p) => JsObject(acc.fields ++ p.fields))
 
     val refKey = "$ref"
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
