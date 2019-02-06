@@ -14,7 +14,7 @@ import scala.collection.immutable.ListMap
 import play.routes.compiler._
 
 import scala.collection.mutable
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 object SwaggerSpecGenerator {
   private val marker = "##"
@@ -132,7 +132,7 @@ final case class SwaggerSpecGenerator(
   private[playSwagger] def generateWithBase(
     paths:    ListMap[String, JsObject],
     baseJson: JsObject                  = Json.obj()): JsObject = {
-    val pathsJson = paths.values.reduce((acc, p) => JsObject(acc.fields ++ p.fields))
+    val pathsJson = paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields))
 
     val refKey = "$ref"
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
