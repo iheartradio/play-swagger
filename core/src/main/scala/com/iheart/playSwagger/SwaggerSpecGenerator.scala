@@ -1,6 +1,7 @@
 package com.iheart.playSwagger
 
 import java.io.File
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
@@ -8,10 +9,12 @@ import play.api.libs.json._
 import ResourceReader.read
 import org.yaml.snakeyaml.Yaml
 import SwaggerParameterMapper.mapParam
+
 import scala.collection.immutable.ListMap
 import play.routes.compiler._
 
-import scala.util.{ Try, Success, Failure }
+import scala.collection.mutable
+import scala.util.{ Failure, Success, Try }
 
 object SwaggerSpecGenerator {
   private val marker = "##"
@@ -129,7 +132,7 @@ final case class SwaggerSpecGenerator(
   private[playSwagger] def generateWithBase(
     paths:    ListMap[String, JsObject],
     baseJson: JsObject                  = Json.obj()): JsObject = {
-    val pathsJson = paths.values.reduce(_ ++ _)
+    val pathsJson = paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields))
 
     val refKey = "$ref"
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
@@ -310,11 +313,10 @@ final case class SwaggerSpecGenerator(
 
       // maintain the routes order as per the original routing file
       val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
-      import collection.mutable.LinkedHashMap
-      val lhm = LinkedHashMap(zgbp.toSeq sortBy (_._2.head._2): _*)
-      val gbp2 = lhm mapValues (_ map (_._1)) toSeq
+      val lhm = mutable.LinkedHashMap(zgbp.toSeq.sortBy(_._2.head._2): _*)
+      val gbp2 = lhm.mapValues(_.map(_._1)).toSeq
 
-      gbp2.toSeq.map(x ⇒ (x._1, x._2.map(_._2).reduce(_ deepMerge _)))
+      gbp2.map(x ⇒ (x._1, x._2.map(_._2).reduce(_ deepMerge _)))
     }
   }
 

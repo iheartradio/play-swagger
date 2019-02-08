@@ -453,7 +453,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       third must beSome[Int]
       fourth must beSome[Int]
 
-      // must be in exact order with nothing inbetween
+      // must be in exact order with nothing in between
       second.get - first.get === 1
       third.get - second.get === 1
       fourth.get - third.get === 1

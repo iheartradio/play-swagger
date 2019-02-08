@@ -3,7 +3,7 @@ import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
 object Format {
-  lazy val settings = SbtScalariform.scalariformSettings ++ Seq(
+  lazy val settings = SbtScalariform.autoImport.scalariformSettings(autoformat = false) ++ Seq(
     ScalariformKeys.preferences in Compile := formattingPreferences,
     ScalariformKeys.preferences in Test := formattingPreferences)
 
