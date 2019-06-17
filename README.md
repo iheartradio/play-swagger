@@ -320,7 +320,17 @@ Make sure you also update your swagger markup to specify that you are using Open
     version: "1.0.0"
 ```
 
-Also, for `$ref` fields you will want to prefix paths with `#/components/schemas/` instead of `#/definitions/`
+Also, for `$ref` fields you will want to prefix paths with `#/components/schemas/` instead of `#/definitions/`. For example:
+
+```
+###  
+#  parameters:
+#    - name: body
+#      schema:
+#        $ref: '#/components/schemas/com.iheart.api.Track'
+###
+POST   /tracks       controller.Api.createTrack()
+```
 
 
 #### Is play java supported? 
