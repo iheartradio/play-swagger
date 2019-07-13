@@ -27,13 +27,13 @@ object OutputTransformer {
       case value: JsObject ⇒ traverseTransformer(value)(transformer)
       case value: JsArray  ⇒ traverseTransformer(value)(transformer)
       case value: JsValue  ⇒ transformer(value)
-    }
+    }.toList
 
-    val failures: Seq[Failure[JsValue]] = tryElements.filter(_.isInstanceOf[Failure[_]]).asInstanceOf[Seq[Failure[JsValue]]]
+    val failures: List[Failure[JsValue]] = tryElements.filter(_.isInstanceOf[Failure[_]]).map(_.asInstanceOf[Failure[JsValue]])
     if (failures.nonEmpty) {
       Failure(failures.head.exception)
     } else {
-      Success(JsArray(tryElements.asInstanceOf[Seq[Success[JsValue]]].map(_.value)))
+      Success(JsArray(tryElements.asInstanceOf[List[Success[JsValue]]].map(_.value)))
     }
   }
 

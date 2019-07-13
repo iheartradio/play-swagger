@@ -9,8 +9,11 @@ lazy val noPublishSettings = Seq(
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
-  .settings(sourcesInBase := false)
-  .settings(noPublishSettings:_*)
+  .settings(
+    sourcesInBase := false,
+    noPublishSettings,
+    scalaVersion := "2.12.8"
+  )
 
 lazy val playSwagger = project.in(file("core"))
   .settings(Publish.coreSettings ++ Format.settings ++ Testing.settings)
