@@ -1,13 +1,10 @@
 
 organization in ThisBuild := "com.iheart"
 
-resolvers +=  Resolver.bintrayRepo("scalaz", "releases")
 
 
 lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
+  skip in publish := true
 )
 
 lazy val root = project.in(file("."))
@@ -24,7 +21,8 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playJson ++
       Dependencies.test ++
       Dependencies.yaml,
-    scalaVersion := "2.12.8"
+    scalaVersion := "2.12.8",
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))

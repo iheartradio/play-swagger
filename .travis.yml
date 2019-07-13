@@ -19,7 +19,7 @@ cache:
 
 script:
   - sbt clean sbtPlaySwagger/scripted
-  - sbt ';project playSwagger;clean;coverage;test'
+  - sbt ';project playSwagger;clean;coverage;+test'
   - cd example && sbt clean compile
 after_success:
   - sbt ';project playSwagger;coverageReport;coveralls'

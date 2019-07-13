@@ -145,8 +145,8 @@ final case class SwaggerSpecGenerator(
 
     val definitions: List[Definition] = {
       val referredClasses: Seq[String] = for {
-        refJson ← allRefs
-        ref ← refJson.asOpt[String]
+        refJson ← allRefs.toList
+        ref ← refJson.asOpt[String].toList
         className = ref.stripPrefix(referencePrefix)
         if modelQualifier.isModel(className)
       } yield className
