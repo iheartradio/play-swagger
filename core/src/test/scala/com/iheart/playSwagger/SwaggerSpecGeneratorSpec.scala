@@ -110,8 +110,8 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val enumContainerJson = (definitionsJson \ "com.iheart.playSwagger.EnumContainer").asOpt[JsObject]
     lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
 
-    def parametersOf(json: JsValue): Seq[JsValue] = {
-      (json \ "parameters").as[JsArray].value
+    def parametersOf(json: JsValue): List[JsValue] = {
+      (json \ "parameters").as[JsArray].value.toList
     }
 
     "reads json comment" >> {
@@ -439,7 +439,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       // use students routes
 
       val pathJsonObj = pathJson.as[JsObject]
-      val fieldKeys: Seq[String] = pathJsonObj.fields.map(_._1)
+      val fieldKeys: List[String] = pathJsonObj.fields.map(_._1).toList
       val fieldsWithIndexMap = fieldKeys.zipWithIndex.toMap
 
       val first = fieldsWithIndexMap.get("/api/students/{name}")
