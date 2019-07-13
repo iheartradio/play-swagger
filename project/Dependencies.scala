@@ -4,7 +4,7 @@ object Dependencies {
   object Versions {
     val play = "2.6.13"
     val playJson = "2.6.9"
-    val specs2 = "3.8.9"
+    val specs2 = "3.10.0"
   }
 
   val playTest = Seq(
