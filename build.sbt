@@ -4,7 +4,10 @@ organization in ThisBuild := "com.iheart"
 
 
 lazy val noPublishSettings = Seq(
-  skip in publish := true
+  skip in publish := true,
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
 )
 
 lazy val root = project.in(file("."))
@@ -13,6 +16,7 @@ lazy val root = project.in(file("."))
     Publish.coreSettings,
     sourcesInBase := false,
     noPublishSettings,
+      
     scalaVersion := "2.12.8"
   )
 
