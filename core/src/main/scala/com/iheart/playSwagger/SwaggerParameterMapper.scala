@@ -151,10 +151,12 @@ object SwaggerParameterMapper {
    */
   private object ScalaEnum {
     def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
-      if (tpeName.endsWith(".Value")) {
+      val suffixIndex = tpeName.lastIndexOf(".")
+      if (suffixIndex > 0) {
         Try {
           val mirror = universe.runtimeMirror(cl)
-          val module = mirror.reflectModule(mirror.staticModule(tpeName.stripSuffix(".Value")))
+          val moduleName = tpeName.substring(0, suffixIndex)
+          val module = mirror.reflectModule(mirror.staticModule(moduleName))
           for {
             enum ← Option(module.instance).toSeq if enum.isInstanceOf[Enumeration]
             value ← enum.asInstanceOf[Enumeration].values.asInstanceOf[Iterable[Enumeration#Value]]

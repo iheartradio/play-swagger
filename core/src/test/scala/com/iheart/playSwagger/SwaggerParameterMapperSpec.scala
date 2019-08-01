@@ -73,8 +73,15 @@ class SwaggerParameterMapperSpec extends Specification {
         enum = Option(Seq("DISABLED", "ACTIVE")))
     }
 
-    "map scala enum to enum constants" >> {
+    "map scala enum to enum constants (referenced by Value type)" >> {
       mapParam(Parameter("scalaEnum", "com.iheart.playSwagger.SampleScalaEnum.Value", None, None)) === GenSwaggerParameter(
+        name = "scalaEnum",
+        `type` = Option("string"),
+        enum = Option(Seq("One", "Two")))
+    }
+
+    "map scala enum to enum constants (referenced by aliased type)" >> {
+      mapParam(Parameter("scalaEnum", "com.iheart.playSwagger.SampleScalaEnum.SampleScalaEnum", None, None)) === GenSwaggerParameter(
         name = "scalaEnum",
         `type` = Option("string"),
         enum = Option(Seq("One", "Two")))
