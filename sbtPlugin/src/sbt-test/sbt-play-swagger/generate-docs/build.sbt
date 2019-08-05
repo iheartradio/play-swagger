@@ -17,6 +17,8 @@ swaggerRoutesFile := "my-routes"
 
 swaggerOutputTransformers := Seq(envOutputTransformer)
 
+playJava := false
+
 val pathVal = System.getenv("PATH")
 
 TaskKey[Unit]("check") := {
