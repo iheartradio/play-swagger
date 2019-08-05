@@ -21,3 +21,13 @@ POST     /:pid/playedTracks             controllers.Player.addPlayedTracks(pid)
 #        $ref: '#/definitions/com.iheart.playSwagger.Animal'
 ###
 GET     /zoo/zone/:zid/animals/:aid               controllers.Animals.search(zid: com.iheart.playSwagger.ZoneId, aid: com.iheart.playSwagger.AnimalId)
+
+
+###
+#  requestBody:
+#    content:
+#      application/json:
+#        schema:
+#          $ref: '#/components/schemas/com.iheart.playSwagger.Attribute'
+###
+POST     /:pid/playedAttributes           controllers.Player.attribute(pid)

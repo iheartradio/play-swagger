@@ -56,7 +56,7 @@ class DefinitionGeneratorSpec extends Specification {
 
     "generate properties" >> {
 
-      val result = DefinitionGenerator("com.iheart.playSwagger", Nil).definition[Foo].properties
+      val result = DefinitionGenerator(false, "com.iheart.playSwagger", Nil).definition[Foo].properties
 
       result.length === 7
 
@@ -88,13 +88,21 @@ class DefinitionGeneratorSpec extends Specification {
 
     }
 
+    "java class" >> {
+
+      val result = DefinitionGenerator(true, "com.iheart.playSwagger", Nil).definition[Person].properties
+
+      result.length === 4
+
+    }
+
     "read class in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+      val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
       result.properties.head.name === "bar"
     }
 
     "read alias type in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
+      val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
 
       val last = result.properties.last.asInstanceOf[GenSwaggerParameter]
       last.name === "id"
@@ -103,24 +111,24 @@ class DefinitionGeneratorSpec extends Specification {
     }
 
     "read sequence items" >> {
-      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.FooWithSeq")
+      val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.FooWithSeq")
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].referenceType === Some("com.iheart.playSwagger.SeqItem")
     }
 
     "read primitive sequence items" >> {
-      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.WithListOfPrimitive")
+      val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.WithListOfPrimitive")
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[GenSwaggerParameter].`type` === Some("integer")
 
     }
 
     "read Optional items " >> {
-      val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.FooWithOption")
+      val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.FooWithOption")
       result.properties.head.asInstanceOf[GenSwaggerParameter].referenceType must beSome("com.iheart.playSwagger.OptionItem")
     }
 
     "with dates" >> {
       "no override" >> {
-        val result = DefinitionGenerator("com.iheart", Nil).definition("com.iheart.playSwagger.WithDate")
+        val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[GenSwaggerParameter]
         prop.`type` must beSome("integer")
         prop.format must beSome("epoch")
@@ -132,7 +140,7 @@ class DefinitionGeneratorSpec extends Specification {
           CustomTypeMapping(
             `type` = "org.joda.time.DateTime",
             specAsParameter = customJson))
-        val result = DefinitionGenerator("com.iheart", mappings).definition("com.iheart.playSwagger.WithDate")
+        val result = DefinitionGenerator(false, "com.iheart", mappings).definition("com.iheart.playSwagger.WithDate")
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
         prop.specAsParameter === customJson
       }
@@ -143,7 +151,7 @@ class DefinitionGeneratorSpec extends Specification {
       val customMapping = CustomTypeMapping(
         `type` = "com.iheart.playSwagger.WrappedString",
         specAsParameter = customJson)
-      val generator = DefinitionGenerator("com.iheart", List(customMapping))
+      val generator = DefinitionGenerator(false, "com.iheart", List(customMapping))
       val definition = generator.definition[FooWithWrappedStringProperties]
 
       "support simple property types" >> {
@@ -173,7 +181,7 @@ class DefinitionGeneratorSpec extends Specification {
   }
 
   "allDefinitions" >> {
-    val allDefs = DefinitionGenerator(ExcludingDomainQualifier).allDefinitions(List("com.iheart.playSwagger.Foo"))
+    val allDefs = DefinitionGenerator(false, ExcludingDomainQualifier).allDefinitions(List("com.iheart.playSwagger.Foo"))
     allDefs.length === 3
     allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo") must beSome[Definition]

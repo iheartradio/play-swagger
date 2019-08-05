@@ -17,4 +17,6 @@ trait SwaggerKeys {
   val swaggerAPIVersion = SettingKey[String]("swaggerAPIVersion", "Version of the API")
 
   val swaggerPrettyJson = SettingKey[Boolean]("swaggerPrettyJson", "True, if needs to pretty print Swagger's documentation")
+
+  val playJava = SettingKey[Boolean]("playJava", "True, if use play java and use jackson to generate model schema")
 }

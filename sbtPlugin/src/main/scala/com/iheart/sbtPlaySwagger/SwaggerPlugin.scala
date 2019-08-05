@@ -34,6 +34,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerOutputTransformers := Seq(),
     swaggerAPIVersion := version.value,
     swaggerPrettyJson := false,
+    playJava := false,
     swagger := Def.task[File] {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
@@ -44,6 +45,7 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerV3.value.toString ::
         swaggerAPIVersion.value ::
         swaggerPrettyJson.value.toString ::
+        playJava.value.toString ::
         Nil
       val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
       runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).failed foreach (sys error _.getMessage)
