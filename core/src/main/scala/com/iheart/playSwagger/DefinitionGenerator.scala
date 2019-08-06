@@ -25,7 +25,7 @@ final case class DefinitionGenerator(
       definitionForPOJO(tpe)
     } else {
       val fields = tpe.decls.collectFirst {
-        case m: MethodSymbol if m.isPrimaryConstructor || m.isFinal ⇒ m
+        case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
       }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
       fields.map { field ⇒
