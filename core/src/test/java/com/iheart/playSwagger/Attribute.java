@@ -31,13 +31,11 @@ public final class Attribute{
   private final String id;
   private final String name;
   private final String address;
-  private final Person person;
 
-  private Attribute(String id, String name, String address, Person person) {
+  private Attribute(String id, String name, String address) {
     this.id = id;
     this.name = name;
     this.address = address;
-    this.person = person;
   }
 
   /**
@@ -64,10 +62,6 @@ public final class Attribute{
     return address;
   }
 
-  @JsonProperty("person")
-  public Person getPerson() {
-    return person;
-  }
 
   /**
    * Copy the current immutable object by setting a address for the {@link AbstractAttribute#getId() id} attribute.
@@ -78,7 +72,7 @@ public final class Attribute{
   public final Attribute withId(String value) {
     String newValue = Objects.requireNonNull(value, "id");
     if (this.id.equals(newValue)) return this;
-    return new Attribute(newValue, this.name, this.address, this.person);
+    return new Attribute(newValue, this.name, this.address);
   }
 
   /**
@@ -90,7 +84,7 @@ public final class Attribute{
   public final Attribute withKey(String value) {
     String newValue = Objects.requireNonNull(value, "name");
     if (this.name.equals(newValue)) return this;
-    return new Attribute(this.id, newValue, this.address, this.person);
+    return new Attribute(this.id, newValue, this.address);
   }
 
   /**
@@ -102,14 +96,9 @@ public final class Attribute{
   public final Attribute withValue(String value) {
     String newValue = Objects.requireNonNull(value, "address");
     if (this.address.equals(newValue)) return this;
-    return new Attribute(this.id, this.name, newValue, this.person);
+    return new Attribute(this.id, this.name, newValue);
   }
 
-  public final Attribute withValue(Person person) {
-    Person newValue = Objects.requireNonNull(person, "person");
-    if (this.address.equals(newValue)) return this;
-    return new Attribute(this.id, this.name, this.address, newValue);
-  }
 
   /**
    * This instance is equal to all instances of {@code Attribute} that have equal attribute values.
@@ -246,7 +235,7 @@ public final class Attribute{
       if (initBits != 0) {
         throw new IllegalStateException(formatRequiredAttributesMessage());
       }
-      return new Attribute(id, key, value, null);
+      return new Attribute(id, key, value);
     }
 
     private String formatRequiredAttributesMessage() {

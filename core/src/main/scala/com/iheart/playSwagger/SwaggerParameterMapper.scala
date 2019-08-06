@@ -88,7 +88,7 @@ object SwaggerParameterMapper {
     }
 
     val generalParamMF: MappingFunction = {
-      case ci"Int"                     ⇒ genSwaggerParameter("integer", Some("int32"))
+      case ci"Int"    | ci"Integer"    ⇒ genSwaggerParameter("integer", Some("int32"))
       case ci"Long"                    ⇒ genSwaggerParameter("integer", Some("int64"))
       case ci"Double" | ci"BigDecimal" ⇒ genSwaggerParameter("number", Some("double"))
       case ci"Float"                   ⇒ genSwaggerParameter("number", Some("float"))

@@ -88,14 +88,6 @@ class DefinitionGeneratorSpec extends Specification {
 
     }
 
-    "java class" >> {
-
-      val result = DefinitionGenerator(true, "com.iheart.playSwagger", Nil).definition[Person].properties
-
-      result.length === 4
-
-    }
-
     "read class in Object" >> {
       val result = DefinitionGenerator(false, "com.iheart", Nil).definition("com.iheart.playSwagger.MyObject.MyInnerClass")
       result.properties.head.name === "bar"
@@ -186,5 +178,66 @@ class DefinitionGeneratorSpec extends Specification {
     allDefs.find(_.name == "com.iheart.playSwagger.ReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.RefReffedFoo") must beSome[Definition]
     allDefs.find(_.name == "com.iheart.playSwagger.Foo") must beSome[Definition]
+  }
+
+  "java class definition" >> {
+    "generate name correctly" >> {
+      DefinitionGenerator().definition[Person].name === "com.iheart.playSwagger.Person"
+    }
+
+    "generate from string classname " >> {
+      DefinitionGenerator().definition("com.iheart.playSwagger.Person").name === "com.iheart.playSwagger.Person"
+    }
+
+    "generate properties" >> {
+      val result = DefinitionGenerator(true, "com.iheart.playSwagger", Nil).definition[Person].properties
+      result.length === 16
+
+      "with correct long property" >> {
+        result.filter(r => r.name == "id").seq.head === GenSwaggerParameter(name = "id", `type` = Some("integer"), format = Some("int64"), required = false)
+        result.filter(r => r.name == "aLong").seq.head === GenSwaggerParameter(name = "aLong", `type` = Some("integer"), format = Some("int64"), required = false)
+      }
+      "with correct int32 property" >> {
+        result.filter(r => r.name == "integer").seq.head === GenSwaggerParameter(name = "integer", `type` = Some("integer"), format = Some("int32"), required = false)
+        result.filter(r => r.name == "anInt").seq.head === GenSwaggerParameter(name = "anInt", `type` = Some("integer"), format = Some("int32"), required = false)
+      }
+
+      "with correct double property" >> {
+        result.filter(r => r.name == "aDouble").seq.head === GenSwaggerParameter(name = "aDouble", `type` = Some("number"), format = Some("double"), required = false)
+        result.filter(r => r.name == "double").seq.head === GenSwaggerParameter(name = "double", `type` = Some("number"), format = Some("double"), required = false)
+      }
+
+      "with correct float property" >> {
+        result.filter(r => r.name == "float").seq.head === GenSwaggerParameter(name = "float", `type` = Some("number"), format = Some("float"), required = false)
+        result.filter(r => r.name == "aFloat").seq.head === GenSwaggerParameter(name = "aFloat", `type` = Some("number"), format = Some("float"), required = false)
+      }
+
+      "with correct java time property" >> {
+        result.filter(r => r.name == "instant").seq.head === GenSwaggerParameter(name = "instant", `type` = Some("string"), format = Some("date-time"), required = false)
+        result.filter(r => r.name == "dayOfBirth").seq.head === GenSwaggerParameter(name = "dayOfBirth", `type` = Some("string"), format = Some("date"), required = false)
+        result.filter(r => r.name == "localDateTime").seq.head === GenSwaggerParameter(name = "localDateTime", `type` = Some("string"), format = Some("date-time"), required = false)
+      }
+
+      "with correct array property" >> {
+        val itemsParam = GenSwaggerParameter(name = "customKey", `type` = Some("string"))
+        result.filter(r => r.name == "customKey").seq.head === GenSwaggerParameter(name = "customKey", `type` = Some("array"), items = Some(itemsParam))
+      }
+
+      "with correct string property" >> {
+        result.filter(r => r.name == "firstName").seq.head === GenSwaggerParameter(name = "firstName", `type` = Some("string"), required = false)
+      }
+
+      "with reference type" >> {
+        result.filter(r => r.name == "attribute").seq.head === GenSwaggerParameter(name = "attribute", referenceType = Some("com.iheart.playSwagger.Attribute"), required = false)
+      }
+
+      "with java collection reference type" >> {
+        val itemsParamList = GenSwaggerParameter(name = "attributeList", referenceType = Some("com.iheart.playSwagger.Attribute"))
+        result.filter(r => r.name == "attributeList").seq.head === GenSwaggerParameter(name = "attributeList", `type` = Some("array"), items = Some(itemsParamList), required = false)
+
+        val itemsParamSet = GenSwaggerParameter(name = "attributeSet", referenceType = Some("com.iheart.playSwagger.Attribute"))
+        result.filter(r => r.name == "attributeSet").seq.head === GenSwaggerParameter(name = "attributeSet", `type` = Some("array"), items = Some(itemsParamSet), required = false)
+      }
+    }
   }
 }
