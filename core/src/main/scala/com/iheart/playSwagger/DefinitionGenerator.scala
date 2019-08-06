@@ -21,8 +21,7 @@ final case class DefinitionGenerator(
   }
 
   def definition(tpe: Type): Definition = {
-    var properties = Seq.empty[SwaggerParameter]
-    if (playJava) {
+    val properties = if (playJava) {
       val _mapper = new ObjectMapper();
       val m = runtimeMirror(getClass.getClassLoader)
       val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
@@ -31,7 +30,7 @@ final case class DefinitionGenerator(
       val beanProperties = beanDesc.findProperties()
       val ignoreProperties = beanDesc.getIgnoredPropertyNames
       val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
-      properties = propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
+      propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
         val name = entry.getName
         var typeName = entry.getPrimaryType.getRawClass.getName
         if (entry.getField != null) {
@@ -51,7 +50,7 @@ final case class DefinitionGenerator(
         case m: MethodSymbol if m.isPrimaryConstructor || m.isFinal ⇒ m
       }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
-      properties = fields.map { field ⇒
+      fields.map { field ⇒
         //TODO: find a better way to get the string representation of typeSignature
         val name = field.name.decodedName.toString
         val typeName = dealiasParams(field.typeSignature).toString
