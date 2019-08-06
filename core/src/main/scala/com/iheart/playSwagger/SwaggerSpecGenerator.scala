@@ -35,7 +35,7 @@ final case class SwaggerSpecGenerator(
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
   swaggerV3:             Boolean                = false,
-  playJava:              Boolean                = false,
+  swaggerPlayJava:       Boolean                = false,
   apiVersion:            Option[String]         = None)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
@@ -152,7 +152,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(playJava, modelQualifier, customMappings).allDefinitions(referredClasses)
+      DefinitionGenerator(swaggerPlayJava, modelQualifier, customMappings).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))

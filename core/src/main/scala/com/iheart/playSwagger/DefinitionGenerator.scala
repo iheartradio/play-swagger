@@ -1,18 +1,18 @@
 package com.iheart.playSwagger
 
-import com.fasterxml.jackson.databind.{ BeanDescription, ObjectMapper }
-import com.iheart.playSwagger.Domain.{ CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter }
+import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
+import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
-import com.sun.istack.internal.Nullable
 import play.routes.compiler.Parameter
 
 import scala.collection.JavaConverters
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-  playJava:       Boolean              = false,
-  modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader) {
+  swaggerPlayJava:  Boolean              = false,
+  modelQualifier:   DomainModelQualifier = PrefixDomainModelQualifier(),
+  mappings:         CustomMappings       = Nil,
+  _mapper:          ObjectMapper         = new ObjectMapper())(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -21,30 +21,8 @@ final case class DefinitionGenerator(
   }
 
   def definition(tpe: Type): Definition = {
-    val properties = if (playJava) {
-      val _mapper = new ObjectMapper();
-      val m = runtimeMirror(getClass.getClassLoader)
-      val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
-      val `type` = _mapper.constructType(clazz)
-      val beanDesc: BeanDescription = _mapper.getSerializationConfig.introspect(`type`)
-      val beanProperties = beanDesc.findProperties()
-      val ignoreProperties = beanDesc.getIgnoredPropertyNames
-      val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
-      propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
-        val name = entry.getName
-        var typeName = entry.getPrimaryType.getRawClass.getName
-        if (entry.getField != null) {
-          if (entry.getField.getType.hasGenericTypes) {
-            val generalType = entry.getField.getType.getContentType.getRawClass.getName
-            typeName = s"$typeName[$generalType]"
-          }
-        }
-        if (!entry.isRequired) {
-          typeName = s"Option[$typeName]"
-        }
-        val param = Parameter(name, typeName, None, None)
-        mapParam(param, modelQualifier, mappings)
-      }
+    val properties = if (swaggerPlayJava) {
+      definitionForPOJO(tpe)
     } else {
       val fields = tpe.decls.collectFirst {
         case m: MethodSymbol if m.isPrimaryConstructor || m.isFinal ⇒ m
@@ -63,6 +41,31 @@ final case class DefinitionGenerator(
     Definition(
       name = tpe.typeSymbol.fullName,
       properties = properties)
+  }
+
+  private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
+    val m = runtimeMirror(getClass.getClassLoader)
+    val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
+    val `type` = _mapper.constructType(clazz)
+    val beanDesc: BeanDescription = _mapper.getSerializationConfig.introspect(`type`)
+    val beanProperties = beanDesc.findProperties
+    val ignoreProperties = beanDesc.getIgnoredPropertyNames
+    val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
+    propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
+      val name = entry.getName
+      var typeName = entry.getPrimaryType.getRawClass.getName
+      if (entry.getField != null) {
+        if (entry.getField.getType.hasGenericTypes) {
+          val generalType = entry.getField.getType.getContentType.getRawClass.getName
+          typeName = s"$typeName[$generalType]"
+        }
+      }
+      if (!entry.isRequired) {
+        typeName = s"Option[$typeName]"
+      }
+      val param = Parameter(name, typeName, None, None)
+      mapParam(param, modelQualifier, mappings)
+    }
   }
 
   def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
@@ -103,10 +106,10 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-    playJava:                    Boolean,
+    swaggerPlayJava:             Boolean,
     domainNameSpace:             String,
     customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      playJava,
+      swaggerPlayJava,
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
 }

@@ -9,11 +9,11 @@ import scala.util.{ Failure, Success, Try }
 object SwaggerSpecRunner extends App {
   implicit def cl: ClassLoader = getClass.getClassLoader
 
-  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: playJavaString :: Nil = args.toList
+  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString :: Nil = args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
     val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)
-    val playJava = java.lang.Boolean.parseBoolean(playJavaString)
+    val swaggerPlayJava = java.lang.Boolean.parseBoolean(swaggerPlayJavaString)
     val domainModelQualifier = PrefixDomainModelQualifier(domainNameSpaceArgs.split(","): _*)
     val transformersStrs: Seq[String] = if (outputTransformersArgs.isEmpty) Seq() else outputTransformersArgs.split(",")
     val transformers = transformersStrs.map { clazz ⇒
@@ -28,7 +28,7 @@ object SwaggerSpecRunner extends App {
       domainModelQualifier,
       outputTransformers = transformers,
       swaggerV3 = swaggerV3,
-      playJava = playJava,
+      swaggerPlayJava = swaggerPlayJava,
       apiVersion = Some(apiVersion)).generate(routesFile).get
 
     if (swaggerPrettyJson.toBoolean) Json.prettyPrint(swaggerSpec)

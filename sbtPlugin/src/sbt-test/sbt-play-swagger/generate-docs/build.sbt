@@ -17,7 +17,7 @@ swaggerRoutesFile := "my-routes"
 
 swaggerOutputTransformers := Seq(envOutputTransformer)
 
-playJava := false
+swaggerPlayJava := false
 
 val pathVal = System.getenv("PATH")
 
