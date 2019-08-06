@@ -16,7 +16,7 @@ object SwaggerParameterMapper {
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
     customMappings: CustomMappings       = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
 
-    def removeKnownPrefixes(name: String) = name.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
+    def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
       s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
