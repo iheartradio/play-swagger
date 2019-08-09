@@ -152,7 +152,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(swaggerPlayJava, modelQualifier, customMappings).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, customMappings, swaggerPlayJava).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))

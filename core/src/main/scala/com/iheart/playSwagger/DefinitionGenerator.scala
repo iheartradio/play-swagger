@@ -9,9 +9,9 @@ import scala.collection.JavaConverters
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-  swaggerPlayJava:  Boolean              = false,
   modelQualifier:   DomainModelQualifier = PrefixDomainModelQualifier(),
   mappings:         CustomMappings       = Nil,
+  swaggerPlayJava:  Boolean              = false,
   _mapper:          ObjectMapper         = new ObjectMapper())(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
@@ -53,15 +53,17 @@ final case class DefinitionGenerator(
     val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
     propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
       val name = entry.getName
-      var typeName = entry.getPrimaryType.getRawClass.getName
-      if (entry.getField != null) {
-        if (entry.getField.getType.hasGenericTypes) {
-          val generalType = entry.getField.getType.getContentType.getRawClass.getName
-          typeName = s"$typeName[$generalType]"
-        }
+      val className = entry.getPrimaryType.getRawClass.getName
+      val generalTypeName = if (entry.getField != null && entry.getField.getType.hasGenericTypes) {
+        val generalType = entry.getField.getType.getContentType.getRawClass.getName
+        s"$className[$generalType]"
+      } else {
+        className
       }
-      if (!entry.isRequired) {
-        typeName = s"Option[$typeName]"
+      val typeName = if (!entry.isRequired) {
+        s"Option[$generalTypeName]"
+      } else {
+        generalTypeName
       }
       val param = Parameter(name, typeName, None, None)
       mapParam(param, modelQualifier, mappings)
@@ -106,10 +108,15 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-    swaggerPlayJava:             Boolean,
     domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+    customParameterTypeMappings: CustomMappings,
+    swaggerPlayJava:             Boolean       )(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      swaggerPlayJava,
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava)
+
+  def apply(
+             domainNameSpace:             String,
+             customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+    DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
 }
