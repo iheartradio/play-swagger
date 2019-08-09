@@ -16,7 +16,7 @@ object SwaggerParameterMapper {
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
     customMappings: CustomMappings       = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
 
-    def removeKnownPrefixes(name: String) = name.replaceAll("(scala.)|(java.lang.)|(math.)|(org.joda.time.)", "")
+    def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
       s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
@@ -88,11 +88,15 @@ object SwaggerParameterMapper {
     }
 
     val generalParamMF: MappingFunction = {
-      case ci"Int"                     ⇒ genSwaggerParameter("integer", Some("int32"))
+      case ci"Int"    | ci"Integer"    ⇒ genSwaggerParameter("integer", Some("int32"))
       case ci"Long"                    ⇒ genSwaggerParameter("integer", Some("int64"))
       case ci"Double" | ci"BigDecimal" ⇒ genSwaggerParameter("number", Some("double"))
       case ci"Float"                   ⇒ genSwaggerParameter("number", Some("float"))
       case ci"DateTime"                ⇒ genSwaggerParameter("integer", Some("epoch"))
+      case ci"java.time.Instant"       ⇒ genSwaggerParameter("string", Some("date-time"))
+      case ci"java.time.LocalDate"     ⇒ genSwaggerParameter("string", Some("date"))
+      case ci"java.time.LocalDateTime" ⇒ genSwaggerParameter("string", Some("date-time"))
+      case ci"java.time.Duration"      ⇒ genSwaggerParameter("string")
       case ci"Any"                     ⇒ genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
       case unknown                     ⇒ genSwaggerParameter(unknown.toLowerCase())
     }

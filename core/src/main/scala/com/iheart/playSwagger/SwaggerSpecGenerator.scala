@@ -35,6 +35,7 @@ final case class SwaggerSpecGenerator(
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
   swaggerV3:             Boolean                = false,
+  swaggerPlayJava:       Boolean                = false,
   apiVersion:            Option[String]         = None)(implicit cl: ClassLoader) {
   import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
   // routes with their prefix
@@ -151,7 +152,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier, customMappings).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, customMappings, swaggerPlayJava).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
@@ -301,7 +302,7 @@ final case class SwaggerSpecGenerator(
 
   private def parseYaml[T](yamlStr: String)(implicit fjs: Reads[T]): T = {
     val yaml = new Yaml()
-    val map = yaml.load(yamlStr)
+    val map = yaml.load[T](yamlStr)
     val mapper = new ObjectMapper()
     val jsonString = mapper.writeValueAsString(map)
     Json.parse(jsonString).as[T]
@@ -368,7 +369,7 @@ final case class SwaggerSpecGenerator(
       val params = for {
         paramList ← route.call.parameters.toSeq
         param ← paramList
-        if param.fixed.isEmpty // Removes parameters the client cannot set
+        if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
       } yield mapParam(param, modelQualifier, customMappings)
 
       JsArray(params.flatMap { p ⇒

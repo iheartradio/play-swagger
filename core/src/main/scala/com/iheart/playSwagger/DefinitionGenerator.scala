@@ -1,14 +1,18 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ CustomMappings, SwaggerParameter, GenSwaggerParameter, Definition }
+import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
+import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
 
+import scala.collection.JavaConverters
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-  modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:       CustomMappings       = Nil)(implicit cl: ClassLoader) {
+  modelQualifier:   DomainModelQualifier = PrefixDomainModelQualifier(),
+  mappings:         CustomMappings       = Nil,
+  swaggerPlayJava:  Boolean              = false,
+  _mapper:          ObjectMapper         = new ObjectMapper())(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -17,22 +21,53 @@ final case class DefinitionGenerator(
   }
 
   def definition(tpe: Type): Definition = {
-    val fields = tpe.decls.collectFirst {
-      case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
-    }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
+    val properties = if (swaggerPlayJava) {
+      definitionForPOJO(tpe)
+    } else {
+      val fields = tpe.decls.collectFirst {
+        case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
+      }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
-    val properties = fields.map { field ⇒
-      //TODO: find a better way to get the string representation of typeSignature
-      val name = field.name.decodedName.toString
-      val typeName = dealiasParams(field.typeSignature).toString
-      // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
-      val param = Parameter(name, typeName, None, None)
-      mapParam(param, modelQualifier, mappings)
+      fields.map { field ⇒
+        //TODO: find a better way to get the string representation of typeSignature
+        val name = field.name.decodedName.toString
+        val typeName = dealiasParams(field.typeSignature).toString
+        // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
+        val param = Parameter(name, typeName, None, None)
+        mapParam(param, modelQualifier, mappings)
+      }
     }
 
     Definition(
       name = tpe.typeSymbol.fullName,
       properties = properties)
+  }
+
+  private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
+    val m = runtimeMirror(getClass.getClassLoader)
+    val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
+    val `type` = _mapper.constructType(clazz)
+    val beanDesc: BeanDescription = _mapper.getSerializationConfig.introspect(`type`)
+    val beanProperties = beanDesc.findProperties
+    val ignoreProperties = beanDesc.getIgnoredPropertyNames
+    val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
+    propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
+      val name = entry.getName
+      val className = entry.getPrimaryType.getRawClass.getName
+      val generalTypeName = if (entry.getField != null && entry.getField.getType.hasGenericTypes) {
+        val generalType = entry.getField.getType.getContentType.getRawClass.getName
+        s"$className[$generalType]"
+      } else {
+        className
+      }
+      val typeName = if (!entry.isRequired) {
+        s"Option[$generalTypeName]"
+      } else {
+        generalTypeName
+      }
+      val param = Parameter(name, typeName, None, None)
+      mapParam(param, modelQualifier, mappings)
+    }
   }
 
   def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
@@ -74,7 +109,14 @@ final case class DefinitionGenerator(
 object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+    customParameterTypeMappings: CustomMappings,
+    swaggerPlayJava:             Boolean       )(implicit cl: ClassLoader): DefinitionGenerator =
+    DefinitionGenerator(
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava)
+
+  def apply(
+             domainNameSpace:             String,
+             customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
 }
