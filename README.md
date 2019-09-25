@@ -216,6 +216,15 @@ The preceding example would result in output for a field with type `java.time.Lo
 }
 ```
 
+#### How to use a custom naming strategy?
+
+To use a custom naming strategies to override your case classes field names, you need to add this to your `build.sbt`:
+
+```scala
+//default is 'none', which is your camelCased case class
+swaggerNamingStrategy := "snake_case" //kebab-case, lowercase and UpperCamelCase also available
+```
+
 #### The spec is missing when built to a docker image using sbt-native-pakcager
 
 @mosche answered this one in #114

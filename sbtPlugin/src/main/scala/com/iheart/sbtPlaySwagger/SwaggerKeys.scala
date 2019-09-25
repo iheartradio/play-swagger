@@ -15,6 +15,7 @@ trait SwaggerKeys {
   val envOutputTransformer = "com.iheart.playSwagger.EnvironmentVariablesTransformer"
 
   val swaggerAPIVersion = SettingKey[String]("swaggerAPIVersion", "Version of the API")
+  val swaggerNamingStrategy = SettingKey[String]("swaggerNamingStrategy", "Naming strategy to decode case class fields")
 
   val swaggerPrettyJson = SettingKey[Boolean]("swaggerPrettyJson", "True, if needs to pretty print Swagger's documentation")
 }

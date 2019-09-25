@@ -112,6 +112,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
     "generate api with placeholders in place" >> {
       val envs = Map("LAST_TRACK_DESCRIPTION" → "Last track", "PLAYED_TRACKS_DESCRIPTION" → "Add tracks")
       val json = SwaggerSpecGenerator(
+        NamingStrategy.None,
         PrefixDomainModelQualifier("com.iheart"),
         outputTransformers = MapVariablesTransformer(envs) :: Nil).generate("env.routes").get
       val pathJson = json \ "paths"
@@ -126,6 +127,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
   "fail to generate API if environment variable is not found" >> {
     val envs = Map("LAST_TRACK_DESCRIPTION" → "Last track")
     val json = SwaggerSpecGenerator(
+      NamingStrategy.None,
       PrefixDomainModelQualifier("com.iheart"),
       outputTransformers = MapVariablesTransformer(envs) :: Nil).generate("env.routes")
     json must beFailedTry[JsObject].withThrowable[IllegalStateException]("Unable to find variable PLAYED_TRACKS_DESCRIPTION")

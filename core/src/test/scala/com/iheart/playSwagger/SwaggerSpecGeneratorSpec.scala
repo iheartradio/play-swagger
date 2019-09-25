@@ -83,7 +83,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
   "integration" >> {
 
-    lazy val defaultRoutesFile = SwaggerSpecGenerator(ExcludingDomainQualifier).generate()
+    lazy val defaultRoutesFile = SwaggerSpecGenerator(modelQualifier = ExcludingDomainQualifier).generate()
 
     "Use default routes file when no argument is given" >> {
       val json = defaultRoutesFile.get
