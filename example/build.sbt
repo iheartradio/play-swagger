@@ -16,4 +16,3 @@ libraryDependencies ++= Seq(
 )
 
 swaggerDomainNameSpaces := Seq("models")
-
