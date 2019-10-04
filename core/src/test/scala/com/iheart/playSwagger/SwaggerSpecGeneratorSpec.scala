@@ -373,6 +373,11 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       tags must beSome.which(_ == Seq("level2"))
     }
 
+    "hornor the trailing slash" >> {
+      val tags = (pathJson \ "/level1/level2/" \ "get" \ "tags").asOpt[Seq[String]]
+      tags must beSome.which(_ == Seq("level2"))
+    }
+
     "not contain tags that are empty" >> {
       val tags = (json \ "tags").as[Seq[JsObject]]
         .map(o ⇒ (o \ "name").as[String])
