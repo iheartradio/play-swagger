@@ -20,17 +20,27 @@ object SwaggerSpecGenerator {
   private val marker = "##"
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
+
+  def apply(namingStrategy: NamingStrategy, swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(namingStrategy, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+  }
+
+  def apply(namingStrategy: NamingStrategy, outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(namingStrategy, PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
+  }
+
   def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+    SwaggerSpecGenerator(NamingStrategy.None, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
+    SwaggerSpecGenerator(NamingStrategy.None, PrefixDomainModelQualifier(domainNameSpaces: _*), outputTransformers = outputTransformers)
   }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
 }
 
 final case class SwaggerSpecGenerator(
+  namingStrategy:        NamingStrategy         = NamingStrategy.None,
   modelQualifier:        DomainModelQualifier   = PrefixDomainModelQualifier(),
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
@@ -152,7 +162,7 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier, customMappings, swaggerPlayJava).allDefinitions(referredClasses)
+      DefinitionGenerator(modelQualifier, customMappings, swaggerPlayJava, namingStrategy = namingStrategy).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))

@@ -12,7 +12,8 @@ final case class DefinitionGenerator(
   modelQualifier:   DomainModelQualifier = PrefixDomainModelQualifier(),
   mappings:         CustomMappings       = Nil,
   swaggerPlayJava:  Boolean              = false,
-  _mapper:          ObjectMapper         = new ObjectMapper())(implicit cl: ClassLoader) {
+  _mapper:          ObjectMapper         = new ObjectMapper(),
+  namingStrategy:   NamingStrategy       = NamingStrategy.None)(implicit cl: ClassLoader) {
 
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
@@ -30,7 +31,7 @@ final case class DefinitionGenerator(
 
       fields.map { field ⇒
         //TODO: find a better way to get the string representation of typeSignature
-        val name = field.name.decodedName.toString
+        val name = namingStrategy(field.name.decodedName.toString)
         val typeName = dealiasParams(field.typeSignature).toString
         // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
         val param = Parameter(name, typeName, None, None)
@@ -110,13 +111,15 @@ object DefinitionGenerator {
   def apply(
     domainNameSpace:             String,
     customParameterTypeMappings: CustomMappings,
-    swaggerPlayJava:             Boolean       )(implicit cl: ClassLoader): DefinitionGenerator =
+    swaggerPlayJava:             Boolean       ,
+    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava)
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava, namingStrategy = namingStrategy)
 
   def apply(
              domainNameSpace:             String,
-             customParameterTypeMappings: CustomMappings)(implicit cl: ClassLoader): DefinitionGenerator =
+             customParameterTypeMappings: CustomMappings,
+             namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings)
+      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, namingStrategy = namingStrategy)
 }
