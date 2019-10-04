@@ -53,6 +53,10 @@ class SwaggerSpecGeneratorSpec extends Specification {
       gen.fullPath("p/", "/") === "/p/"
     }
 
+    "respect trailing slash from previous element when in route path is empty" >> {
+      gen.fullPath("p/", "") === "/p/"
+    }
+
     "remove top level trailing slash" >> {
       gen.fullPath("p", "/") === "/p"
     }
