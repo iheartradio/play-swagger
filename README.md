@@ -82,29 +82,28 @@ You can find the setup in the example project as well.
 
 #### Step 1
 
-For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the releases tab](https://github.com/iheartradio/play-swagger/releases) for the latest versions)
-
-For Play 2.5
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5")
-```
 
 For play 2.6, sbt 1.x and Scala 2.12.x please use 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.7.5")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.0")
 ```
 
 For play 2.7, sbt 1.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.7.8-PLAY2.7")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.0-PLAY2.7")
 ```
 
-For play 2.6 and sbt 0.13.x please use a special release build with play 2.6 binary. (No longer maintained after 0.6.2)
+For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
+
+```
+For Play 2.5 (No longer maintained after 0.6.5)
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5") 
 ```
 
-For play 2.4 please use a special release build with play 2.4 binary (No longer maintained after 0.6.0)
+For play 2.4 (No longer maintained after 0.6.0)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.0-PLAY2.4")
 
