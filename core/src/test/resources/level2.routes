@@ -1,1 +1,2 @@
 GET     /level3       com.iheart.controllers.Resource.get()
+GET     /             com.iheart.controllers.Resource.get()

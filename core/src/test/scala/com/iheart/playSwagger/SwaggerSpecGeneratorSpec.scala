@@ -53,6 +53,10 @@ class SwaggerSpecGeneratorSpec extends Specification {
       gen.fullPath("p/", "/") === "/p/"
     }
 
+    "respect trailing slash from previous element when in route path is empty" >> {
+      gen.fullPath("p/", "") === "/p/"
+    }
+
     "remove top level trailing slash" >> {
       gen.fullPath("p", "/") === "/p"
     }
@@ -370,6 +374,11 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "handle multiple levels of includes" >> {
       val tags = (pathJson \ "/level1/level2/level3" \ "get" \ "tags").asOpt[Seq[String]]
+      tags must beSome.which(_ == Seq("level2"))
+    }
+
+    "hornor the trailing slash" >> {
+      val tags = (pathJson \ "/level1/level2/" \ "get" \ "tags").asOpt[Seq[String]]
       tags must beSome.which(_ == Seq("level2"))
     }
 
