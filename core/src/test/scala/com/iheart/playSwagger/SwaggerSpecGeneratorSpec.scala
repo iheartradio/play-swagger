@@ -17,7 +17,9 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
 
-case class EnumContainer(javaEnum: SampleJavaEnum, scalaEnum: SampleScalaEnum.SampleScalaEnum)
+case class EnumContainer(javaEnum: SampleJavaEnum,
+                         scalaEnum: SampleScalaEnum.SampleScalaEnum,
+                         enumeratumEnum: SampleEnumeratumEnum)
 
 case class AllOptional(a: Option[String], b: Option[String])
 
@@ -185,6 +187,11 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "read scala enum with container" >> {
       enumContainerJson must beSome[JsObject]
       (enumContainerJson.get \ "properties" \ "scalaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("One", "Two"))
+    }
+
+    "read enumeratum enum with container" >> {
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "enumeratumEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("info_one", "info_two"))
     }
 
     "definition property have no name" >> {
