@@ -1,10 +1,10 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter }
+import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
-import scala.reflect.runtime.universe
 
+import scala.reflect.runtime.universe
 import scala.util.Try
 
 object SwaggerParameterMapper {
@@ -59,8 +59,9 @@ object SwaggerParameterMapper {
         enum = enum)
 
     val enumParamMF: MappingFunction = {
-      case JavaEnum(enumConstants)  ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
-      case ScalaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case JavaEnum(enumConstants)       ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case ScalaEnum(enumConstants)      ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case EnumeratumEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
     }
 
     def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
@@ -169,5 +170,28 @@ object SwaggerParameterMapper {
     }
   }
 
+  /**
+   * Unapply the type by name and return the Enumeratum enum constants if those exist.
+   */
+  private object EnumeratumEnum {
+    def unapply(className: String): Option[Seq[String]] = {
+      (for {
+        clazz     <- Try(Class.forName(className + "$"))
+        singleton <- Try(clazz.getField("MODULE$").get(clazz))
+        values    <- Try(singleton.getClass.getDeclaredField("values"))
+        _         =  values.setAccessible(true)
+        entries   <- Try(values
+                          .get(singleton)
+                          .asInstanceOf[Vector[_]]
+                          .map { item =>
+                            val entryName = item.getClass.getMethod("entryName")
+                            entryName.setAccessible(true)
+                            entryName.invoke(item).asInstanceOf[String]
+                          }
+                          .toList
+                     )
+      } yield entries).toOption
+    }
+  }
 }
 
