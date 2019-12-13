@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{GenSwaggerParameter, _}
+import com.iheart.playSwagger.Domain._
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 
