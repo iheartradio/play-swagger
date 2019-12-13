@@ -200,6 +200,7 @@ final case class SwaggerSpecGenerator(
 
   private lazy val genParamWrites: OWrites[GenSwaggerParameter] = {
     val under = if (swaggerV3) __ \ "schema" else __
+    val nullableName = if (swaggerV3) "nullable" else "x-nullable"
 
     (
       (__ \ 'name).write[String] ~
@@ -207,6 +208,7 @@ final case class SwaggerSpecGenerator(
       (under \ 'type).writeNullable[String] ~
       (under \ 'format).writeNullable[String] ~
       (__ \ 'required).write[Boolean] ~
+      (under \ nullableName).writeNullable[Boolean] ~
       (under \ 'default).writeNullable[JsValue] ~
       (under \ 'example).writeNullable[JsValue] ~
       (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
@@ -220,12 +222,15 @@ final case class SwaggerSpecGenerator(
           if (swaggerV3) Json.obj("schema" -> input) else input
         }
 
+        val nullableName = if (swaggerV3) "nullable" else "x-nullable"
+
         val under = if (swaggerV3) __ \ "schema" else __
         val w = (
           (__ \ 'name).write[String] ~
           (__ \ 'required).write[Boolean] ~
+          (under \ nullableName).writeNullable[Boolean] ~
           (under \ 'default).writeNullable[JsValue])(
-            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.default))
+            (c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.nullable, c.default))
 
         (w.writes(csp) ++ withPrefix(head)) :: tail
       case Nil ⇒ Nil
@@ -242,14 +247,19 @@ final case class SwaggerSpecGenerator(
     case c: CustomSwaggerParameter ⇒ customPropWrites.writes(c)
   }
 
-  private lazy val genPropWrites: Writes[GenSwaggerParameter] = (
-    (__ \ 'type).writeNullable[String] ~
-    (__ \ 'format).writeNullable[String] ~
-    (__ \ 'default).writeNullable[JsValue] ~
-    (__ \ 'example).writeNullable[JsValue] ~
-    (__ \ "$ref").writeNullable[String] ~
-    (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
-    (__ \ "enum").writeNullable[Seq[String]])(p ⇒ (p.`type`, p.format, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
+  private lazy val genPropWrites: Writes[GenSwaggerParameter] = {
+    val nullableName = if (swaggerV3) "nullable" else "x-nullable"
+
+    (
+      (__ \ 'type).writeNullable[String] ~
+      (__ \ 'format).writeNullable[String] ~
+      (__ \ nullableName).writeNullable[Boolean] ~
+      (__ \ 'default).writeNullable[JsValue] ~
+      (__ \ 'example).writeNullable[JsValue] ~
+      (__ \ "$ref").writeNullable[String] ~
+      (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
+      (__ \ "enum").writeNullable[Seq[String]])(p ⇒ (p.`type`, p.format, p.nullable, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum))
+  }
 
   implicit class PathAdditions(path: JsPath) {
     def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =

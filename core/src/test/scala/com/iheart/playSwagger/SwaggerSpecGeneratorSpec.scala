@@ -143,6 +143,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (limitParamJson \ "name").as[String] === "limit"
       (limitParamJson \ "format").as[String] === "int32"
       (limitParamJson \ "required").as[Boolean] === false
+      (limitParamJson \ "x-nullable").as[Boolean] === true
     }
 
     "merge comment in" >> {
@@ -336,6 +337,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       "set default value" >> {
         (paramJson \ "default").as[Boolean] === true
       }
+
+      "not set nullable" >> {
+        (paramJson \ "x-nullable").isEmpty
+      }
     }
 
     "parse param with default triple quoted string value as optional field" >> {
@@ -356,6 +361,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       "set default value" >> {
         (paramJson \ "default").as[String] === """defaultValue with triple quotes"""
+      }
+
+      "not set nullable" >> {
+        (paramJson \ "x-nullable").isEmpty
       }
     }
 
@@ -378,6 +387,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       "set default value" >> {
 
         (paramJson \ "default").as[String] === "defaultValue"
+      }
+
+      "not set nullable" >> {
+        (paramJson \ "x-nullable").isEmpty
       }
     }
 
@@ -413,6 +426,14 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "definitions does not expose 'required' array if there are no required properties" >> {
       (allOptionalDefJson \ "required").asOpt[Seq[String]] === None
+    }
+
+    "properties set x-nullable on options" >> {
+      (trackJson \ "properties" \ "genre" \ "x-nullable").as[Boolean] === true
+    }
+
+    "properties don't set x-nullable on non-options" >> {
+      (trackJson \ "properties" \ "name" \ "x-nullable").isEmpty === true
     }
 
     "handle multiple levels of includes" >> {
@@ -540,6 +561,14 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (firstParam \ "name").as[String] === "zid"
       (firstParam \ "schema" \ "type").as[String] === "string"
       (firstParam \ "required").as[Boolean] === true
+    }
+
+    "properties set nullable on options" >> {
+      (trackJson \ "properties" \ "genre" \ "nullable").as[Boolean] === true
+    }
+
+    "properties don't set nullable on non-options" >> {
+      (trackJson \ "properties" \ "name" \ "nullable").isEmpty === true
     }
   }
 }
