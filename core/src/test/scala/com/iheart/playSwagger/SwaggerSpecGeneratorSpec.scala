@@ -1,6 +1,8 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{ CustomTypeMapping, CustomMappings }
+import java.time.LocalDate
+
+import com.iheart.playSwagger.Domain.CustomMappings
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -10,7 +12,7 @@ case class Artist(name: String, age: Int)
 case class Student(name: String, teacher: Option[Teacher])
 case class Teacher(name: String)
 
-case class Animal(name: String, keeper: Keeper)
+case class Animal(name: String, keeper: Keeper, birthDate: LocalDate, lastCheckup: Option[LocalDate])
 
 case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 
@@ -457,6 +459,14 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       val properties = (definitionsJson \ "com.iheart.playSwagger.Animal" \ "properties").as[JsObject]
       (properties \ "keeper" \ "$ref").as[String] === "#/definitions/Keeper"
+
+      val birthDateProperties = (properties \ "birthDate").get
+      (birthDateProperties \ "type").as[String] === "string"
+      (birthDateProperties \ "format").as[String] === "date"
+      (birthDateProperties \ "x-nullable").isEmpty === true
+
+      val lastCheckupProperties = (properties \ "lastCheckup").get
+      (lastCheckupProperties \ "x-nullable").as[Boolean] === true
 
       (definitionsJson \ "com.iheart.playSwagger.Keeper").toOption must beEmpty
     }

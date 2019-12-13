@@ -233,7 +233,10 @@ final case class SwaggerSpecGenerator(
   }
 
   private lazy val customPropWrites: Writes[CustomSwaggerParameter] = Writes { cwp ⇒
+    val nullableName = if (swaggerV3) "nullable" else "x-nullable"
+
     (__ \ 'default).writeNullable[JsValue].writes(cwp.default) ++
+    (__ \ nullableName).writeNullable[Boolean].writes(cwp.nullable) ++
       (cwp.specAsProperty orElse cwp.specAsParameter.headOption).getOrElse(Json.obj())
   }
 
