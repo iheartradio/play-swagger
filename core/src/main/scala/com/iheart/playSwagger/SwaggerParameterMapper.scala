@@ -71,7 +71,7 @@ object SwaggerParameterMapper {
 
     def optionalParam(optionalTpe: String) = {
       val asRequired = mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier, customMappings = customMappings)
-      asRequired.update(required = false, default = asRequired.default)
+      asRequired.update(required = false, nullable = true, default = asRequired.default)
     }
 
     def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter ⇒ GenSwaggerParameter): SwaggerParameter = param match {
