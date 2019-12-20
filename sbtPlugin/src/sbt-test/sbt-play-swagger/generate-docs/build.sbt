@@ -82,7 +82,8 @@ TaskKey[Unit]("check") := {
       |               "type":"string"
       |            },
       |            "genre":{
-      |               "type":"string"
+      |               "type":"string",
+      |               "x-nullable": true
       |            },
       |            "artist":{
       |               "$$ref":"#/definitions/namespace1.Artist"
