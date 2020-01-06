@@ -8,7 +8,7 @@ scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(
   jdbc,
-  cache,
+  cacheApi,
   ws,
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test,
