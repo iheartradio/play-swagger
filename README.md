@@ -82,14 +82,14 @@ You can find the setup in the example project as well.
 #### Step 1
 
 
-For play 2.6, sbt 1.x and Scala 2.12.x please use 
+For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.0")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1")
 ```
 
 For play 2.7, sbt 1.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.0-PLAY2.7")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1-PLAY2.7")
 ```
 
 For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
