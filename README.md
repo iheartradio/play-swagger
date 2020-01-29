@@ -347,4 +347,7 @@ POST   /tracks       controller.Api.createTrack()
 
 #### Is play java supported? 
 
-Mostly. Auto definition generation for classes only works with Java classes that have all the fields in the first constructor. 
+you can generate module definition from java POJO by setting the flag:
+```
+  playJava := true
+```
