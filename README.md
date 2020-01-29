@@ -347,7 +347,7 @@ POST   /tracks       controller.Api.createTrack()
 
 #### Is play java supported? 
 
-you can generate module definition from java POJO by setting the flag:
+you can generate models definition from java POJO by setting the flag:
 ```
   playJava := true
 ```
