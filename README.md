@@ -351,3 +351,4 @@ you can generate module definition from java POJO by setting the flag:
 ```
   playJava := true
 ```
+The flag only suport PlayJava 2.7 and 2.8
