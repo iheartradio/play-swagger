@@ -74,5 +74,13 @@ POST  /iWantAQueryBody                     controllers.Test.queryBodyHandler(bod
 #      schema:
 #        $ref: '#/definitions/com.iheart.playSwagger.Parent'
 ###
-GET  /iWantAChild                     controllers.Test.queryForChild
+GET  /iWantAChild                           controllers.Test.queryForChild
 
+###
+#  responses:
+#    default:
+#      description: Something optional
+#      schema:
+#        $ref: '#/definitions/com.iheart.playSwagger.TypeParametricWrapper[String, com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat], Seq[com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]]]'
+###
+GET  /iWantVariousStuff                     controllers.Test.queryParametricPolymorphic
