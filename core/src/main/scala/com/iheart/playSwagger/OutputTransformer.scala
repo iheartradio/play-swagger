@@ -1,7 +1,5 @@
 package com.iheart.playSwagger
 
-import java.util.regex.Pattern
-
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import play.api.libs.json.{ JsArray, JsString, JsValue, JsObject }
 
@@ -69,3 +67,28 @@ class PlaceholderVariablesTransformer(map: String ⇒ Option[String], pattern: R
 final case class MapVariablesTransformer(map: Map[String, String]) extends PlaceholderVariablesTransformer(map.get)
 class EnvironmentVariablesTransformer extends PlaceholderVariablesTransformer((key: String) ⇒ Option(System.getenv(key)))
 
+class ParametricTypeNamesTransformer extends OutputTransformer {
+  override def apply(obj: JsObject): Try[JsObject] = Success(tf(obj))
+
+  private def tf(obj: JsObject): JsObject = JsObject {
+    obj.fields.map {
+      case (key, value: JsObject) ⇒ (normalize(key), tf(value))
+      case (key, JsString(value)) ⇒ (normalize(key), JsString(normalize(value)))
+      case (key, other)           ⇒ (normalize(key), other)
+      case e                      ⇒ e
+    }
+  }
+
+  private final val normalize: String ⇒ String = {
+    case ParametricType.ParametricTypeClassName(className, argsGroup) ⇒
+      val normalizedArgs =
+        argsGroup
+          .split(",")
+          .iterator
+          .map(_.trim)
+          .map(normalize)
+          .mkString("_")
+      s"$className-$normalizedArgs"
+    case n ⇒ n
+  }
+}
