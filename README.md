@@ -291,6 +291,66 @@ In build.sbt, add
 swaggerPrettyJson := true
 ```
 
+#### Support for generic types in schemas
+Generic types in schema definitions for request/response body is supported. Example:
+```scala
+package models
+
+case class Foo[T](payload: T)
+case class AnotherOne(someString: String)
+```
+One can, then, reference the schema directly with `models.Foo[models.AnotherOne]` 
+and a correct OpenAPI 3 spec will be generated (not tested with Swagger 2.0):
+```yaml
+###
+#   summary: Get a message
+#   responses:
+#       200:
+#           description: success
+#           content:
+#               application/json:
+#                   schema:
+#                       $ref: '#/components/schemas/models.Foo[models.AnotherOne]'
+###
+GET     /message        controllers.AsyncController.parametric
+```
+The generated schema name, however, cannot contain `[`, `]` or `,` which appear in type argument lists in Scala. 
+Therefore, there's a default `OutputTransformer` (`ParametricTypeNamesTransformerSpec`) which normalises the name into the URL-compliant form. 
+The definitions output would then look like:
+```json
+{
+  "components" : {
+    "schemas" : {
+      "models.AnotherOne" : {
+        "properties" : {
+          "someString" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "someString" ]
+      },
+      "models.Foo-models.AnotherOne" : {
+        "properties" : {
+          "payload" : {
+            "$ref" : "#/components/schemas/models.AnotherOne"
+          }
+        },
+        "required" : [ "payload" ]
+      }
+    }
+  },
+...
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/models.Foo-models.AnotherOne"
+                }
+              }
+            }
+...
+}
+```
+
 #### Where to find more examples?
 In the [tests](/core/src/test/scala/com/iheart/playSwagger/SwaggerSpecGeneratorSpec.scala)!
 

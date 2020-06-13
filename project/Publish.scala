@@ -15,7 +15,7 @@ object Publish {
       "git@github.com:iheartradio/play-swagger.git")),
     pomIncludeRepository := { _ ⇒ false },
     publishArtifact in Test := false,
-    releaseProcess :=  Seq[ReleaseStep](
+    releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
       releaseStepCommandAndRemaining("+clean"),
@@ -26,8 +26,7 @@ object Publish {
       releaseStepCommandAndRemaining("+publish"),
       setNextVersion,
       commitNextVersion,
-      pushChanges)
-  )
+      pushChanges))
 
 
   val sbtPluginSettings = Seq(
