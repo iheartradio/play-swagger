@@ -31,7 +31,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerTarget := target.value / "swagger",
     swaggerFileName := "swagger.json",
     swaggerRoutesFile := "routes",
-    swaggerOutputTransformers := Seq(),
+    swaggerOutputTransformers := Seq("com.iheart.playSwagger.ParametricTypeNamesTransformer"),
     swaggerAPIVersion := version.value,
     swaggerPrettyJson := false,
     swaggerPlayJava := false,
