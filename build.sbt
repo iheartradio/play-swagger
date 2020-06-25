@@ -30,6 +30,7 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playRoutesCompiler ++
       Dependencies.playJson ++
       Dependencies.enumeratum ++
+      Dependencies.refined ++
       Dependencies.test ++
       Dependencies.yaml,
     scalaVersion := "2.12.8",
