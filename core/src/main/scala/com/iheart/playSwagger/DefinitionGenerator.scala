@@ -32,7 +32,11 @@ final case class DefinitionGenerator(
       fields.map { field ⇒
         //TODO: find a better way to get the string representation of typeSignature
         val name = namingStrategy(field.name.decodedName.toString)
-        val typeName = dealiasParams(field.typeSignature).toString
+        val typeName = dealiasParams(field.typeSignature).toString match {
+          case "eu.timepit.refined.api.Refined" => field.info.dealias.typeArgs.head.toString
+          case v  => v
+        }
+
         // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
         val param = Parameter(name, typeName, None, None)
         mapParam(param, modelQualifier, mappings)
