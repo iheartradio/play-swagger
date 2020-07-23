@@ -5,14 +5,13 @@ import java.io.File
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import play.api.libs.json._
-import ResourceReader.read
+import com.iheart.playSwagger.ResourceReader.read
+import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
-import SwaggerParameterMapper.mapParam
-
-import scala.collection.immutable.ListMap
+import play.api.libs.json._
 import play.routes.compiler._
 
+import scala.collection.immutable.ListMap
 import scala.util.{ Failure, Success, Try }
 
 object SwaggerSpecGenerator {
@@ -37,6 +36,7 @@ object SwaggerSpecGenerator {
   }
 
   case object MissingBaseSpecException extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
+
 }
 
 final case class SwaggerSpecGenerator(
@@ -45,8 +45,11 @@ final case class SwaggerSpecGenerator(
   defaultPostBodyFormat: String                 = "application/json",
   outputTransformers:    Seq[OutputTransformer] = Nil,
   swaggerV3:             Boolean                = false,
+  swaggerPlayJava:       Boolean                = false,
   apiVersion:            Option[String]         = None)(implicit cl: ClassLoader) {
-  import SwaggerSpecGenerator.{ customMappingsFileName, baseSpecFileName, MissingBaseSpecException }
+
+  import SwaggerSpecGenerator.{ MissingBaseSpecException, baseSpecFileName, customMappingsFileName }
+
   // routes with their prefix
   type Routes = (String, Seq[Route])
 
@@ -161,7 +164,10 @@ final case class SwaggerSpecGenerator(
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(modelQualifier, customMappings, namingStrategy).allDefinitions(referredClasses)
+      DefinitionGenerator(
+        modelQualifier = modelQualifier,
+        mappings = customMappings,
+        namingStrategy = namingStrategy).allDefinitions(referredClasses)
     }
 
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))

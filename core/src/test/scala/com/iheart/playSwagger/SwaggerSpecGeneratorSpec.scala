@@ -24,6 +24,13 @@ case class AllOptional(a: Option[String], b: Option[String])
 trait Parent
 case class Child(name: String) extends Parent
 
+case class EitherRepr[T](payload: Option[T], reason: Option[String])
+
+case class Dog(legs: Int)
+case class Cat(catName: String)
+
+case class TypeParametricWrapper[T, O, S](simplePayload: T, maybeOtherPayload: Option[O], seq: Seq[S])
+
 class SwaggerSpecGeneratorSpec extends Specification {
   implicit val cl = getClass.getClassLoader
   val gen = SwaggerSpecGenerator()
@@ -109,6 +116,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
     lazy val enumContainerJson = (definitionsJson \ "com.iheart.playSwagger.EnumContainer").asOpt[JsObject]
     lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
+    lazy val typeParametricWrapperJson = (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[String, com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat], Seq[com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]]]").as[JsObject]
+    lazy val otherTypeParametricWrapperJson = (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[Option[String], Seq[com.iheart.playSwagger.Cat], Seq[Option[com.iheart.playSwagger.Dog]]]").as[JsObject]
+    lazy val dogEitherJson = (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]").as[JsObject]
+    lazy val catEitherJson = (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]").as[JsObject]
+    lazy val dogJson = (definitionsJson \ "com.iheart.playSwagger.Dog").as[JsObject]
+    lazy val catJson = (definitionsJson \ "com.iheart.playSwagger.Cat").as[JsObject]
 
     def parametersOf(json: JsValue): Seq[JsValue] = {
       (json \ "parameters").as[JsArray].value
@@ -181,6 +194,27 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "read scala enum with container" >> {
       enumContainerJson must beSome[JsObject]
       (enumContainerJson.get \ "properties" \ "scalaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("One", "Two"))
+    }
+
+    "read parametric type wrappers" >> {
+      (typeParametricWrapperJson \ "properties" \ "simplePayload" \ "type").as[String] === "string"
+      (typeParametricWrapperJson \ "properties" \ "maybeOtherPayload" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]"
+      (typeParametricWrapperJson \ "properties" \ "seq" \ "items" \ "items" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]"
+
+      (typeParametricWrapperJson \ "required").as[Seq[String]] === Seq("simplePayload", "seq")
+
+      (otherTypeParametricWrapperJson \ "properties" \ "simplePayload" \ "type").as[String] === "string"
+      (otherTypeParametricWrapperJson \ "properties" \ "maybeOtherPayload" \ "type").as[String] === "array"
+      (otherTypeParametricWrapperJson \ "properties" \ "maybeOtherPayload" \ "items" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.Cat"
+      (otherTypeParametricWrapperJson \ "properties" \ "seq" \ "type").as[String] === "array"
+      (otherTypeParametricWrapperJson \ "properties" \ "seq" \ "items" \ "type").as[String] === "array"
+      (otherTypeParametricWrapperJson \ "properties" \ "seq" \ "items" \ "items" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.Dog"
+      (otherTypeParametricWrapperJson \ "required").as[Seq[String]] === Seq("seq")
+
+      (dogEitherJson \ "properties" \ "payload" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.Dog"
+      (catEitherJson \ "properties" \ "payload" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.Cat"
+      (dogJson \ "properties" \ "legs" \ "type").as[String] === "integer"
+      (catJson \ "properties" \ "catName" \ "type").as[String] === "string"
     }
 
     "definition property have no name" >> {
