@@ -19,7 +19,7 @@ object SwaggerParameterMapper {
     def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
     def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
-      s"$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
+      s"^$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
     }
 
     def collectionItemType(typeName: String): Option[String] =
