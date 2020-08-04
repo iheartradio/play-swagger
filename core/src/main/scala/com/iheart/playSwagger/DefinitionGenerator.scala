@@ -9,43 +9,44 @@ import scala.collection.JavaConverters
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-  modelQualifier:   DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:         CustomMappings       = Nil,
-  swaggerPlayJava:  Boolean              = false,
-  _mapper:          ObjectMapper         = new ObjectMapper(),
-  namingStrategy:   NamingStrategy       = NamingStrategy.None)(implicit cl: ClassLoader) {
-
+                                      modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
+                                      mappings: CustomMappings = Nil,
+                                      swaggerPlayJava: Boolean = false,
+                                      _mapper: ObjectMapper = new ObjectMapper(),
+                                      namingStrategy: NamingStrategy = NamingStrategy.None)(implicit cl: ClassLoader) {
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
       dealiasParams(arg.dealias)
     })
   }
 
-  def definition(tpe: Type): Definition = {
-    val properties = if (swaggerPlayJava) {
-      definitionForPOJO(tpe)
-    } else {
-      val fields = tpe.decls.collectFirst {
-        case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
-      }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
+  def definition: ParametricType ⇒ Definition = {
+    case parametricType@ParametricType(tpe, reifiedTypeName, _, _) ⇒
 
-      fields.map { field ⇒
-        //TODO: find a better way to get the string representation of typeSignature
-        val name = namingStrategy(field.name.decodedName.toString)
-        val typeName = dealiasParams(field.typeSignature).toString match {
-          case "eu.timepit.refined.api.Refined" => field.info.dealias.typeArgs.head.toString
-          case v  => v
+      val properties = if (swaggerPlayJava) {
+        definitionForPOJO(tpe)
+      } else {
+        val fields = tpe.decls.collectFirst {
+          case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
+        }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
+
+        fields.map { field ⇒
+          //TODO: find a better way to get the string representation of typeSignature
+          val name = namingStrategy(field.name.decodedName.toString)
+          val rawTypeName = dealiasParams(field.typeSignature).toString match {
+            case "eu.timepit.refined.api.Refined" => field.info.dealias.typeArgs.head.toString
+            case v => v
+          }
+          val typeName = parametricType.resolve(rawTypeName)
+          // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
+          val param = Parameter(name, typeName, None, None)
+          mapParam(param, modelQualifier, mappings)
         }
-
-        // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
-        val param = Parameter(name, typeName, None, None)
-        mapParam(param, modelQualifier, mappings)
       }
-    }
 
-    Definition(
-      name = tpe.typeSymbol.fullName,
-      properties = properties)
+      Definition(
+        name = reifiedTypeName,
+        properties = properties)
   }
 
   private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
@@ -58,7 +59,7 @@ final case class DefinitionGenerator(
     val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
     propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
       val name = entry.getName
-      val className = entry.getPrimaryType.getRawClass.getName
+      val className = entry.getPrimaryMember.getType.getRawClass.getName
       val generalTypeName = if (entry.getField != null && entry.getField.getType.hasGenericTypes) {
         val generalType = entry.getField.getType.getContentType.getRawClass.getName
         s"$className[$generalType]"
@@ -75,27 +76,28 @@ final case class DefinitionGenerator(
     }
   }
 
-  def definition[T: TypeTag]: Definition = definition(weakTypeOf[T])
+  def definition[T: TypeTag]: Definition = definition(ParametricType[T])
 
-  def definition(className: String): Definition = {
-    val mirror = runtimeMirror(cl)
-    val sym = mirror.staticClass(className)
-    val tpe = sym.selfType
-    definition(tpe)
-  }
+  def definition(className: String): Definition = definition(ParametricType(className))
 
   def allDefinitions(typeNames: Seq[String]): List[Definition] = {
-    def genSwaggerParameter: PartialFunction[SwaggerParameter, GenSwaggerParameter] =
-      { case p: GenSwaggerParameter ⇒ p }
+    def genSwaggerParameter: PartialFunction[SwaggerParameter, GenSwaggerParameter] = {
+      case p: GenSwaggerParameter ⇒ p
+    }
 
     def allReferredDefs(defName: String, memo: List[Definition]): List[Definition] = {
+      def findRefTypes(p: GenSwaggerParameter): Seq[String] =
+        p.referenceType.toSeq ++ {
+          p.items.toSeq.collect(genSwaggerParameter).flatMap(findRefTypes)
+        }
+
       memo.find(_.name == defName) match {
         case Some(_) ⇒ memo
         case None ⇒
           val thisDef = definition(defName)
           val refNames: Seq[String] = for {
             p ← thisDef.properties.collect(genSwaggerParameter)
-            className ← p.referenceType orElse p.items.collect(genSwaggerParameter).flatMap(_.referenceType)
+            className ← findRefTypes(p)
             if modelQualifier.isModel(className)
           } yield className
 
@@ -113,17 +115,17 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-    domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings,
-    swaggerPlayJava:             Boolean       ,
-    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+             domainNameSpace: String,
+             customParameterTypeMappings: CustomMappings,
+             swaggerPlayJava: Boolean,
+             namingStrategy: NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava, namingStrategy = namingStrategy)
 
   def apply(
-             domainNameSpace:             String,
+             domainNameSpace: String,
              customParameterTypeMappings: CustomMappings,
-             namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+             namingStrategy: NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, namingStrategy = namingStrategy)
 }
