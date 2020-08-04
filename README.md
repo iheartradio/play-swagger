@@ -1,7 +1,6 @@
 
 [![Build Status](https://travis-ci.org/iheartradio/play-swagger.svg)](https://travis-ci.org/iheartradio/play-swagger)
 [![Coverage Status](https://coveralls.io/repos/iheartradio/play-swagger/badge.svg?branch=master&service=github)](https://coveralls.io/github/iheartradio/play-swagger?branch=master)
-[![Stories in Ready](https://badge.waffle.io/iheartradio/play-swagger.svg?label=ready&title=Ready)](http://waffle.io/iheartradio/play-swagger)
 [ ![Download](https://api.bintray.com/packages/iheartradio/maven/play-swagger/images/download.svg) ](https://bintray.com/iheartradio/maven/play-swagger/_latestVersion)
 [![Gitter](https://badges.gitter.im/iheartradio/play-swagger.svg)](https://gitter.im/iheartradio/play-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -82,29 +81,33 @@ You can find the setup in the example project as well.
 
 #### Step 1
 
-For play2.5 add Swagger sbt plugin dependency to your plugins.sbt (see [the releases tab](https://github.com/iheartradio/play-swagger/releases) for the latest versions)
 
-For Play 2.5
+For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use 
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1")
 ```
 
-For play 2.6, sbt 1.x and Scala 2.12.x please use 
+For play 2.7, sbt 1.x please use
 ```scala
-addSbtPlugin("com.iheart" %% "sbt-play-swagger" % "0.7.5")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1-PLAY2.7")
 ```
 
-For play 2.7, sbt 1.x and Scala 2.12.x please use
+For play 2.8, please use
 ```scala
-addSbtPlugin("com.iheart" %% "sbt-play-swagger" % "0.7.5-PLAY2.7")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1-PLAY2.8")
 ```
 
-For play 2.6 and sbt 0.13.x please use a special release build with play 2.6 binary. (No longer maintained after 0.6.2)
+For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
+
+```
+For Play 2.5 (No longer maintained after 0.6.5)
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5") 
 ```
 
-For play 2.4 please use a special release build with play 2.4 binary (No longer maintained after 0.6.0)
+For play 2.4 (No longer maintained after 0.6.0)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.0-PLAY2.4")
 
@@ -404,4 +407,8 @@ POST   /tracks       controller.Api.createTrack()
 
 #### Is play java supported? 
 
-Mostly. Auto definition generation for classes only works with Java classes that have all the fields in the first constructor. 
+you can generate models definition from java POJO by setting the flag:
+```
+  playJava := true
+```
+The flag only suport PlayJava 2.7 and 2.8
