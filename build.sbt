@@ -1,7 +1,7 @@
 
 organization in ThisBuild := "com.iheart"
 
-
+lazy val scalaV = "2.12.12"
 
 lazy val noPublishSettings = Seq(
   skip in publish := true,
@@ -17,7 +17,7 @@ lazy val root = project.in(file("."))
     sourcesInBase := false,
     noPublishSettings,
       
-    scalaVersion := "2.12.8"
+    scalaVersion := scalaV
   )
 
 lazy val playSwagger = project.in(file("core"))
@@ -33,8 +33,8 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.refined ++
       Dependencies.test ++
       Dependencies.yaml,
-    scalaVersion := "2.12.8",
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
+    scalaVersion := scalaV,
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.3")
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
@@ -50,7 +50,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     name := "sbt-play-swagger",
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
-    scalaVersion := "2.12.8",
+    scalaVersion := scalaV,
     scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated,
     scriptedLaunchOpts := { scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
