@@ -24,7 +24,6 @@ import java.util.Objects;
  */
 @SuppressWarnings({"all"})
 @ParametersAreNonnullByDefault
-@javax.annotation.Generated("org.immutables.processor.ProxyProcessor")
 @Immutable
 @CheckReturnValue
 public final class Attribute{
