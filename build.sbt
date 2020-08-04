@@ -36,7 +36,7 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.test ++
       Dependencies.yaml,
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.3")
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
