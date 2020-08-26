@@ -173,12 +173,13 @@ final case class SwaggerSpecGenerator(
     val definitionsJson = JsObject(definitions.map(d ⇒ d.name → Json.toJson(d)))
 
     //TODO: remove hardcoded path
-    val generatedTagsJson = JsArray(
-      paths.keys
-        //.filterNot(_ == RoutesFileReader.rootRoute)
-        .map(tag ⇒ Json.obj("name" → tag)).toSeq)
+    //    val generatedTagsJson = JsArray(
+    //      paths.keys
+    //        //.filterNot(_ == RoutesFileReader.rootRoute)
+    //        .map(tag ⇒ Json.obj("name" → tag)).toSeq)
 
-    val tagsJson = mergeByName(generatedTagsJson, (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray()))
+    // val tagsJson = mergeByName(generatedTagsJson, (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray()))
+    val tagsJson = (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray())
 
     val pathsAndDefinitionsJson = Json.obj(
       "paths" → pathsJson,
