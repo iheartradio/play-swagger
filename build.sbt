@@ -33,7 +33,8 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playJson ++
       Dependencies.enumeratum ++
       Dependencies.test ++
-      Dependencies.yaml,
+      Dependencies.yaml :+
+      "joda-time" % "joda-time" % "2.10.6" % Test,
     scalaVersion := scalaV,
     crossScalaVersions := Seq(scalaVersion.value, "2.13.3")
   )

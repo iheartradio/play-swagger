@@ -268,7 +268,21 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must containAllOf(Seq("customResource", "liveMeta", "player", "resource"))
+      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must contain(exactly("player"))
+
+      val allTags =
+        pathJson.as[JsObject].value.values.flatMap { pathObj =>
+          pathObj.as[JsObject].value.values.flatMap { opObj =>
+            val tag = (opObj \ "tags").asOpt[Seq[String]]
+
+            tag must beSome[Seq[String]]
+            tag.get must have size 1
+            tag.get
+          }
+        }.toSet
+
+      allTags must containAllOf(Seq("test", "students", "player", "resource", "level2", "customResource",
+        "liveMeta", "referencing", "zoo"))
     }
 
     "merge tag description from base" >> {
