@@ -15,9 +15,10 @@ object Domain {
   sealed trait SwaggerParameter {
     def name: String
     def required: Boolean
+    def nullable: Option[Boolean]
     def default: Option[JsValue]
 
-    def update(required: Boolean, default: Option[JsValue]): SwaggerParameter
+    def update(required: Boolean, nullable: Boolean, default: Option[JsValue]): SwaggerParameter
   }
 
   final case class GenSwaggerParameter(
@@ -26,12 +27,13 @@ object Domain {
     `type`:        Option[String]           = None,
     format:        Option[String]           = None,
     required:      Boolean                  = true,
+    nullable:      Option[Boolean]          = None,
     default:       Option[JsValue]          = None,
     example:       Option[JsValue]          = None,
     items:         Option[SwaggerParameter] = None,
     enum:          Option[Seq[String]]      = None) extends SwaggerParameter {
-    def update(_required: Boolean, _default: Option[JsValue]) =
-      copy(required = _required, default = _default)
+    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]) =
+      copy(required = _required, nullable = Some(_nullable), default = _default)
   }
 
   final case class CustomSwaggerParameter(
@@ -39,9 +41,10 @@ object Domain {
     specAsParameter: List[JsObject],
     specAsProperty:  Option[JsObject],
     required:        Boolean          = true,
+    nullable:        Option[Boolean]  = None,
     default:         Option[JsValue]  = None) extends SwaggerParameter {
-    def update(_required: Boolean, _default: Option[JsValue]) =
-      copy(required = _required, default = _default)
+    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]) =
+      copy(required = _required, nullable = Some(_nullable), default = _default)
   }
 
   type CustomMappings = List[CustomTypeMapping]

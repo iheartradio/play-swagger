@@ -85,10 +85,12 @@ class SwaggerParameterMapperSpec extends Specification {
       mapParam(Parameter("aField", "Option[Seq[String]]", None, None)) === GenSwaggerParameter(
         name = "aField",
         required = false,
+        nullable = Some(true),
         `type` = Some("array"),
         items = Some(GenSwaggerParameter(
           name = "aField",
           required = true,
+          nullable = None,
           `type` = Some("string"))))
     }
 
