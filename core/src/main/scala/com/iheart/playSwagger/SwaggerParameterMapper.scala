@@ -184,7 +184,9 @@ object SwaggerParameterMapper {
                           .get(singleton)
                           .asInstanceOf[Vector[_]]
                           .map { item =>
-                            val entryName = item.getClass.getMethod("entryName")
+                            val entryName = Try(
+                              item.getClass.getMethod("entryName")
+                            ).getOrElse(item.getClass.getMethod("value"))
                             entryName.setAccessible(true)
                             entryName.invoke(item).asInstanceOf[String]
                           }
