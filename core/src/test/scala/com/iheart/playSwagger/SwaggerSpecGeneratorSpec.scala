@@ -1,13 +1,11 @@
 package com.iheart.playSwagger
 
-<<<<<<< HEAD
+
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomTypeMapping}
 import com.iheart.playSwagger.RefinedTypes.{Age, SpotifyAccount}
-=======
->>>>>>> release
+
 import java.time.LocalDate
 
-import com.iheart.playSwagger.Domain.CustomMappings
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
