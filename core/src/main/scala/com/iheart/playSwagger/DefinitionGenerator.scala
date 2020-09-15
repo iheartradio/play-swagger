@@ -9,11 +9,12 @@ import scala.collection.JavaConverters
 import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
-                                      modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-                                      mappings: CustomMappings = Nil,
-                                      swaggerPlayJava: Boolean = false,
-                                      _mapper: ObjectMapper = new ObjectMapper(),
-                                      namingStrategy: NamingStrategy = NamingStrategy.None)(implicit cl: ClassLoader) {
+  modelQualifier:  DomainModelQualifier = PrefixDomainModelQualifier(),
+  mappings:        CustomMappings       = Nil,
+  swaggerPlayJava: Boolean              = false,
+  _mapper:         ObjectMapper         = new ObjectMapper(),
+  namingStrategy:  NamingStrategy       = NamingStrategy.None)(implicit cl: ClassLoader) {
+
   def dealiasParams(t: Type): Type = {
     appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
       dealiasParams(arg.dealias)
@@ -21,8 +22,7 @@ final case class DefinitionGenerator(
   }
 
   def definition: ParametricType ⇒ Definition = {
-    case parametricType@ParametricType(tpe, reifiedTypeName, _, _) ⇒
-
+    case parametricType @ ParametricType(tpe, reifiedTypeName, _, _) ⇒
       val properties = if (swaggerPlayJava) {
         definitionForPOJO(tpe)
       } else {
@@ -33,6 +33,7 @@ final case class DefinitionGenerator(
         fields.map { field ⇒
           //TODO: find a better way to get the string representation of typeSignature
           val name = namingStrategy(field.name.decodedName.toString)
+
           val rawTypeName = dealiasParams(field.typeSignature).toString match {
             case "eu.timepit.refined.api.Refined" => field.info.dealias.typeArgs.head.toString
             case v => v
@@ -115,17 +116,18 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-             domainNameSpace: String,
-             customParameterTypeMappings: CustomMappings,
-             swaggerPlayJava: Boolean,
-             namingStrategy: NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+    domainNameSpace:             String,
+    customParameterTypeMappings: CustomMappings,
+    swaggerPlayJava:             Boolean,
+    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava, namingStrategy = namingStrategy)
 
   def apply(
-             domainNameSpace: String,
-             customParameterTypeMappings: CustomMappings,
-             namingStrategy: NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+    domainNameSpace:             String,
+    customParameterTypeMappings: CustomMappings,
+    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, namingStrategy = namingStrategy)
 }

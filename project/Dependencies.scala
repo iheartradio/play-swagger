@@ -19,7 +19,7 @@ object Dependencies {
     "com.typesafe.play" %% "play-json" % Versions.playJson % "provided")
 
   val yaml = Seq(
-    "org.yaml" % "snakeyaml" % "1.24")
+    "org.yaml" % "snakeyaml" % "1.27")
 
   val enumeratum = Seq(
     "com.beachape" %% "enumeratum" % Versions.enumeratum % Test)
