@@ -1,7 +1,10 @@
 package com.iheart.playSwagger
 
+<<<<<<< HEAD
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomTypeMapping}
 import com.iheart.playSwagger.RefinedTypes.{Age, SpotifyAccount}
+=======
+>>>>>>> release
 import java.time.LocalDate
 
 import com.iheart.playSwagger.Domain.CustomMappings
@@ -23,7 +26,8 @@ trait PolymorphicItem
 
 case class EnumContainer(javaEnum: SampleJavaEnum,
                          scalaEnum: SampleScalaEnum.SampleScalaEnum,
-                         enumeratumEnum: SampleEnumeratumEnum)
+                         enumeratumEnum: SampleEnumeratumEnum,
+                         enumeratumValueEnum: SampleEnumeratumValueEnum)
 
 case class AllOptional(a: Option[String], b: Option[String])
 
@@ -212,6 +216,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       enumContainerJson must beSome[JsObject]
       (enumContainerJson.get \ "properties" \ "enumeratumEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("info_one", "info_two"))
     }
+
+    "read enumeratum value enum with container" >> {
+      enumContainerJson must beSome[JsObject]
+      (enumContainerJson.get \ "properties" \ "enumeratumValueEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("valueOne", "valueTwo"))
+    }
+
 
     "read parametric type wrappers" >> {
       (typeParametricWrapperJson \ "properties" \ "simplePayload" \ "type").as[String] === "string"
