@@ -155,7 +155,7 @@ Alternatively you can use swagger-ui webjar and have you play app serving the sw
 
 Add the following dependency
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "2.2.0"
+libraryDependencies += "org.webjars" % "swagger-ui" % "3.35.0"
 ```
 
 Add the following to your route file
