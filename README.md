@@ -153,9 +153,9 @@ Deploy a swagger ui and point to the swagger spec end point at 'assets/swagger.j
 #### Step 3b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
-Add the following dependency
+Add the following dependency (check latest version swagger-ui [here](https://github.com/webjars/swagger-ui))
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "3.35.0"
+libraryDependencies += "org.webjars" % "swagger-ui" % "3.43.0"
 ```
 
 Add the following to your route file
