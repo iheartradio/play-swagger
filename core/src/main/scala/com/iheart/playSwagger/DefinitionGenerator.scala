@@ -15,10 +15,16 @@ final case class DefinitionGenerator(
   _mapper:         ObjectMapper         = new ObjectMapper(),
   namingStrategy:  NamingStrategy       = NamingStrategy.None)(implicit cl: ClassLoader) {
 
+  private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+\])?)".r
+
   def dealiasParams(t: Type): Type = {
-    appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
-      dealiasParams(arg.dealias)
-    })
+    t.toString match {
+      case refinedTypePattern(_) => t.typeArgs.headOption.getOrElse(t)
+      case _ =>
+        appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
+          dealiasParams(arg.dealias)
+        })
+    }
   }
 
   def definition: ParametricType ⇒ Definition = {
@@ -35,7 +41,7 @@ final case class DefinitionGenerator(
           val name = namingStrategy(field.name.decodedName.toString)
 
           val rawTypeName = dealiasParams(field.typeSignature).toString match {
-            case "eu.timepit.refined.api.Refined" => field.info.dealias.typeArgs.head.toString
+            case refinedTypePattern(_) => field.info.dealias.typeArgs.head.toString
             case v => v
           }
           val typeName = parametricType.resolve(rawTypeName)

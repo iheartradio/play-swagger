@@ -2,15 +2,14 @@ package com.iheart.playSwagger
 
 
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomTypeMapping}
-import com.iheart.playSwagger.RefinedTypes.{Age, SpotifyAccount}
+import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
 
 import java.time.LocalDate
-
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
 case class Track(name: String, genre: Option[String], artist: Artist, related: Seq[Artist], numbers: Seq[Int])
-case class Artist(name: String, age: Age, spotifyAccount: SpotifyAccount)
+case class Artist(name: String, age: Age, spotifyAccount: SpotifyAccount, albums: Albums)
 
 case class Student(name: String, teacher: Option[Teacher])
 case class Teacher(name: String)
@@ -192,6 +191,8 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       (artistDefJson \ "properties" \ "age" \ "type").as[String] === "integer"
       (artistDefJson \ "properties" \ "spotifyAccount" \ "type").as[String] === "string"
+      (artistDefJson \ "properties" \ "albums" \ "type").as[String] === "array"
+      (artistDefJson \ "properties" \ "albums" \ "items" \ "type").as[String] === "string"
     }
 
     "read trait with container" >> {
