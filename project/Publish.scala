@@ -35,15 +35,15 @@ object Publish {
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      runClean,
-      runTest,
+      releaseStepCommandAndRemaining("+clean"),
+      releaseStepCommandAndRemaining("+test"),
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      publishArtifacts,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
       setNextVersion,
       commitNextVersion,
-      ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       pushChanges))
 
 }
