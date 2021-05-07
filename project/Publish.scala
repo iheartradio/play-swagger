@@ -13,6 +13,14 @@ object Publish {
     scmInfo := Some(ScmInfo(
       url("https://github.com/iheartradio/play-swagger"),
       "git@github.com:iheartradio/play-swagger.git")),
+    developers := List(
+      Developer(
+        "kailuowang",
+        "Kailuo Wang",
+        "kailuo.wang@gmail.com",
+        url("https://kailuowang.com")
+      )
+    ),
     pomIncludeRepository := { _ ⇒ false },
     publishArtifact in Test := false,
     publishTo := {
