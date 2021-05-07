@@ -1,36 +1,49 @@
+import com.typesafe.sbt.pgp.PgpKeys
 import sbt._, Keys._
-import bintray.BintrayKeys._
 import sbtrelease.ReleasePlugin.autoImport._
 import ReleaseTransformations._
+
 object Publish {
 
   val coreSettings = Seq(
-    bintrayOrganization := Some("iheartradio"),
-    bintrayPackageLabels := Seq("play-framework", "swagger", "rest-api", "API", "documentation"),
+    organization in ThisBuild := "com.iheart",
     publishMavenStyle := true,
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://iheartradio.github.io/play-swagger")),
     scmInfo := Some(ScmInfo(
       url("https://github.com/iheartradio/play-swagger"),
       "git@github.com:iheartradio/play-swagger.git")),
+    developers := List(
+      Developer(
+        "kailuowang",
+        "Kailuo Wang",
+        "kailuo.wang@gmail.com",
+        url("https://kailuowang.com")
+      )
+    ),
     pomIncludeRepository := { _ ⇒ false },
     publishArtifact in Test := false,
+    publishTo := {
+      val nexus = "https://oss.sonatype.org/"
+      if (isSnapshot.value)
+        Some("Snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("Releases" at nexus + "service/local/staging/deploy/maven2")
+    },
+    releaseCrossBuild := true,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
-      releaseStepCommandAndRemaining("+clean"),
-      releaseStepCommandAndRemaining("+test"),
+      runClean,
+      runTest,
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      releaseStepCommandAndRemaining("+publish"),
+      publishArtifacts,
       setNextVersion,
       commitNextVersion,
+      ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       pushChanges))
 
-
-  val sbtPluginSettings = Seq(
-    licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-    publishMavenStyle := false,
-    bintrayOrganization := Some("iheartradio"))
 }
