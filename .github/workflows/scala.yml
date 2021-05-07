@@ -23,7 +23,10 @@ jobs:
         sbt clean sbtPlaySwagger/scripted
     - name: Core Lib tests
       run: 
-        sbt ';project playSwagger;clean;+test'
+        sbt ';project playSwagger;clean;coverage;+test'
     - name: Example compile    
       run: 
         cd example && sbt clean compile
+    - name: Coverage report
+      run: 
+        sbt ';project playSwagger;coverageReport;coveralls'
