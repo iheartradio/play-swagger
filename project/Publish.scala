@@ -23,14 +23,8 @@ object Publish {
     ),
     pomIncludeRepository := { _ ⇒ false },
     publishArtifact in Test := false,
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if (isSnapshot.value)
-        Some("Snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("Releases" at nexus + "service/local/staging/deploy/maven2")
-    },
     releaseCrossBuild := true,
+    publishTo := sonatypePublishToBundle.value,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
