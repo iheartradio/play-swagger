@@ -18,8 +18,12 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
-    - name: Run tests
+    - name: Sbt Plugin tests
       run: 
-      - sbt clean sbtPlaySwagger/scripted
-      - sbt ';project playSwagger;clean;+test'
-      - cd example && sbt clean compile
+        sbt clean sbtPlaySwagger/scripted
+    - name: Core Lib tests
+      run: 
+        sbt ';project playSwagger;clean;+test'
+    - name: Example compile    
+      run: 
+        cd example && sbt clean compile
