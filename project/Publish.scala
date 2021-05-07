@@ -1,4 +1,5 @@
 import com.typesafe.sbt.pgp.PgpKeys
+import xerial.sbt.Sonatype.autoImport._
 import sbt._, Keys._
 import sbtrelease.ReleasePlugin.autoImport._
 import ReleaseTransformations._
