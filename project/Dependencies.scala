@@ -4,7 +4,7 @@ object Dependencies {
   object Versions {
     val play = "2.7.9"
     val playJson = "2.7.4"
-    val specs2 = "4.6.0"
+    val specs2 = "4.12.0"
     val enumeratum = "1.5.13"
   }
 
