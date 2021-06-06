@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
-import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
-import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
+import com.fasterxml.jackson.databind.{ BeanDescription, ObjectMapper }
+import com.iheart.playSwagger.Domain.{ CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter }
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
 

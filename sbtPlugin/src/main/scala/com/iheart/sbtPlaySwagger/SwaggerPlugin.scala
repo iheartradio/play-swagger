@@ -1,5 +1,6 @@
 package com.iheart.sbtPlaySwagger
 
+import com.iheart.sbtPlaySwagger.SwaggerPlugin.autoImport.swaggerFileName
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbt.Attributed._
@@ -37,7 +38,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerPlayJava := false,
     swaggerNamingStrategy := "none",
     swagger := Def.task[File] {
-      (swaggerTarget.value).mkdirs()
+      swaggerTarget.value.mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
@@ -47,16 +48,17 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerAPIVersion.value ::
         swaggerPrettyJson.value.toString ::
         swaggerPlayJava.value.toString ::
-        swaggerNamingStrategy.value.toString ::
+        swaggerNamingStrategy.value ::
         Nil
-      val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
+      val swaggerClasspath = data((Runtime / fullClasspath).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
       runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).failed foreach (sys error _.getMessage)
       file
     }.value,
-    unmanagedResourceDirectories in Assets += swaggerTarget.value,
-    mappings in (Compile, packageBin) += (swagger.value) → s"public/${swaggerFileName.value}", //include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
-    packageBin in Universal := (packageBin in Universal).dependsOn(swagger).value,
-    run := (run in Compile).dependsOn(swagger).evaluated,
+    Assets / unmanagedResourceDirectories += swaggerTarget.value,
+    packageBin / mappings += swagger.value → s"public/${swaggerFileName.value}", //include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
+    Compile / mappings += swagger.value → s"public/${swaggerFileName.value}",
+    Universal / packageBin := (Universal / packageBin).dependsOn(swagger).value,
+    run := (Compile / run).dependsOn(swagger).evaluated,
     stage := stage.dependsOn(swagger).value)
 }
 

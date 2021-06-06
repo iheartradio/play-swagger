@@ -9,7 +9,7 @@ import scala.util.{ Failure, Success, Try }
 object SwaggerSpecRunner extends App {
   implicit def cl: ClassLoader = getClass.getClassLoader
 
-  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString  :: namingStrategy :: Nil = args.toList
+  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString :: namingStrategy :: Nil = args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
     val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)

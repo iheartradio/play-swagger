@@ -1,12 +1,11 @@
 
-organization in ThisBuild := "com.iheart"
-
+ThisBuild / organization := "com.iheart"
 
 
 lazy val noPublishSettings = Seq(
-  skip in publish := true,
-  publish := (),
-  publishLocal := (),
+  publish / skip := true,
+  publish := {},
+  publishLocal := {},
   publishArtifact := false
 )
 
@@ -52,7 +51,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
     scalaVersion := scalaV,
-    scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated,
+    scripted := scripted.dependsOn(playSwagger / publishLocal).evaluated,
     scriptedLaunchOpts := { scriptedLaunchOpts.value ++
       Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
     },

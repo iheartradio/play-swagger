@@ -6,7 +6,7 @@ import ReleaseTransformations._
 object Publish {
 
   val coreSettings = Seq(
-    organization in ThisBuild := "com.iheart",
+    ThisBuild / organization := "com.iheart",
     publishMavenStyle := true,
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://iheartradio.github.io/play-swagger")),
@@ -22,7 +22,7 @@ object Publish {
       )
     ),
     pomIncludeRepository := { _ ⇒ false },
-    publishArtifact in Test := false,
+    Test / publishArtifact := false,
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
       if (isSnapshot.value)
@@ -45,5 +45,4 @@ object Publish {
       commitNextVersion,
       ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       pushChanges))
-
 }

@@ -241,7 +241,7 @@ final case class SwaggerSpecGenerator(
     val nullableName = if (swaggerV3) "nullable" else "x-nullable"
 
     (__ \ 'default).writeNullable[JsValue].writes(cwp.default) ++
-    (__ \ nullableName).writeNullable[Boolean].writes(cwp.nullable) ++
+      (__ \ nullableName).writeNullable[Boolean].writes(cwp.nullable) ++
       (cwp.specAsProperty orElse cwp.specAsParameter.headOption).getOrElse(Json.obj())
   }
 

@@ -1,11 +1,11 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
-import play.api.libs.json._
-import play.routes.compiler.Parameter
-
 import scala.reflect.runtime.universe
 import scala.util.Try
+
+import com.iheart.playSwagger.Domain.{ CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter }
+import play.api.libs.json._
+import play.routes.compiler.Parameter
 
 object SwaggerParameterMapper {
 
@@ -89,7 +89,7 @@ object SwaggerParameterMapper {
     }
 
     val generalParamMF: MappingFunction = {
-      case ci"Int"    | ci"Integer"    ⇒ genSwaggerParameter("integer", Some("int32"))
+      case ci"Int" | ci"Integer"       ⇒ genSwaggerParameter("integer", Some("int32"))
       case ci"Long"                    ⇒ genSwaggerParameter("integer", Some("int64"))
       case ci"Double" | ci"BigDecimal" ⇒ genSwaggerParameter("number", Some("double"))
       case ci"Float"                   ⇒ genSwaggerParameter("number", Some("float"))
@@ -176,22 +176,20 @@ object SwaggerParameterMapper {
   private object EnumeratumEnum {
     def unapply(className: String): Option[Seq[String]] = {
       (for {
-        clazz     <- Try(Class.forName(className + "$"))
-        singleton <- Try(clazz.getField("MODULE$").get(clazz))
-        values    <- Try(singleton.getClass.getDeclaredField("values"))
-        _         =  values.setAccessible(true)
-        entries   <- Try(values
-                          .get(singleton)
-                          .asInstanceOf[Vector[_]]
-                          .map { item =>
-                            val entryName = Try(
-                              item.getClass.getMethod("entryName")
-                            ).getOrElse(item.getClass.getMethod("value"))
-                            entryName.setAccessible(true)
-                            entryName.invoke(item).asInstanceOf[String]
-                          }
-                          .toList
-                     )
+        clazz ← Try(Class.forName(className + "$"))
+        singleton ← Try(clazz.getField("MODULE$").get(clazz))
+        values ← Try(singleton.getClass.getDeclaredField("values"))
+        _ = values.setAccessible(true)
+        entries ← Try(values
+          .get(singleton)
+          .asInstanceOf[Vector[_]]
+          .map { item ⇒
+            val entryName = Try(
+              item.getClass.getMethod("entryName")).getOrElse(item.getClass.getMethod("value"))
+            entryName.setAccessible(true)
+            entryName.invoke(item).asInstanceOf[String]
+          }
+          .toList)
       } yield entries).toOption
     }
   }

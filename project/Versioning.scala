@@ -4,7 +4,7 @@ import sbt._
 object Versioning {
 
   def writeVersionFile(path: String) = Def.task {
-    val file = (resourceManaged in Compile).value / path
+    val file = (Compile / resourceManaged).value / path
     IO.write(file, version.value.getBytes)
     Seq(file)
   }
