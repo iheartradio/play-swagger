@@ -18,12 +18,16 @@ object SwaggerParameterMapper {
 
     def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
-    def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
-      s"^$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
+    def higherOrderType(higherOrder: String, typeName: String, pkgPattern: Option[String]): Option[String] = {
+      s"^${pkgPattern.map(p => s"(?:$p\\.)?").getOrElse("")}$higherOrder\\[(\\S+)\\]".r
+        .findFirstMatchIn(typeName)
+        .map(_.group(1))
     }
 
     def collectionItemType(typeName: String): Option[String] =
-      List("Seq", "List", "Set", "Vector").map(higherOrderType(_, typeName)).reduce(_ orElse _)
+      List("Seq", "List", "Set", "Vector")
+        .map(higherOrderType(_, typeName, Some("collection(?:\\.(?:mutable|immutable))?")))
+        .reduce(_ orElse _)
 
     val typeName = removeKnownPrefixes(parameter.typeName)
 
@@ -84,8 +88,8 @@ object SwaggerParameterMapper {
     }
 
     val optionalParamMF: MappingFunction = {
-      case tpe if higherOrderType("Option", typeName).isDefined ⇒
-        optionalParam(higherOrderType("Option", typeName).get)
+      case tpe if higherOrderType("Option", typeName, None).isDefined ⇒
+        optionalParam(higherOrderType("Option", typeName, None).get)
     }
 
     val generalParamMF: MappingFunction = {

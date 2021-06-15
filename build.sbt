@@ -10,7 +10,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val scalaV = "2.12.12"
+lazy val scalaV = "2.12.14"
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
@@ -32,15 +32,16 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.playRoutesCompiler ++
       Dependencies.playJson ++
       Dependencies.enumeratum ++
+      Dependencies.refined ++
       Dependencies.test ++
       Dependencies.yaml,
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.3")
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.6")
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(
-    Publish.sbtPluginSettings,
+    Publish.coreSettings,
     Format.settings,
     addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.17" % Provided),
     addSbtPlugin("com.typesafe.sbt" %% "sbt-web" % "1.4.3" % Provided))
