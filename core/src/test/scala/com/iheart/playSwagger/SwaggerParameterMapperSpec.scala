@@ -94,6 +94,17 @@ class SwaggerParameterMapperSpec extends Specification {
           `type` = Some("string"))))
     }
 
+    "map scala.collection.immutable.Seq[T] to item type" >> {
+      mapParam(Parameter("aField", "scala.collection.immutable.Seq[String]", None, None)) === GenSwaggerParameter(
+        name = "aField",
+        nullable = None,
+        `type` = Some("array"),
+        items = Some(GenSwaggerParameter(
+          name = "aField",
+          nullable = None,
+          `type` = Some("string"))))
+    }
+
     "map String to string without override interference" >> {
 
       val specAsParameter = List(Json.obj("type" → "string", "format" → "date-time"))

@@ -81,6 +81,7 @@ You can find the setup in the example project as well.
 
 #### Step 1
 
+
 For play 2.7, sbt 1.x please use
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4")
