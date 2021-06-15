@@ -18,12 +18,16 @@ object SwaggerParameterMapper {
 
     def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
-    def higherOrderType(higherOrder: String, typeName: String): Option[String] = {
-      s"^$higherOrder\\[(\\S+)\\]".r.findFirstMatchIn(typeName).map(_.group(1))
+    def higherOrderType(higherOrder: String, typeName: String, pkgPattern: Option[String]): Option[String] = {
+      s"^${pkgPattern.map(p => s"(?:$p\\.)?").getOrElse("")}$higherOrder\\[(\\S+)\\]".r
+        .findFirstMatchIn(typeName)
+        .map(_.group(1))
     }
 
     def collectionItemType(typeName: String): Option[String] =
-      List("Seq", "List", "Set", "Vector").map(higherOrderType(_, typeName)).reduce(_ orElse _)
+      List("Seq", "List", "Set", "Vector")
+        .map(higherOrderType(_, typeName, Some("collection(?:\\.(?:mutable|immutable))?")))
+        .reduce(_ orElse _)
 
     val typeName = removeKnownPrefixes(parameter.typeName)
 
@@ -71,7 +75,7 @@ object SwaggerParameterMapper {
 
     def optionalParam(optionalTpe: String) = {
       val asRequired = mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier, customMappings = customMappings)
-      asRequired.update(required = false, default = asRequired.default)
+      asRequired.update(required = false, nullable = true, default = asRequired.default)
     }
 
     def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter ⇒ GenSwaggerParameter): SwaggerParameter = param match {
@@ -84,8 +88,8 @@ object SwaggerParameterMapper {
     }
 
     val optionalParamMF: MappingFunction = {
-      case tpe if higherOrderType("Option", typeName).isDefined ⇒
-        optionalParam(higherOrderType("Option", typeName).get)
+      case tpe if higherOrderType("Option", typeName, None).isDefined ⇒
+        optionalParam(higherOrderType("Option", typeName, None).get)
     }
 
     val generalParamMF: MappingFunction = {
@@ -184,7 +188,9 @@ object SwaggerParameterMapper {
                           .get(singleton)
                           .asInstanceOf[Vector[_]]
                           .map { item =>
-                            val entryName = item.getClass.getMethod("entryName")
+                            val entryName = Try(
+                              item.getClass.getMethod("entryName")
+                            ).getOrElse(item.getClass.getMethod("value"))
                             entryName.setAccessible(true)
                             entryName.invoke(item).asInstanceOf[String]
                           }

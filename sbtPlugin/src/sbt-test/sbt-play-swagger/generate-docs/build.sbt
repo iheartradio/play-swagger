@@ -9,7 +9,7 @@ name := "app"
 
 version := "1.0.1-BETA1"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.14"
 
 swaggerDomainNameSpaces := Seq("namespace1", "namespace2")
 
@@ -82,7 +82,8 @@ TaskKey[Unit]("check") := {
       |               "type":"string"
       |            },
       |            "genre":{
-      |               "type":"string"
+      |               "type":"string",
+      |               "x-nullable": true
       |            },
       |            "artist":{
       |               "$$ref":"#/definitions/namespace1.Artist"

@@ -82,19 +82,19 @@ You can find the setup in the example project as well.
 #### Step 1
 
 
-For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use 
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1")
-```
-
 For play 2.7, sbt 1.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1-PLAY2.7")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4")
 ```
 
 For play 2.8, please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.9.1-PLAY2.8")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4-PLAY2.8")
+```
+
+For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use (No Longer maintained after 0.10.0)
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.0-PLAY2.6")
 ```
 
 For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
@@ -154,9 +154,9 @@ Deploy a swagger ui and point to the swagger spec end point at 'assets/swagger.j
 #### Step 3b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
-Add the following dependency
+Add the following dependency (check latest version swagger-ui [here](https://github.com/webjars/swagger-ui))
 ```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "2.2.0"
+libraryDependencies += "org.webjars" % "swagger-ui" % "3.43.0"
 ```
 
 Add the following to your route file
