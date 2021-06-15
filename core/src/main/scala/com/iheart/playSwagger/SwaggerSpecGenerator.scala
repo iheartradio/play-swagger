@@ -167,6 +167,7 @@ final case class SwaggerSpecGenerator(
       DefinitionGenerator(
         modelQualifier = modelQualifier,
         mappings = customMappings,
+        swaggerPlayJava = swaggerPlayJava,
         namingStrategy = namingStrategy).allDefinitions(referredClasses)
     }
 
