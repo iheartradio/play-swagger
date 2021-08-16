@@ -57,7 +57,7 @@ final case class DefinitionGenerator(
   }
 
   private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
-    val m = runtimeMirror(getClass.getClassLoader)
+    val m = runtimeMirror(cl)
     val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
     val `type` = _mapper.constructType(clazz)
     val beanDesc: BeanDescription = _mapper.getSerializationConfig.introspect(`type`)
