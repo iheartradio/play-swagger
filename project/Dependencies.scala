@@ -6,7 +6,7 @@ object Dependencies {
     val playJson = "2.8.2"
     val specs2 = "4.6.0"
     val enumeratum = "1.7.0"
-    val refined = "0.9.14"
+    val refined = "0.9.29"
   }
 
   val playTest = Seq(
