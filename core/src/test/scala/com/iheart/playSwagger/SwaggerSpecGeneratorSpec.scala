@@ -146,6 +146,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val limitParamJson = (artistJson \ "parameters").as[JsArray].value(1).as[JsObject]
       (limitParamJson \ "name").as[String] === "limit"
       (limitParamJson \ "format").as[String] === "int32"
+      (limitParamJson \ "default").asOpt[String] === None
       (limitParamJson \ "required").as[Boolean] === false
       (limitParamJson \ "x-nullable").as[Boolean] === true
     }
@@ -403,6 +404,56 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       "not set nullable" >> {
         (paramJson \ "x-nullable").isEmpty
+      }
+    }
+
+    "parse param with default None value as optional string field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParamOptionalString" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "optionFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+        (paramJson \ "default").asOpt[String] === None
+      }
+
+      "not set nullable" >> {
+        (paramJson \ "x-nullable").as[Boolean]
+      }
+    }
+
+    "parse param with default None value as optional integer field" >> {
+      val endPointJson = (pathJson \ "/api/students/defaultValueParamOptionalInteger" \ "put").asOpt[JsObject]
+      endPointJson must beSome[JsObject]
+
+      val paramJson: JsValue = parametersOf(endPointJson.get).head
+
+      (paramJson \ "name").as[String] === "optionFlag"
+
+      "set required as false" >> {
+        (paramJson \ "required").as[Boolean] === false
+      }
+
+      "set in as query" >> {
+        (paramJson \ "in").as[String] === "query"
+      }
+
+      "set default value" >> {
+        (paramJson \ "default").asOpt[String] === None
+      }
+      
+      "not set nullable" >> {
+        (paramJson \ "x-nullable").as[Boolean]
       }
     }
 

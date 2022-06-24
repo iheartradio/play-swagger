@@ -74,7 +74,15 @@ object SwaggerParameterMapper {
       GenSwaggerParameter(parameter.name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val asRequired = mapParam(parameter.copy(typeName = optionalTpe), modelQualifier = modelQualifier, customMappings = customMappings)
+      val asRequired = mapParam(parameter.copy(
+        typeName = optionalTpe, 
+        default = parameter.default match {
+          // If `Some("None")`, then `variable: Option[T] ? = None` is specified. So `default` is treated as if it does not exist.
+          case Some("None") => None
+          // Maybe only `None`.
+          case default => default
+        }
+      ), modelQualifier = modelQualifier, customMappings = customMappings)
       asRequired.update(required = false, nullable = true, default = asRequired.default)
     }
 
