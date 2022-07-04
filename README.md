@@ -81,15 +81,14 @@ You can find the setup in the example project as well.
 
 #### Step 1
 
+For play 2.8, Scala 2.13.x and Scala 2.12.x please use
+```scala
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.6-PLAY2.8")
+```
 
 For play 2.7, sbt 1.x please use
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4")
-```
-
-For play 2.8, please use
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4-PLAY2.8")
 ```
 
 For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use (No Longer maintained after 0.10.0)
@@ -121,6 +120,16 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) /
 Also in build.sbt add domain package names for play-swagger to auto generate swagger definitions for domain classes mentioned in your routes
 ```Scala
 swaggerDomainNameSpaces := Seq("models")
+```
+
+To be more specific, If you want to use the case class defined in the package `something.models` in swagger (accessed via `#ref:definitions/`), add the following in sbt.
+```Scala
+swaggerDomainNameSpaces := Seq("something.models")
+```
+
+Additionally, if you want to use other packages (e.g. `other.models`), you can do so like this.
+```Scala
+swaggerDomainNameSpaces := Seq("something.models","other.models")
 ```
 
 This plugin adds a sbt task `swagger`, with which you can generate the `swagger.json` for testing purpose.
@@ -172,6 +181,34 @@ The sbt-play-swagger plugin will generate the swagger.json on `sbt run` or `sbt 
 you should be able to open the swagger ui at
 http://localhost:9000/docs/swagger-ui/index.html?url=/assets/swagger.json
 
+#### Step 3c
+
+The query parameter `url` is disabled in 4.1.3 and later versions. ([GHSA-qrmm-w75w-3wpx](https://github.com/swagger-api/swagger-ui/security/advisories/GHSA-qrmm-w75w-3wpx))
+```scala
+libraryDependencies += "org.webjars" % "swagger-ui" % "4.11.1"
+```
+
+Copy the `index.html` and `swagger-initializer.js` generated in `target/${project}/public/lib/main/swagger-ui/` and modify the js files as follows to create Swagger-UI can be used easily.
+```js
+window.onload = function() {
+  window.ui = SwaggerUIBundle({
+    // edit url
+    url: "/assets/swagger.json",
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  });
+};
+```
+
+For more information: [installation.md](https://github.com/swagger-api/swagger-ui/blob/master/docs/usage/installation.md)
 
 ============================
 ## How to contribute
