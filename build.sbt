@@ -1,5 +1,9 @@
 organization in ThisBuild := "com.iheart"
 
+scalafixDependencies in ThisBuild ++= Seq(
+  "com.github.liancheng" %% "organize-imports" % "0.6.0"
+)
+
 lazy val noPublishSettings = Seq(
   skip in publish := true,
   publish := (),
@@ -32,7 +36,11 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.test ++
       Dependencies.yaml,
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.6")
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.6"),
+    scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) => Seq("-Wunused")
+      case _ => Seq("-Xlint:unused")
+    })
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
@@ -55,5 +63,9 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
       scriptedLaunchOpts.value ++
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
     },
-    scriptedBufferLog := false
+    scriptedBufferLog := false,
+    scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) => Seq("-Wunused")
+      case _ => Seq("-Xlint:unused")
+    })
   )
