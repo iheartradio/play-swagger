@@ -12,11 +12,13 @@ object SwaggerParameterMapper {
   type MappingFunction = PartialFunction[String, SwaggerParameter]
 
   def mapParam(
-    parameter:      Parameter,
-    modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-    customMappings: CustomMappings       = Nil)(implicit cl: ClassLoader): SwaggerParameter = {
+      parameter: Parameter,
+      modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
+      customMappings: CustomMappings = Nil
+  )(implicit cl: ClassLoader): SwaggerParameter = {
 
-    def removeKnownPrefixes(name: String) = name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
+    def removeKnownPrefixes(name: String) =
+      name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
 
     def higherOrderType(higherOrder: String, typeName: String, pkgPattern: Option[String]): Option[String] = {
       s"^${pkgPattern.map(p => s"(?:$p\\.)?").getOrElse("")}$higherOrder\\[(\\S+)\\]".r
@@ -34,9 +36,9 @@ object SwaggerParameterMapper {
     val defaultValueO: Option[JsValue] = {
       parameter.default.map { value ⇒
         typeName match {
-          case ci"Int" | ci"Long"                      ⇒ JsNumber(value.toLong)
+          case ci"Int" | ci"Long" ⇒ JsNumber(value.toLong)
           case ci"Double" | ci"Float" | ci"BigDecimal" ⇒ JsNumber(value.toDouble)
-          case ci"Boolean"                             ⇒ JsBoolean(value.toBoolean)
+          case ci"Boolean" ⇒ JsBoolean(value.toBoolean)
           case ci"String" ⇒ {
             val noquotes = value match {
               case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") ⇒ c.substring(3, c.length - 3)
@@ -51,20 +53,22 @@ object SwaggerParameterMapper {
     }
 
     def genSwaggerParameter(
-      tp:     String,
-      format: Option[String]      = None,
-      enum:   Option[Seq[String]] = None) =
+        tp: String,
+        format: Option[String] = None,
+        enum: Option[Seq[String]] = None
+    ) =
       GenSwaggerParameter(
         parameter.name,
         `type` = Some(tp),
         format = format,
         required = defaultValueO.isEmpty,
         default = defaultValueO,
-        enum = enum)
+        enum = enum
+      )
 
     val enumParamMF: MappingFunction = {
-      case JavaEnum(enumConstants)       ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
-      case ScalaEnum(enumConstants)      ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case JavaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case ScalaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
       case EnumeratumEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
     }
 
@@ -74,22 +78,27 @@ object SwaggerParameterMapper {
       GenSwaggerParameter(parameter.name, referenceType = Some(referenceType))
 
     def optionalParam(optionalTpe: String) = {
-      val asRequired = mapParam(parameter.copy(
-        typeName = optionalTpe, 
-        default = parameter.default match {
-          // If `Some("None")`, then `variable: Option[T] ? = None` is specified. So `default` is treated as if it does not exist.
-          case Some("None") => None
-          // Maybe only `None`.
-          case default => default
-        }
-      ), modelQualifier = modelQualifier, customMappings = customMappings)
+      val asRequired = mapParam(
+        parameter.copy(
+          typeName = optionalTpe,
+          default = parameter.default match {
+            // If `Some("None")`, then `variable: Option[T] ? = None` is specified. So `default` is treated as if it does not exist.
+            case Some("None") => None
+            // Maybe only `None`.
+            case default => default
+          }
+        ),
+        modelQualifier = modelQualifier,
+        customMappings = customMappings
+      )
       asRequired.update(required = false, nullable = true, default = asRequired.default)
     }
 
-    def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter ⇒ GenSwaggerParameter): SwaggerParameter = param match {
-      case p: GenSwaggerParameter ⇒ update(p)
-      case _                      ⇒ param
-    }
+    def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter ⇒ GenSwaggerParameter): SwaggerParameter =
+      param match {
+        case p: GenSwaggerParameter ⇒ update(p)
+        case _ ⇒ param
+      }
 
     val referenceParamMF: MappingFunction = {
       case tpe if isReference(tpe) ⇒ referenceParam(tpe)
@@ -101,17 +110,17 @@ object SwaggerParameterMapper {
     }
 
     val generalParamMF: MappingFunction = {
-      case ci"Int"    | ci"Integer"    ⇒ genSwaggerParameter("integer", Some("int32"))
-      case ci"Long"                    ⇒ genSwaggerParameter("integer", Some("int64"))
+      case ci"Int" | ci"Integer" ⇒ genSwaggerParameter("integer", Some("int32"))
+      case ci"Long" ⇒ genSwaggerParameter("integer", Some("int64"))
       case ci"Double" | ci"BigDecimal" ⇒ genSwaggerParameter("number", Some("double"))
-      case ci"Float"                   ⇒ genSwaggerParameter("number", Some("float"))
-      case ci"DateTime"                ⇒ genSwaggerParameter("integer", Some("epoch"))
-      case ci"java.time.Instant"       ⇒ genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.LocalDate"     ⇒ genSwaggerParameter("string", Some("date"))
+      case ci"Float" ⇒ genSwaggerParameter("number", Some("float"))
+      case ci"DateTime" ⇒ genSwaggerParameter("integer", Some("epoch"))
+      case ci"java.time.Instant" ⇒ genSwaggerParameter("string", Some("date-time"))
+      case ci"java.time.LocalDate" ⇒ genSwaggerParameter("string", Some("date"))
       case ci"java.time.LocalDateTime" ⇒ genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.Duration"      ⇒ genSwaggerParameter("string")
-      case ci"Any"                     ⇒ genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
-      case unknown                     ⇒ genSwaggerParameter(unknown.toLowerCase())
+      case ci"java.time.Duration" ⇒ genSwaggerParameter("string")
+      case ci"Any" ⇒ genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
+      case unknown ⇒ genSwaggerParameter(unknown.toLowerCase())
     }
 
     val itemsParamMF: MappingFunction = {
@@ -122,7 +131,9 @@ object SwaggerParameterMapper {
         // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
         updateGenParam(generalParamMF("array"))(_.copy(
           items = Some(
-            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings))))
+            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings)
+          )
+        ))
     }
 
     val customMappingMF: MappingFunction = customMappings.map { mapping ⇒
@@ -134,7 +145,8 @@ object SwaggerParameterMapper {
             mapping.specAsParameter,
             mapping.specAsProperty,
             default = defaultValueO,
-            required = defaultValueO.isEmpty && mapping.required)
+            required = defaultValueO.isEmpty && mapping.required
+          )
       }
       mf
     }.foldLeft[MappingFunction](PartialFunction.empty)(_ orElse _)
@@ -146,7 +158,8 @@ object SwaggerParameterMapper {
       customMappingMF,
       enumParamMF,
       referenceParamMF,
-      generalParamMF).reduce(_ orElse _)(typeName)
+      generalParamMF
+    ).reduce(_ orElse _)(typeName)
 
   }
 
@@ -155,8 +168,8 @@ object SwaggerParameterMapper {
   }
 
   /**
-   * Unapply the type by name and return the Java enum constants if those exist.
-   */
+    * Unapply the type by name and return the Java enum constants if those exist.
+    */
   private object JavaEnum {
     def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
       Try(cl.loadClass(tpeName)).toOption.filter(_.isEnum).map(_.getEnumConstants.map(_.toString))
@@ -164,8 +177,8 @@ object SwaggerParameterMapper {
   }
 
   /**
-   * Unapply the type by name and return the Scala enum constants if those exist.
-   */
+    * Unapply the type by name and return the Scala enum constants if those exist.
+    */
   private object ScalaEnum {
     def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
       if (tpeName.endsWith(".Value")) {
@@ -183,29 +196,27 @@ object SwaggerParameterMapper {
   }
 
   /**
-   * Unapply the type by name and return the Enumeratum enum constants if those exist.
-   */
+    * Unapply the type by name and return the Enumeratum enum constants if those exist.
+    */
   private object EnumeratumEnum {
     def unapply(className: String): Option[Seq[String]] = {
       (for {
-        clazz     <- Try(Class.forName(className + "$"))
+        clazz <- Try(Class.forName(className + "$"))
         singleton <- Try(clazz.getField("MODULE$").get(clazz))
-        values    <- Try(singleton.getClass.getDeclaredField("values"))
-        _         =  values.setAccessible(true)
-        entries   <- Try(values
-                          .get(singleton)
-                          .asInstanceOf[Vector[_]]
-                          .map { item =>
-                            val entryName = Try(
-                              item.getClass.getMethod("entryName")
-                            ).getOrElse(item.getClass.getMethod("value"))
-                            entryName.setAccessible(true)
-                            entryName.invoke(item).asInstanceOf[String]
-                          }
-                          .toList
-                     )
+        values <- Try(singleton.getClass.getDeclaredField("values"))
+        _ = values.setAccessible(true)
+        entries <- Try(values
+          .get(singleton)
+          .asInstanceOf[Vector[_]]
+          .map { item =>
+            val entryName = Try(
+              item.getClass.getMethod("entryName")
+            ).getOrElse(item.getClass.getMethod("value"))
+            entryName.setAccessible(true)
+            entryName.invoke(item).asInstanceOf[String]
+          }
+          .toList)
       } yield entries).toOption
     }
   }
 }
-

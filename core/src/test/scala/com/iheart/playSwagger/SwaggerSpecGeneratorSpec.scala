@@ -1,6 +1,5 @@
 package com.iheart.playSwagger
 
-
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomTypeMapping}
 import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
 
@@ -21,10 +20,12 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
 
-case class EnumContainer(javaEnum: SampleJavaEnum,
-                         scalaEnum: SampleScalaEnum.SampleScalaEnum,
-                         enumeratumEnum: SampleEnumeratumEnum,
-                         enumeratumValueEnum: SampleEnumeratumValueEnum)
+case class EnumContainer(
+    javaEnum: SampleJavaEnum,
+    scalaEnum: SampleScalaEnum.SampleScalaEnum,
+    enumeratumEnum: SampleEnumeratumEnum,
+    enumeratumValueEnum: SampleEnumeratumValueEnum
+)
 
 case class AllOptional(a: Option[String], b: Option[String])
 
@@ -123,14 +124,23 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
     lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
-    lazy val polymorphicContainerJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
+    lazy val polymorphicContainerJson =
+      (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
     lazy val enumContainerJson = (definitionsJson \ "com.iheart.playSwagger.EnumContainer").asOpt[JsObject]
     lazy val overriddenDictTypeJson = (definitionsJson \ "com.iheart.playSwagger.DictType").as[JsObject]
-    lazy val typeParametricWrapperJson = (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[String, com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat], Seq[com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]]]").as[JsObject]
-    lazy val otherTypeParametricWrapperJson = (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[Option[String], Seq[com.iheart.playSwagger.Cat], Seq[Option[com.iheart.playSwagger.Dog]]]").as[JsObject]
-    lazy val dogEitherJson = (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]").as[JsObject]
-    lazy val catEitherJson = (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]").as[JsObject]
+    lazy val typeParametricWrapperJson =
+      (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[String, com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat], Seq[com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]]]").as[
+        JsObject
+      ]
+    lazy val otherTypeParametricWrapperJson =
+      (definitionsJson \ "com.iheart.playSwagger.TypeParametricWrapper[Option[String], Seq[com.iheart.playSwagger.Cat], Seq[Option[com.iheart.playSwagger.Dog]]]").as[
+        JsObject
+      ]
+    lazy val dogEitherJson =
+      (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]").as[JsObject]
+    lazy val catEitherJson =
+      (definitionsJson \ "com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]").as[JsObject]
     lazy val dogJson = (definitionsJson \ "com.iheart.playSwagger.Dog").as[JsObject]
     lazy val catJson = (definitionsJson \ "com.iheart.playSwagger.Cat").as[JsObject]
 
@@ -173,7 +183,9 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "read schema of referenced type" >> {
-      (trackJson \ "properties" \ "artist" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
+      (trackJson \ "properties" \ "artist" \ "$ref").asOpt[String] === Some(
+        "#/definitions/com.iheart.playSwagger.Artist"
+      )
     }
 
     "read seq of referenced type" >> {
@@ -198,13 +210,18 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "read trait with container" >> {
       polymorphicContainerJson must beSome[JsObject]
-      (polymorphicContainerJson.get \ "properties" \ "item" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.PolymorphicItem")
+      (polymorphicContainerJson.get \ "properties" \ "item" \ "$ref").asOpt[String] === Some(
+        "#/definitions/com.iheart.playSwagger.PolymorphicItem"
+      )
       polymorphicItemJson must beSome[JsObject]
     }
 
     "read java enum with container" >> {
       enumContainerJson must beSome[JsObject]
-      (enumContainerJson.get \ "properties" \ "javaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("DISABLED", "ACTIVE"))
+      (enumContainerJson.get \ "properties" \ "javaEnum" \ "enum").asOpt[Seq[String]] === Some(Seq(
+        "DISABLED",
+        "ACTIVE"
+      ))
     }
 
     "read scala enum with container" >> {
@@ -214,18 +231,25 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "read enumeratum enum with container" >> {
       enumContainerJson must beSome[JsObject]
-      (enumContainerJson.get \ "properties" \ "enumeratumEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("info_one", "info_two"))
+      (enumContainerJson.get \ "properties" \ "enumeratumEnum" \ "enum").asOpt[Seq[String]] === Some(Seq(
+        "info_one",
+        "info_two"
+      ))
     }
 
     "read enumeratum value enum with container" >> {
       enumContainerJson must beSome[JsObject]
-      (enumContainerJson.get \ "properties" \ "enumeratumValueEnum" \ "enum").asOpt[Seq[String]] === Some(Seq("valueOne", "valueTwo"))
+      (enumContainerJson.get \ "properties" \ "enumeratumValueEnum" \ "enum").asOpt[Seq[String]] === Some(Seq(
+        "valueOne",
+        "valueTwo"
+      ))
     }
-
 
     "read parametric type wrappers" >> {
       (typeParametricWrapperJson \ "properties" \ "simplePayload" \ "type").as[String] === "string"
-      (typeParametricWrapperJson \ "properties" \ "maybeOtherPayload" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]"
+      (typeParametricWrapperJson \ "properties" \ "maybeOtherPayload" \ "$ref").as[
+        String
+      ] === "#/definitions/com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Cat]"
       (typeParametricWrapperJson \ "properties" \ "seq" \ "items" \ "items" \ "$ref").as[String] === "#/definitions/com.iheart.playSwagger.EitherRepr[com.iheart.playSwagger.Dog]"
 
       (typeParametricWrapperJson \ "required").as[Seq[String]] === Seq("simplePayload", "seq")
@@ -284,7 +308,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must containAllOf(Seq("customResource", "liveMeta", "player", "resource"))
+      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must containAllOf(Seq(
+        "customResource",
+        "liveMeta",
+        "player",
+        "resource"
+      ))
     }
 
     "merge tag description from base" >> {
@@ -451,14 +480,16 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       "set default value" >> {
         (paramJson \ "default").asOpt[String] === None
       }
-      
+
       "not set nullable" >> {
         (paramJson \ "x-nullable").as[Boolean]
       }
     }
 
     "should contain schemas in responses" >> {
-      (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.FooWithSeq2")
+      (postBodyJson \ "responses" \ "200" \ "schema" \ "$ref").asOpt[String] === Some(
+        "#/definitions/com.iheart.playSwagger.FooWithSeq2"
+      )
     }
 
     "should contain schemas in requests" >> {
@@ -471,7 +502,9 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
         "type" → "object",
         "properties" → Json.obj(
           "id" → Json.obj("type" → "string"),
-          "value" → Json.obj("type" → "string")))
+          "value" → Json.obj("type" → "string")
+        )
+      )
     }
 
     "definition properties does not contain 'required' boolean field" >> {
@@ -525,11 +558,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val parameters = (pathJson \ "/references/magic/echoMagic/{type}" \ "post" \ "parameters").as[Seq[JsObject]]
 
       parameters must contain((entry: JsObject) ⇒
-        entry.value.get("$ref").contains(JsString("#/parameters/magic")))
+        entry.value.get("$ref").contains(JsString("#/parameters/magic"))
+      )
         .exactly(1.times)
 
       parameters must contain((entry: JsObject) ⇒
-        entry.value.get("name").contains(JsString("notMagic")))
+        entry.value.get("name").contains(JsString("notMagic"))
+      )
         .exactly(1.times)
     }
 
@@ -538,7 +573,8 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       val parameters = (pathJson \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
       parameters.size === 1
       parameters must contain((entry: JsObject) ⇒
-        entry.value.get("name").contains(JsString("aid")))
+        entry.value.get("name").contains(JsString("aid"))
+      )
         .exactly(1.times).not
 
     }
@@ -643,4 +679,3 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
   }
 }
-

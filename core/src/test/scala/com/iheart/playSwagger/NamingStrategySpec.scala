@@ -1,6 +1,5 @@
 package com.iheart.playSwagger
 
-
 import org.specs2.mutable.Specification
 
 class NamingStrategySpec extends Specification {

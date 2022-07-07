@@ -17,7 +17,10 @@ class ParametricTypeNamesTransformerSpec extends Specification {
             "another.class.Name[String, Seq[Option[Int]]]" -> 3,
             "arrField" -> Json.arr(
               "1" -> "should.not.be.replaced.ClassName[String]",
-              "2" -> "should.not.be.replaced.ClassName[Int]")))
+              "2" -> "should.not.be.replaced.ClassName[Int]"
+            )
+          )
+        )
       } === Success(
         Json.obj(
           "$ref" -> "#/components/schemas/some.class.Name-SomeType_another.ClassName",
@@ -25,7 +28,11 @@ class ParametricTypeNamesTransformerSpec extends Specification {
             "another.class.Name-String_Seq-Option-Int" -> 3,
             "arrField" -> Json.arr(
               "1" -> "should.not.be.replaced.ClassName[String]",
-              "2" -> "should.not.be.replaced.ClassName[Int]"))))
+              "2" -> "should.not.be.replaced.ClassName[Int]"
+            )
+          )
+        )
+      )
     }
   }
 }
