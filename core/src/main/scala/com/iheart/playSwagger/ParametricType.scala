@@ -1,9 +1,10 @@
 package com.iheart.playSwagger
 
-import scala.reflect.runtime.universe._
-import ParametricType._
-
 import scala.collection.immutable.SortedMap
+import scala.reflect.runtime.universe._
+import scala.util.matching.Regex
+
+import ParametricType._
 
 case class ParametricType private (
     tpe: Type,
@@ -24,7 +25,7 @@ case class ParametricType private (
 }
 
 object ParametricType {
-  final val ParametricTypeClassName = "^(.*?)\\[(.*)\\]$".r
+  final val ParametricTypeClassName: Regex = "^(.*?)\\[(.*)\\]$".r
 
   def apply(reifiedTypeName: String)(implicit cl: ClassLoader): ParametricType = {
     val mirror = runtimeMirror(cl)

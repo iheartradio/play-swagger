@@ -1,11 +1,12 @@
 package com.iheart.playSwagger
 
+import scala.reflect.runtime.universe
+import scala.util.Try
+import scala.util.matching.Regex
+
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
-
-import scala.reflect.runtime.universe
-import scala.util.Try
 
 object SwaggerParameterMapper {
 
@@ -164,7 +165,7 @@ object SwaggerParameterMapper {
   }
 
   implicit class CaseInsensitiveRegex(sc: StringContext) {
-    def ci = ("(?i)" + sc.parts.mkString).r
+    def ci: Regex = ("(?i)" + sc.parts.mkString).r
   }
 
   /**

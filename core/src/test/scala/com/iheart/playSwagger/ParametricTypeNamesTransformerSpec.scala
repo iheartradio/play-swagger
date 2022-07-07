@@ -1,9 +1,9 @@
 package com.iheart.playSwagger
 
+import scala.util.Success
+
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
-
-import scala.util.Success
 
 class ParametricTypeNamesTransformerSpec extends Specification {
   private val transformer = new ParametricTypeNamesTransformer

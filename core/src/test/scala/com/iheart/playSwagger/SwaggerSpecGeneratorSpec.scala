@@ -1,9 +1,9 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.Domain.{CustomMappings, CustomTypeMapping}
-import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
-
 import java.time.LocalDate
+
+import com.iheart.playSwagger.Domain.CustomMappings
+import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -40,8 +40,8 @@ case class Cat(catName: String)
 case class TypeParametricWrapper[T, O, S](simplePayload: T, maybeOtherPayload: Option[O], seq: Seq[S])
 
 class SwaggerSpecGeneratorSpec extends Specification {
-  implicit val cl = getClass.getClassLoader
-  val gen = SwaggerSpecGenerator()
+  implicit val cl: ClassLoader = getClass.getClassLoader
+  val gen: SwaggerSpecGenerator = SwaggerSpecGenerator()
 
   "full path" >> {
     "combine routePath with prefix" >> {
@@ -98,7 +98,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
 }
 
 class SwaggerSpecGeneratorIntegrationSpec extends Specification {
-  implicit val cl = getClass.getClassLoader
+  implicit val cl: ClassLoader = getClass.getClassLoader
 
   "integration" >> {
 

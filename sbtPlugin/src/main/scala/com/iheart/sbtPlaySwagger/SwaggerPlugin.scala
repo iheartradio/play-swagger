@@ -2,13 +2,13 @@ package com.iheart.sbtPlaySwagger
 
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.web.Import._
 import sbt.Attributed._
 import sbt.Keys._
 import sbt.{AutoPlugin, _}
-import com.typesafe.sbt.web.Import._
 
 object SwaggerPlugin extends AutoPlugin {
-  lazy val SwaggerConfig = config("play-swagger").hide
+  lazy val SwaggerConfig: Configuration = config("play-swagger").hide
   lazy val playSwaggerVersion = com.iheart.playSwagger.BuildInfo.version
 
   object autoImport extends SwaggerKeys
