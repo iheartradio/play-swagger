@@ -1,6 +1,4 @@
 import org.scalatestplus.play._
-import play.api.test._
-import play.api.test.Helpers._
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
 
 /**

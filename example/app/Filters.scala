@@ -1,9 +1,8 @@
 import javax.inject._
-import play.api._
-import play.api.http.HttpFilters
-import play.api.mvc._
 
 import filters.ExampleFilter
+import play.api._
+import play.api.http.HttpFilters
 
 /**
   * This class configures filters that run on every request. This
@@ -24,7 +23,7 @@ class Filters @Inject() (
     exampleFilter: ExampleFilter
 ) extends HttpFilters {
 
-  override val filters = {
+  override val filters: Seq[ExampleFilter] = {
     // Use the example filter if we're running development mode. If
     // we're running in production or test mode then don't use any
     // filters at all.
