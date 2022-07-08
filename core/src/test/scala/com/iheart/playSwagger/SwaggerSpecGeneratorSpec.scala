@@ -17,6 +17,10 @@ case class Animal(name: String, keeper: Keeper, birthDate: LocalDate, lastChecku
 
 case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 
+case class Subject(name: String)
+
+case class DayOfWeek(name: String)
+
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
 
@@ -124,6 +128,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     lazy val trackJson = (definitionsJson \ "com.iheart.playSwagger.Track").as[JsObject]
     lazy val studentJson = (definitionsJson \ "com.iheart.playSwagger.Student").asOpt[JsObject]
     lazy val teacherJson = (definitionsJson \ "com.iheart.playSwagger.Teacher").asOpt[JsObject]
+    lazy val dayOfWeekJson = (definitionsJson \ "com.iheart.playSwagger.DayOfWeek").asOpt[JsObject]
     lazy val polymorphicContainerJson =
       (definitionsJson \ "com.iheart.playSwagger.PolymorphicContainer").asOpt[JsObject]
     lazy val polymorphicItemJson = (definitionsJson \ "com.iheart.playSwagger.PolymorphicItem").asOpt[JsObject]
@@ -483,6 +488,28 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       "not set nullable" >> {
         (paramJson \ "x-nullable").as[Boolean]
+      }
+    }
+
+    "parse class referenced in referenced external file" >> {
+      dayOfWeekJson must beSome[JsObject]
+      (dayOfWeekJson.get \ "properties" \ "name" \ "type").as[String] === "string"
+    }
+
+    "parse mixin referenced external file" >> {
+      lazy val subjectJson = (pathJson \ "/api/subjects/dow/{subject}" \ "get").as[JsObject]
+      "parse param" >> {
+        val properties = (definitionsJson \ "com.iheart.playSwagger.Subject" \ "properties").as[JsObject]
+        (properties \ "name" \ "type").as[String] === "string"
+      }
+      "embedding mixed responses" >> {
+        "description" >> {
+          (subjectJson \ "responses" \ "200" \ "description").as[String] === "success"
+        }
+        "reference schema" >> {
+          (subjectJson \ "responses" \ "200" \ "content" \ "application/json" \ "schema" \ "$ref").as[String] ===
+            "#/definitions/com.iheart.playSwagger.DayOfWeek"
+        }
       }
     }
 

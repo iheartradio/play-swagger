@@ -165,9 +165,40 @@ final case class SwaggerSpecGenerator(
       paths: ListMap[String, JsObject],
       baseJson: JsObject = Json.obj()
   ): JsObject = {
-    val pathsJson = paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields))
+    implicit class JsValueUpdate(jsValue: JsValue) {
+      def update(target: String)(f: JsValue => JsObject): JsValue = jsValue.result match {
+        case JsDefined(obj: JsObject) =>
+          JsObject(obj.update(target)(f))
+
+        case JsDefined(arr: JsArray) =>
+          JsArray(arr.value.map(_.update(target)(f)))
+
+        case JsDefined(js) => js
+
+        case _ => JsNull
+      }
+    }
+
+    implicit class JsObjectUpdate(jsObject: JsObject) {
+      def update(target: String)(f: JsValue => JsObject): collection.Seq[(String, JsValue)] = jsObject.fields.flatMap {
+        case (k, v) if k == target => f(v).fields
+        case (k, v) => Seq(k -> v.update(target)(f))
+      }
+    }
 
     val refKey = "$ref"
+
+    val pathsJson = JsObject(paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields)).update(refKey) {
+      case JsString(v) =>
+        val pattern = "^([^#]+)(?:#(?:/[a-zA-Z])+)?$".r
+        v match {
+          case pattern(path) if PathValidator.isValid(path) =>
+            readCfgFile[JsObject](path).getOrElse(JsObject(Seq(refKey -> JsString(v))))
+          case _ => JsObject(Seq(refKey -> JsString(v)))
+        }
+      case v => JsObject(Seq(refKey -> v))
+    })
+
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
     val customMappingRefs = for {
       customMapping ← customMappings
