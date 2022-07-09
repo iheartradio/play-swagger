@@ -14,15 +14,15 @@ object NamingStrategy {
   object KebabCase extends NamingStrategy(x ⇒ regex.replaceAllIn(x, { m ⇒ "-" + m.group(0).toLowerCase() }))
   object LowerCase extends NamingStrategy(x ⇒ regex.replaceAllIn(x, { m ⇒ m.group(0).toLowerCase() }))
   object UpperCamelCase extends NamingStrategy(x ⇒ {
-    val (head, tail) = x.splitAt(1)
-    head.toUpperCase() + tail
-  })
+        val (head, tail) = x.splitAt(1)
+        head.toUpperCase() + tail
+      })
 
   def from(naming: String): NamingStrategy = naming match {
-    case "snake_case"     ⇒ SnakeCase
-    case "kebab-case"     ⇒ KebabCase
-    case "lowercase"      ⇒ LowerCase
+    case "snake_case" ⇒ SnakeCase
+    case "kebab-case" ⇒ KebabCase
+    case "lowercase" ⇒ LowerCase
     case "UpperCamelCase" ⇒ UpperCamelCase
-    case _                ⇒ None
+    case _ ⇒ None
   }
 }

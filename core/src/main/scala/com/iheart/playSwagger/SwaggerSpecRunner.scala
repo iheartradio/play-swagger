@@ -1,15 +1,16 @@
 package com.iheart.playSwagger
 
-import java.nio.file.{ Files, Paths, StandardOpenOption }
+import java.nio.file.{Files, Paths, StandardOpenOption}
 
-import play.api.libs.json.{ JsValue, Json }
+import scala.util.{Failure, Success, Try}
 
-import scala.util.{ Failure, Success, Try }
+import play.api.libs.json.{JsValue, Json}
 
 object SwaggerSpecRunner extends App {
   implicit def cl: ClassLoader = getClass.getClassLoader
 
-  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString  :: namingStrategy :: Nil = args.toList
+  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString :: namingStrategy :: Nil =
+    args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
     val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)
@@ -19,7 +20,10 @@ object SwaggerSpecRunner extends App {
     val transformers = transformersStrs.map { clazz ⇒
       Try(cl.loadClass(clazz).asSubclass(classOf[OutputTransformer]).newInstance()) match {
         case Failure(ex: ClassCastException) ⇒
-          throw new IllegalArgumentException("Transformer should be a subclass of com.iheart.playSwagger.OutputTransformer:" + clazz, ex)
+          throw new IllegalArgumentException(
+            "Transformer should be a subclass of com.iheart.playSwagger.OutputTransformer:" + clazz,
+            ex
+          )
         case Failure(ex) ⇒ throw new IllegalArgumentException("Could not create transformer", ex)
         case Success(el) ⇒ el
       }
@@ -30,7 +34,8 @@ object SwaggerSpecRunner extends App {
       outputTransformers = transformers,
       swaggerV3 = swaggerV3,
       swaggerPlayJava = swaggerPlayJava,
-      apiVersion = Some(apiVersion)).generate(routesFile).get
+      apiVersion = Some(apiVersion)
+    ).generate(routesFile).get
 
     if (swaggerPrettyJson.toBoolean) Json.prettyPrint(swaggerSpec)
     else swaggerSpec.toString

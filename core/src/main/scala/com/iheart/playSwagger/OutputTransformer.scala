@@ -1,12 +1,12 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import play.api.libs.json.{ JsArray, JsString, JsValue, JsObject }
-
 import scala.util.matching.Regex
-import scala.util.{ Success, Failure, Try }
+import scala.util.{Failure, Success, Try}
 
-/** Specialization of a Kleisli function (A => M[B])*/
+import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
+import play.api.libs.json.{JsArray, JsObject, JsString, JsValue}
+
+/** Specialization of a Kleisli function (A => M[B]) */
 trait OutputTransformer extends (JsObject ⇒ Try[JsObject]) {
 
   /** alias for `andThen` as defined monadic function */
@@ -23,11 +23,12 @@ object OutputTransformer {
   def traverseTransformer(vals: JsArray)(transformer: JsValue ⇒ Try[JsValue]): Try[JsArray] = {
     val tryElements = vals.value.map {
       case value: JsObject ⇒ traverseTransformer(value)(transformer)
-      case value: JsArray  ⇒ traverseTransformer(value)(transformer)
-      case value: JsValue  ⇒ transformer(value)
+      case value: JsArray ⇒ traverseTransformer(value)(transformer)
+      case value: JsValue ⇒ transformer(value)
     }.toList
 
-    val failures: List[Failure[JsValue]] = tryElements.filter(_.isInstanceOf[Failure[_]]).map(_.asInstanceOf[Failure[JsValue]])
+    val failures: List[Failure[JsValue]] =
+      tryElements.filter(_.isInstanceOf[Failure[_]]).map(_.asInstanceOf[Failure[JsValue]])
     if (failures.nonEmpty) {
       Failure(failures.head.exception)
     } else {
@@ -39,7 +40,7 @@ object OutputTransformer {
     val tryFields = obj.fields.map {
       case (key, value: JsObject) ⇒ (key, traverseTransformer(value)(transformer))
       case (key, values: JsArray) ⇒ (key, traverseTransformer(values)(transformer))
-      case (key, value: JsValue)  ⇒ (key, transformer(value))
+      case (key, value: JsValue) ⇒ (key, transformer(value))
     }
     val failures: Seq[(String, Failure[JsValue])] = tryFields
       .filter(_._2.isInstanceOf[Failure[_]])
@@ -54,18 +55,21 @@ object OutputTransformer {
   }
 }
 
-class PlaceholderVariablesTransformer(map: String ⇒ Option[String], pattern: Regex = "^\\$\\{(.*)\\}$".r) extends OutputTransformer {
-  def apply(value: JsObject) = OutputTransformer.traverseTransformer(value) {
+class PlaceholderVariablesTransformer(map: String ⇒ Option[String], pattern: Regex = "^\\$\\{(.*)\\}$".r)
+    extends OutputTransformer {
+  def apply(value: JsObject): Try[JsObject] = OutputTransformer.traverseTransformer(value) {
     case JsString(pattern(key)) ⇒ map(key) match {
-      case Some(result) ⇒ Success(JsString(result))
-      case None         ⇒ Failure(new IllegalStateException(s"Unable to find variable $key"))
-    }
+        case Some(result) ⇒ Success(JsString(result))
+        case None ⇒ Failure(new IllegalStateException(s"Unable to find variable $key"))
+      }
     case e: JsValue ⇒ Success(e)
   }
 }
 
 final case class MapVariablesTransformer(map: Map[String, String]) extends PlaceholderVariablesTransformer(map.get)
-class EnvironmentVariablesTransformer extends PlaceholderVariablesTransformer((key: String) ⇒ Option(System.getenv(key)))
+class EnvironmentVariablesTransformer extends PlaceholderVariablesTransformer((key: String) ⇒
+      Option(System.getenv(key))
+    )
 
 class ParametricTypeNamesTransformer extends OutputTransformer {
   override def apply(obj: JsObject): Try[JsObject] = Success(tf(obj))
@@ -74,8 +78,8 @@ class ParametricTypeNamesTransformer extends OutputTransformer {
     obj.fields.map {
       case (key, value: JsObject) ⇒ (normalize(key), tf(value))
       case (key, JsString(value)) ⇒ (normalize(key), JsString(normalize(value)))
-      case (key, other)           ⇒ (normalize(key), other)
-      case e                      ⇒ e
+      case (key, other) ⇒ (normalize(key), other)
+      case e ⇒ e
     }
   }
 

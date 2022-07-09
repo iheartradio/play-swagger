@@ -1,19 +1,20 @@
 package com.iheart.playSwagger
 
+import scala.collection.JavaConverters
+import scala.reflect.runtime.universe._
+
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
 
-import scala.collection.JavaConverters
-import scala.reflect.runtime.universe._
-
 final case class DefinitionGenerator(
-  modelQualifier:  DomainModelQualifier = PrefixDomainModelQualifier(),
-  mappings:        CustomMappings       = Nil,
-  swaggerPlayJava: Boolean              = false,
-  _mapper:         ObjectMapper         = new ObjectMapper(),
-  namingStrategy:  NamingStrategy       = NamingStrategy.None)(implicit cl: ClassLoader) {
+    modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
+    mappings: CustomMappings = Nil,
+    swaggerPlayJava: Boolean = false,
+    _mapper: ObjectMapper = new ObjectMapper(),
+    namingStrategy: NamingStrategy = NamingStrategy.None
+)(implicit cl: ClassLoader) {
 
   private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+\])?)".r
 
@@ -21,9 +22,12 @@ final case class DefinitionGenerator(
     t.toString match {
       case refinedTypePattern(_) => t.typeArgs.headOption.getOrElse(t)
       case _ =>
-        appliedType(t.dealias.typeConstructor, t.typeArgs.map { arg ⇒
-          dealiasParams(arg.dealias)
-        })
+        appliedType(
+          t.dealias.typeConstructor,
+          t.typeArgs.map { arg ⇒
+            dealiasParams(arg.dealias)
+          }
+        )
     }
   }
 
@@ -37,7 +41,7 @@ final case class DefinitionGenerator(
         }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
         fields.map { field ⇒
-          //TODO: find a better way to get the string representation of typeSignature
+          // TODO: find a better way to get the string representation of typeSignature
           val name = namingStrategy(field.name.decodedName.toString)
 
           val rawTypeName = dealiasParams(field.typeSignature).toString match {
@@ -53,7 +57,8 @@ final case class DefinitionGenerator(
 
       Definition(
         name = reifiedTypeName,
-        properties = properties)
+        properties = properties
+      )
   }
 
   private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
@@ -122,18 +127,26 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-    domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings,
-    swaggerPlayJava:             Boolean,
-    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
-
+      domainNameSpace: String,
+      customParameterTypeMappings: CustomMappings,
+      swaggerPlayJava: Boolean,
+      namingStrategy: NamingStrategy
+  )(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, swaggerPlayJava, namingStrategy = namingStrategy)
+      PrefixDomainModelQualifier(domainNameSpace),
+      customParameterTypeMappings,
+      swaggerPlayJava,
+      namingStrategy = namingStrategy
+    )
 
   def apply(
-    domainNameSpace:             String,
-    customParameterTypeMappings: CustomMappings,
-    namingStrategy:              NamingStrategy)(implicit cl: ClassLoader): DefinitionGenerator =
+      domainNameSpace: String,
+      customParameterTypeMappings: CustomMappings,
+      namingStrategy: NamingStrategy
+  )(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace), customParameterTypeMappings, namingStrategy = namingStrategy)
+      PrefixDomainModelQualifier(domainNameSpace),
+      customParameterTypeMappings,
+      namingStrategy = namingStrategy
+    )
 }
