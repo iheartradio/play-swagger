@@ -18,12 +18,18 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
+    - name: Check Format by scalafmt
+      run:
+        sbt scalafmtSbtCheck scalafmtCheckAll
+    - name: Check Lint by scalafix
+      run:
+        sbt scalafixEnable "scalafixAll --check"
     - name: Sbt Plugin tests
       run: 
         sbt clean sbtPlaySwagger/scripted
     - name: Core Lib tests
       run: 
         sbt ';project playSwagger;clean;+test'
-    - name: Example compile    
+    - name: Example compile
       run: 
-        cd example && sbt clean compile
+        cd example && sbt clean scalafmtSbtCheck scalafmtCheckAll scalafixEnable "scalafixAll --check" compile
