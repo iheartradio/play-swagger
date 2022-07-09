@@ -440,6 +440,57 @@ Also, for `$ref` fields you will want to prefix paths with `#/components/schemas
 POST   /tracks       controller.Api.createTrack()
 ```
 
+#### No #definitions generated when referencing other Swagger files
+
+By placing a json or YAML file in `conf/${dir}/${file}` and referencing it with `$ref` in a comment, the file can be generated embedded in swagger.json.
+
+example `conf/routes` file.
+
+```
+###
+#  summary: Top Page
+#  responses:
+#    200:
+#      $ref: './swagger/home_200.yml'
+###
+GET     /            controllers.HomeController.index
+```
+
+example `conf/swagger/home_200.yml` file.
+
+```yaml
+description: success
+```
+
+Of course, writing `schema` etc. will also be embedded.
+
+Generated `swagger.json`.
+
+```json
+{
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "index",
+        "tags": [
+          "routes"
+        ],
+        "summary": "Top Page",
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        }
+      }
+    }
+  }
+  ......
+}
+```
+
+See the following document for information on how to refer to other files by "$ref".
+
+https://swagger.io/docs/specification/using-ref/
 
 #### Is play java supported? 
 
