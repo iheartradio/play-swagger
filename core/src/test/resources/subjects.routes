@@ -1,0 +1,6 @@
+###
+#  responses:
+#    200:
+#      $ref: './swagger/subject_dow_200.yml'
+###
+GET     /dow/:subject               controllers.Subjects.dayOfWeek(subject: com.iheart.playSwagger.Subject)

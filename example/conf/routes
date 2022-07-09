@@ -1,5 +1,10 @@
 
-### NoDocs ###
+###
+#  summary: Top Page
+#  responses:
+#    200:
+#      $ref: './swagger/home_200.yml'
+###
 GET     /                           controllers.HomeController.index
 
 ->      /math                       math.Routes
