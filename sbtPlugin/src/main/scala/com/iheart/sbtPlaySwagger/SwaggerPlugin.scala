@@ -4,7 +4,7 @@ import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbt.Attributed._
 import sbt.Keys._
-import sbt.{ AutoPlugin, _ }
+import sbt.{AutoPlugin, _}
 import com.typesafe.sbt.web.Import._
 
 object SwaggerPlugin extends AutoPlugin {
@@ -24,7 +24,7 @@ object SwaggerPlugin extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] = Seq(
     ivyConfigurations += SwaggerConfig,
     resolvers += Resolver.jcenterRepo,
-    //todo: remove hardcoded org name using BuildInfo
+    // todo: remove hardcoded org name using BuildInfo
     libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % SwaggerConfig,
     swaggerDomainNameSpaces := Seq(),
     swaggerV3 := false,
@@ -49,14 +49,20 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerPlayJava.value.toString ::
         swaggerNamingStrategy.value.toString ::
         Nil
-      val swaggerClasspath = data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
-      runner.value.run("com.iheart.playSwagger.SwaggerSpecRunner", swaggerClasspath, args, streams.value.log).failed foreach (sys error _.getMessage)
+      val swaggerClasspath =
+        data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
+      runner.value.run(
+        "com.iheart.playSwagger.SwaggerSpecRunner",
+        swaggerClasspath,
+        args,
+        streams.value.log
+      ).failed foreach (sys error _.getMessage)
       file
     }.value,
     unmanagedResourceDirectories in Assets += swaggerTarget.value,
-    mappings in (Compile, packageBin) += (swagger.value) → s"public/${swaggerFileName.value}", //include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
+    mappings in (Compile, packageBin) += (swagger.value) → s"public/${swaggerFileName.value}", // include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
     packageBin in Universal := (packageBin in Universal).dependsOn(swagger).value,
     run := (run in Compile).dependsOn(swagger).evaluated,
-    stage := stage.dependsOn(swagger).value)
+    stage := stage.dependsOn(swagger).value
+  )
 }
-

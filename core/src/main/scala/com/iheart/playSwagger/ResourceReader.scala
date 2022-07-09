@@ -1,7 +1,7 @@
 package com.iheart.playSwagger
 
-import java.io.{ IOException, InputStream }
-import scala.util.{ Failure, Try }
+import java.io.{IOException, InputStream}
+import scala.util.{Failure, Try}
 import scala.io.Source
 
 object ResourceReader {

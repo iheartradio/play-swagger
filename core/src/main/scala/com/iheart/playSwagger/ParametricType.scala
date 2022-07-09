@@ -5,7 +5,12 @@ import ParametricType._
 
 import scala.collection.immutable.SortedMap
 
-case class ParametricType private (tpe: Type, reifiedTypeName: String, className: String, typeArgsMapping: Map[Line, String]) {
+case class ParametricType private (
+    tpe: Type,
+    reifiedTypeName: String,
+    className: String,
+    typeArgsMapping: Map[Line, String]
+) {
   val resolve: String ⇒ String = {
     case ParametricTypeClassName(className, typeArgs) ⇒
       val resolvedTypes =

@@ -4,7 +4,7 @@ import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class OutputTransformerSpec extends Specification {
   "OutputTransformer.traverseTransformer" >> {
@@ -12,7 +12,8 @@ class OutputTransformerSpec extends Specification {
     "traverse and transform object and update simple paths" >> {
       val result = OutputTransformer.traverseTransformer(Json.obj(
         "a" → 1,
-        "b" → "c")) { _ ⇒ Success(JsNumber(10)) }
+        "b" → "c"
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" → 10, "b" → 10))
     }
 
@@ -20,7 +21,9 @@ class OutputTransformerSpec extends Specification {
       val result = OutputTransformer.traverseTransformer(Json.obj(
         "a" → 1,
         "b" → Json.obj(
-          "c" → 1))) { _ ⇒ Success(JsNumber(10)) }
+          "c" → 1
+        )
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" → 10, "b" → Json.obj("c" → 10)))
     }
 
@@ -30,11 +33,17 @@ class OutputTransformerSpec extends Specification {
         "b" → Json.arr(
           Json.obj("c" → 1),
           Json.obj("d" → 1),
-          Json.obj("e" → 1)))) { _ ⇒ Success(JsNumber(10)) }
-      result === Success(Json.obj("a" → 10, "b" → Json.arr(
-        Json.obj("c" → 10),
-        Json.obj("d" → 10),
-        Json.obj("e" → 10))))
+          Json.obj("e" → 1)
+        )
+      )) { _ ⇒ Success(JsNumber(10)) }
+      result === Success(Json.obj(
+        "a" → 10,
+        "b" → Json.arr(
+          Json.obj("c" → 10),
+          Json.obj("d" → 10),
+          Json.obj("e" → 10)
+        )
+      ))
     }
 
     "return a failure when there's a problem transforming data" >> {
@@ -42,7 +51,9 @@ class OutputTransformerSpec extends Specification {
       val result = OutputTransformer.traverseTransformer(Json.obj(
         "a" → 1,
         "b" → Json.obj(
-          "c" → 1))) { _ ⇒ Failure(err) }
+          "c" → 1
+        )
+      )) { _ ⇒ Failure(err) }
       result === Failure(err)
     }
   }
@@ -50,35 +61,38 @@ class OutputTransformerSpec extends Specification {
     "return composed function" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
         case JsString(content) ⇒ Success(JsString(content + "a"))
-        case _                 ⇒ Failure(new IllegalStateException())
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
         case JsString(content) ⇒ Success(JsString(content + "b"))
-        case _                 ⇒ Failure(new IllegalStateException())
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
       g(Json.obj(
         "A" → "Z",
-        "B" → "Y")) must beSuccessfulTry.withValue(Json.obj(
+        "B" → "Y"
+      )) must beSuccessfulTry.withValue(Json.obj(
         "A" → "Zab",
-        "B" → "Yab"))
+        "B" → "Yab"
+      ))
     }
 
     "fail if one composed function fails" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
         case JsString(content) ⇒ Success(JsString("a" + content))
-        case _                 ⇒ Failure(new IllegalStateException())
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
         case JsString(content) ⇒ Failure(new IllegalStateException("not strings"))
-        case _                 ⇒ Failure(new IllegalStateException())
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
       g(Json.obj(
         "A" → "Z",
-        "B" → "Y")) must beFailedTry[JsObject].withThrowable[IllegalStateException]("not strings")
+        "B" → "Y"
+      )) must beFailedTry[JsObject].withThrowable[IllegalStateException]("not strings")
     }
   }
 }
@@ -91,7 +105,9 @@ class EnvironmentVariablesSpec extends Specification {
       instance(Json.obj(
         "a" → "${A}",
         "b" → Json.obj(
-          "c" → "${C}"))) === Success(Json.obj("a" → "B", "b" → Json.obj("c" → "D")))
+          "c" → "${C}"
+        )
+      )) === Success(Json.obj("a" → "B", "b" → Json.obj("c" → "D")))
     }
 
     "return failure when using non present environment variables" >> {
@@ -100,7 +116,9 @@ class EnvironmentVariablesSpec extends Specification {
       instance(Json.obj(
         "a" → "${A}",
         "b" → Json.obj(
-          "c" → "${NON_EXISTING}"))) must beFailedTry[JsObject].withThrowable[IllegalStateException]("Unable to find variable NON_EXISTING")
+          "c" → "${NON_EXISTING}"
+        )
+      )) must beFailedTry[JsObject].withThrowable[IllegalStateException]("Unable to find variable NON_EXISTING")
     }
   }
 }
@@ -114,7 +132,8 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
       val json = SwaggerSpecGenerator(
         NamingStrategy.None,
         PrefixDomainModelQualifier("com.iheart"),
-        outputTransformers = MapVariablesTransformer(envs) :: Nil).generate("env.routes").get
+        outputTransformers = MapVariablesTransformer(envs) :: Nil
+      ).generate("env.routes").get
       val pathJson = json \ "paths"
       val stationJson = (pathJson \ "/api/station/{sid}/playedTracks/last" \ "get").as[JsObject]
       val addTrackJson = (pathJson \ "/api/station/playedTracks" \ "post").as[JsObject]
@@ -129,7 +148,10 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
     val json = SwaggerSpecGenerator(
       NamingStrategy.None,
       PrefixDomainModelQualifier("com.iheart"),
-      outputTransformers = MapVariablesTransformer(envs) :: Nil).generate("env.routes")
-    json must beFailedTry[JsObject].withThrowable[IllegalStateException]("Unable to find variable PLAYED_TRACKS_DESCRIPTION")
+      outputTransformers = MapVariablesTransformer(envs) :: Nil
+    ).generate("env.routes")
+    json must beFailedTry[JsObject].withThrowable[IllegalStateException](
+      "Unable to find variable PLAYED_TRACKS_DESCRIPTION"
+    )
   }
 }
