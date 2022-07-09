@@ -1,13 +1,14 @@
 package controllers
 
-import akka.actor.ActorSystem
 import javax.inject._
-import models.Message
-import play.api._
-import play.api.libs.json.Json
-import play.api.mvc._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future, Promise}
+
+import akka.actor.ActorSystem
+import models.Message
+import play.api.libs.json.{Json, OFormat}
+import play.api.mvc._
 
 /**
   * This controller creates an `Action` that demonstrates how to write
@@ -22,7 +23,7 @@ import scala.concurrent.duration._
 @Singleton
 class AsyncController @Inject() (actorSystem: ActorSystem, components: ControllerComponents)(implicit
 exec: ExecutionContext) extends AbstractController(components) {
-  implicit val fmt = Json.format[Message]
+  implicit val fmt: OFormat[Message] = Json.format[Message]
 
   /**
     * Create an Action that returns a plain text message after a delay
@@ -32,7 +33,7 @@ exec: ExecutionContext) extends AbstractController(components) {
     * will be called when the application receives a `GET` request with
     * a path of `/message`.
     */
-  def message = Action.async {
+  def message: Action[AnyContent] = Action.async {
     getFutureMessage(1.second).map { msg ⇒ Ok(Json.toJson(msg)) }
   }
 

@@ -21,6 +21,9 @@ jobs:
     - name: Check Format by scalafmt
       run:
         sbt scalafmtSbtCheck scalafmtCheckAll
+    - name: Check Lint by scalafix
+      run:
+        sbt scalafixEnable "scalafixAll --check"
     - name: Sbt Plugin tests
       run: 
         sbt clean sbtPlaySwagger/scripted
@@ -29,4 +32,4 @@ jobs:
         sbt ';project playSwagger;clean;+test'
     - name: Example compile
       run: 
-        cd example && sbt clean scalafmtSbtCheck scalafmtCheckAll compile
+        cd example && sbt clean scalafmtSbtCheck scalafmtCheckAll scalafixEnable "scalafixAll --check" compile

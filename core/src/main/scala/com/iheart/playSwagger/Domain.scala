@@ -1,7 +1,6 @@
 package com.iheart.playSwagger
 
 import play.api.libs.json.{JsObject, JsPath, JsValue, Reads}
-import play.twirl.api.TemplateMagic.Default
 
 object Domain {
   type Path = String
@@ -34,7 +33,7 @@ object Domain {
       items: Option[SwaggerParameter] = None,
       enum: Option[Seq[String]] = None
   ) extends SwaggerParameter {
-    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]) =
+    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]): GenSwaggerParameter =
       copy(required = _required, nullable = Some(_nullable), default = _default)
   }
 
@@ -46,7 +45,7 @@ object Domain {
       nullable: Option[Boolean] = None,
       default: Option[JsValue] = None
   ) extends SwaggerParameter {
-    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]) =
+    def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]): CustomSwaggerParameter =
       copy(required = _required, nullable = Some(_nullable), default = _default)
   }
 

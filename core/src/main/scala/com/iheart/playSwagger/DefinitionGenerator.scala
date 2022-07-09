@@ -1,12 +1,12 @@
 package com.iheart.playSwagger
 
+import scala.collection.JavaConverters
+import scala.reflect.runtime.universe._
+
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import play.routes.compiler.Parameter
-
-import scala.collection.JavaConverters
-import scala.reflect.runtime.universe._
 
 final case class DefinitionGenerator(
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),

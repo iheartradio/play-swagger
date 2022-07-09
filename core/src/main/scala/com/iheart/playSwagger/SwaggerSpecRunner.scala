@@ -2,9 +2,9 @@ package com.iheart.playSwagger
 
 import java.nio.file.{Files, Paths, StandardOpenOption}
 
-import play.api.libs.json.{JsValue, Json}
-
 import scala.util.{Failure, Success, Try}
+
+import play.api.libs.json.{JsValue, Json}
 
 object SwaggerSpecRunner extends App {
   implicit def cl: ClassLoader = getClass.getClassLoader

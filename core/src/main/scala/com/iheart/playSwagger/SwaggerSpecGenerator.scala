@@ -2,6 +2,10 @@ package com.iheart.playSwagger
 
 import java.io.File
 
+import scala.collection.immutable.ListMap
+import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
@@ -10,10 +14,6 @@ import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
 import play.api.libs.json._
 import play.routes.compiler._
-
-import scala.collection.mutable
-import scala.collection.immutable.ListMap
-import scala.util.{Failure, Success, Try}
 
 object SwaggerSpecGenerator {
   private val marker = "##"

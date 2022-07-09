@@ -1,10 +1,10 @@
 package com.iheart.playSwagger
 
-import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import play.api.libs.json.{JsArray, JsString, JsValue, JsObject}
-
 import scala.util.matching.Regex
-import scala.util.{Success, Failure, Try}
+import scala.util.{Failure, Success, Try}
+
+import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
+import play.api.libs.json.{JsArray, JsObject, JsString, JsValue}
 
 /** Specialization of a Kleisli function (A => M[B]) */
 trait OutputTransformer extends (JsObject ⇒ Try[JsObject]) {
@@ -57,7 +57,7 @@ object OutputTransformer {
 
 class PlaceholderVariablesTransformer(map: String ⇒ Option[String], pattern: Regex = "^\\$\\{(.*)\\}$".r)
     extends OutputTransformer {
-  def apply(value: JsObject) = OutputTransformer.traverseTransformer(value) {
+  def apply(value: JsObject): Try[JsObject] = OutputTransformer.traverseTransformer(value) {
     case JsString(pattern(key)) ⇒ map(key) match {
         case Some(result) ⇒ Success(JsString(result))
         case None ⇒ Failure(new IllegalStateException(s"Unable to find variable $key"))

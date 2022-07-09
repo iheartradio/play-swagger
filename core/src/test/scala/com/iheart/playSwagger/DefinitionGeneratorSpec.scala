@@ -49,13 +49,13 @@ object MyObject {
 }
 
 object ExcludingDomainQualifier extends DomainModelQualifier {
-  val parent = PrefixDomainModelQualifier("com.iheart.playSwagger")
-  val exclusions = Seq("com.iheart.playSwagger.DictType")
+  val parent: PrefixDomainModelQualifier = PrefixDomainModelQualifier("com.iheart.playSwagger")
+  val exclusions: Seq[String] = Seq("com.iheart.playSwagger.DictType")
   override def isModel(className: String): Boolean = parent.isModel(className) && !(exclusions contains className)
 }
 
 class DefinitionGeneratorSpec extends Specification {
-  implicit val cl = getClass.getClassLoader
+  implicit val cl: ClassLoader = getClass.getClassLoader
 
   "definition" >> {
 

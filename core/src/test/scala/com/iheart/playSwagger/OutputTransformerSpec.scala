@@ -1,10 +1,10 @@
 package com.iheart.playSwagger
 
+import scala.util.{Failure, Success}
+
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import org.specs2.mutable.Specification
 import play.api.libs.json._
-
-import scala.util.{Failure, Success}
 
 class OutputTransformerSpec extends Specification {
   "OutputTransformer.traverseTransformer" >> {
@@ -124,7 +124,7 @@ class EnvironmentVariablesSpec extends Specification {
 }
 
 class EnvironmentVariablesIntegrationSpec extends Specification {
-  implicit val cl = getClass.getClassLoader
+  implicit val cl: ClassLoader = getClass.getClassLoader
 
   "integration" >> {
     "generate api with placeholders in place" >> {

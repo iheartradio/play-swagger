@@ -2,9 +2,11 @@ package services
 
 import java.time.{Clock, Instant}
 import javax.inject._
+
+import scala.concurrent.Future
+
 import play.api.Logger
 import play.api.inject.ApplicationLifecycle
-import scala.concurrent.Future
 
 /**
   * This class demonstrates how to run code when the
@@ -23,7 +25,7 @@ import scala.concurrent.Future
 @Singleton
 class ApplicationTimer @Inject() (clock: Clock, appLifecycle: ApplicationLifecycle) {
 
-  val logger = Logger(this.getClass)
+  val logger: Logger = Logger(this.getClass)
 
   // This code is called when the application starts.
   private val start: Instant = clock.instant

@@ -1,8 +1,8 @@
 package com.iheart.playSwagger
 
-import org.specs2.mutable.Specification
-import play.api.libs.json.{Json, JsString}
 import com.iheart.playSwagger.Domain._
+import org.specs2.mutable.Specification
+import play.api.libs.json.{JsString, Json}
 import play.routes.compiler.Parameter
 
 class SwaggerParameterMapperSpec extends Specification {
