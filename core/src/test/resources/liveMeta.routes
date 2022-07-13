@@ -43,4 +43,7 @@ GET      /api/station/hidden/a                 controllers.LiveMeta.hiddenEndPoi
 GET      /api/station/hidden/b                 controllers.LiveMeta.hiddenEndPointB()
 
 ### NoDocsEnd ###
+###
+#  summary: I'm not hiding!
+###
 GET      /api/station/hidden/c                 controllers.LiveMeta.hiddenEndPointC()

@@ -292,6 +292,9 @@ GET      /api/hidden/a                 controllers.hiddenEndPointA()
 GET      /api/hidden/b                 controllers.hiddenEndPointB()
 
 ### NoDocsEnd ###
+###
+#  summary: I'm not hiding!
+###
 GET      /api/hidden/c                 controllers.hiddenEndPointC()
 ```
 

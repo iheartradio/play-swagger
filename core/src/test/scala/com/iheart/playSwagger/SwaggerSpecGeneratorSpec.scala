@@ -307,7 +307,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "does generate for end points marked as finished hidden" >> {
-      (pathJson \ "/api/station/hidden/c" \ "get").toOption must not(beEmpty)
+      "not hidden" >> {
+        (pathJson \ "/api/station/hidden/c" \ "get").toOption must not(beEmpty)
+      }
+      "readable summary" >> {
+        (pathJson \ "/api/station/hidden/c" \ "get" \ "summary").asOpt[String] === Some("I'm not hiding!")
+      }
     }
 
     "generate path correctly with missing type (String by default) in controller description" >> {
