@@ -13,7 +13,8 @@ object Publish {
     homepage := Some(url("http://iheartradio.github.io/play-swagger")),
     scmInfo := Some(ScmInfo(
       url("https://github.com/iheartradio/play-swagger"),
-      "git@github.com:iheartradio/play-swagger.git")),
+      "git@github.com:iheartradio/play-swagger.git"
+    )),
     developers := List(
       Developer(
         "kailuowang",
@@ -39,6 +40,8 @@ object Publish {
       releaseStepCommand("sonatypeBundleRelease"),
       setNextVersion,
       commitNextVersion,
-      pushChanges))
+      pushChanges
+    )
+  )
 
 }

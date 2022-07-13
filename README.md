@@ -1,7 +1,6 @@
-
-[![Build Status](https://travis-ci.org/iheartradio/play-swagger.svg)](https://travis-ci.org/iheartradio/play-swagger)
+[![Scala CI](https://github.com/iheartradio/play-swagger/actions/workflows/scala.yml/badge.svg)](https://github.com/iheartradio/play-swagger/actions/workflows/scala.yml)
 [![Coverage Status](https://coveralls.io/repos/iheartradio/play-swagger/badge.svg?branch=master&service=github)](https://coveralls.io/github/iheartradio/play-swagger?branch=master)
-[ ![Download](https://api.bintray.com/packages/iheartradio/maven/play-swagger/images/download.svg) ](https://bintray.com/iheartradio/maven/play-swagger/_latestVersion)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.iheart/sbt-play-swagger/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.iheart/sbt-play-swagger)
 [![Gitter](https://badges.gitter.im/iheartradio/play-swagger.svg)](https://gitter.im/iheartradio/play-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Swagger API spec generator for Play
@@ -441,6 +440,57 @@ Also, for `$ref` fields you will want to prefix paths with `#/components/schemas
 POST   /tracks       controller.Api.createTrack()
 ```
 
+#### No #definitions generated when referencing other Swagger files
+
+By placing a json or YAML file in `conf/${dir}/${file}` and referencing it with `$ref` in a comment, the file can be generated embedded in swagger.json.
+
+example `conf/routes` file.
+
+```
+###
+#  summary: Top Page
+#  responses:
+#    200:
+#      $ref: './swagger/home_200.yml'
+###
+GET     /            controllers.HomeController.index
+```
+
+example `conf/swagger/home_200.yml` file.
+
+```yaml
+description: success
+```
+
+Of course, writing `schema` etc. will also be embedded.
+
+Generated `swagger.json`.
+
+```json
+{
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "index",
+        "tags": [
+          "routes"
+        ],
+        "summary": "Top Page",
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        }
+      }
+    }
+  }
+  ......
+}
+```
+
+See the following document for information on how to refer to other files by "$ref".
+
+https://swagger.io/docs/specification/using-ref/
 
 #### Is play java supported? 
 

@@ -4,6 +4,7 @@
 ->   /api/resource         resource.Routes
 ->   /api/customResource   customResource.Routes
 ->   /api/students         students.Routes
+->   /api/subjects         subjects.Routes
 
 ->   /level1               level1.Routes
 
