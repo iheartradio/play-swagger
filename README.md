@@ -82,29 +82,38 @@ You can find the setup in the example project as well.
 
 For play 2.8, Scala 2.13.x and Scala 2.12.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.6-PLAY2.8")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.8")
 ```
 
+⚠️ **Support for play versions prior to 2.7 has been discontinued. Past versions may work with past play.**
+
+**If you need support for past play versions, please contribute via issue or pull request!**
+
+**※ deprecated**
 For play 2.7, sbt 1.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.4")
+addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.7")
 ```
 
+**※ deprecated**
 For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use (No Longer maintained after 0.10.0)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.0-PLAY2.6")
 ```
 
+**※ deprecated**
 For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
-
 ```
+
+**※ deprecated**
 For Play 2.5 (No longer maintained after 0.6.5)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5") 
 ```
 
+**※ deprecated**
 For play 2.4 (No longer maintained after 0.6.0)
 ```scala
 addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.0-PLAY2.4")
@@ -162,26 +171,6 @@ Deploy a swagger ui and point to the swagger spec end point at 'assets/swagger.j
 #### Step 3b
 Alternatively you can use swagger-ui webjar and have you play app serving the swagger ui:
 
-Add the following dependency (check latest version swagger-ui [here](https://github.com/webjars/swagger-ui))
-```scala
-libraryDependencies += "org.webjars" % "swagger-ui" % "3.43.0"
-```
-
-Add the following to your route file
-```
-### NoDocs ###
-GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-
-### NoDocs ###
-GET   /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)
-```
-
-The sbt-play-swagger plugin will generate the swagger.json on `sbt run` or `sbt package`
-you should be able to open the swagger ui at
-http://localhost:9000/docs/swagger-ui/index.html?url=/assets/swagger.json
-
-#### Step 3c
-
 The query parameter `url` is disabled in 4.1.3 and later versions. ([GHSA-qrmm-w75w-3wpx](https://github.com/swagger-api/swagger-ui/security/advisories/GHSA-qrmm-w75w-3wpx))
 ```scala
 libraryDependencies += "org.webjars" % "swagger-ui" % "4.11.1"
@@ -208,6 +197,8 @@ window.onload = function() {
 ```
 
 For more information: [installation.md](https://github.com/swagger-api/swagger-ui/blob/master/docs/usage/installation.md)
+
+The sbt-play-swagger plugin will generate the swagger.json on `sbt run` or `sbt package`.
 
 ============================
 ## How to contribute
