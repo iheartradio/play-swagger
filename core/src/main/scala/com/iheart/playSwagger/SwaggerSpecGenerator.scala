@@ -1,17 +1,16 @@
 package com.iheart.playSwagger
 
 import java.io.File
-
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger.ResourceReader.read
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
+import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
 import play.routes.compiler._
 
@@ -456,6 +455,14 @@ final case class SwaggerSpecGenerator(
       else None
     }
 
+    def amendBodyParam(params: JsArray): JsArray = {
+      val bodyParam = findByName(params, "body")
+      bodyParam.fold(params) { param ⇒
+        val enhancedBodyParam = Json.obj("in" → JsString("body")) ++ param
+        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
+      }
+    }
+
     val paramsFromController = {
       val pathParams = route.path.parts.collect {
         case d: DynamicPart ⇒ d.name
@@ -477,14 +484,6 @@ final case class SwaggerSpecGenerator(
         val enhance = Json.obj("in" → in)
         jos.map(enhance ++ _)
       })
-    }
-
-    def amendBodyParam(params: JsArray): JsArray = {
-      val bodyParam = findByName(params, "body")
-      bodyParam.fold(params) { param ⇒
-        val enhancedBodyParam = Json.obj("in" → JsString("body")) ++ param
-        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
-      }
     }
 
     val jsonFromComment = {
