@@ -1,9 +1,11 @@
 package com.iheart.playSwagger
 
 import java.io.File
+
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
@@ -445,7 +447,9 @@ final case class SwaggerSpecGenerator(
   private def endPointSpec(route: Route, tag: Option[String]) = {
 
     def tryParseYaml(comment: String): Option[JsObject] = {
-      val pattern = "^\\w+:".r
+      // The purpose here is more to ensure that it is not in other formats such as JSON
+      // If invalid YAML is passed, org.yaml.snakeyaml.parser.ParserException
+      val pattern = "^\\w+|\\$ref:".r
       pattern.findFirstIn(comment).map(_ ⇒ parseYaml[JsObject](comment))
     }
 

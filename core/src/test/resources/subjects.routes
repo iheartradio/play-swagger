@@ -4,3 +4,9 @@
 #      $ref: './swagger/subject_dow_200.yml'
 ###
 GET     /dow/:subject               controllers.Subjects.dayOfWeek(subject: com.iheart.playSwagger.Subject)
+
+###
+#  $ref: './swagger/subject_dow_not.yml'
+#  description: 'What day of the week is that subject?'
+###
+GET     /dow/not/:subject           controllers.Subjects.hasNotDayOfWeek(subject: com.iheart.playSwagger.Subject)
