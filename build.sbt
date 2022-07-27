@@ -1,7 +1,8 @@
 organization in ThisBuild := "com.iheart"
 
 scalafixDependencies in ThisBuild ++= Seq(
-  "com.github.liancheng" %% "organize-imports" % "0.6.0"
+  "com.github.liancheng" %% "organize-imports" % "0.6.0",
+  "net.pixiv" %% "scalafix-pixiv-rule" % "2.2.0"
 )
 
 lazy val noPublishSettings = Seq(
