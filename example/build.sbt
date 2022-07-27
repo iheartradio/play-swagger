@@ -3,7 +3,8 @@ name := """example"""
 version := "1.0-SNAPSHOT"
 
 scalafixDependencies in ThisBuild ++= Seq(
-  "com.github.liancheng" %% "organize-imports" % "0.6.0"
+  "com.github.liancheng" %% "organize-imports" % "0.6.0",
+  "net.pixiv" %% "scalafix-pixiv-rule" % "2.2.0"
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
