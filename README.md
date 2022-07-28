@@ -272,6 +272,23 @@ e.g.
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 ```
 
+##### Skip entire file
+
+The entire file can be skipped by adding `### SkipFileForDocs ###` at the beginning of the routes file.
+
+Alternatively, the routes file can be split into multiple files, so that you can skip practically only a part of the file.
+
+https://www.playframework.com/documentation/ja/2.4.x/SBTSubProjects
+
+```
+### SkipFileForDocs ###
+
+GET      /api/hidden/a                 controllers.hiddenEndPointA()
+GET      /api/hidden/b                 controllers.hiddenEndPointB()
+GET      /api/hidden/c                 controllers.hiddenEndPointC()
+```
+
+
 #### How to specify body content in a POST endpoint 
 Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
 ```
