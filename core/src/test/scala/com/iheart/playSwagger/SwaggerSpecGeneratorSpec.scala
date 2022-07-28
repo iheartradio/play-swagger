@@ -498,10 +498,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "parse mixin referenced external file" >> {
       lazy val subjectJson = (pathJson \ "/api/subjects/dow/{subject}" \ "get").as[JsObject]
+
       "parse param" >> {
         val properties = (definitionsJson \ "com.iheart.playSwagger.Subject" \ "properties").as[JsObject]
         (properties \ "name" \ "type").as[String] === "string"
       }
+
       "embedding mixed responses" >> {
         "description" >> {
           (subjectJson \ "responses" \ "200" \ "description").as[String] === "success"
@@ -510,6 +512,24 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
           (subjectJson \ "responses" \ "200" \ "content" \ "application/json" \ "schema" \ "$ref").as[String] ===
             "#/definitions/com.iheart.playSwagger.DayOfWeek"
         }
+      }
+    }
+
+    "Top-level $ref is also embedded" >> {
+      lazy val subjectNotJson = (pathJson \ "/api/subjects/dow/not/{subject}" \ "get").as[JsObject]
+
+      "Information written in comments is mixed with external files" >> {
+        (subjectNotJson \ "description").as[String] === "What day of the week is that subject?"
+      }
+      "description_200" >> {
+        (subjectNotJson \ "responses" \ "200" \ "description").as[String] === "success"
+      }
+      "description_400" >> {
+        (subjectNotJson \ "responses" \ "400" \ "description").as[String] === "error"
+      }
+      "reference schema" >> {
+        (subjectNotJson \ "responses" \ "200" \ "content" \ "application/json" \ "schema" \ "$ref").as[String] ===
+          "#/definitions/com.iheart.playSwagger.DayOfWeek"
       }
     }
 

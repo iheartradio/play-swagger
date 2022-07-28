@@ -1,0 +1,13 @@
+responses:
+  200:
+    description: "success"
+    content:
+      application/json:
+        schema:
+          $ref: '#/definitions/com.iheart.playSwagger.DayOfWeek'
+        example:
+          success:
+            value:
+              name: "MonDay"
+  400:
+    description: "error"

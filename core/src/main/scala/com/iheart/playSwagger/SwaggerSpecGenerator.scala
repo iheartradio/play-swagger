@@ -12,6 +12,7 @@ import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger.ResourceReader.read
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
+import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
 import play.routes.compiler._
 
@@ -446,7 +447,9 @@ final case class SwaggerSpecGenerator(
   private def endPointSpec(route: Route, tag: Option[String]) = {
 
     def tryParseYaml(comment: String): Option[JsObject] = {
-      val pattern = "^\\w+:".r
+      // The purpose here is more to ensure that it is not in other formats such as JSON
+      // If invalid YAML is passed, org.yaml.snakeyaml.parser.ParserException
+      val pattern = "^\\w+|\\$ref:".r
       pattern.findFirstIn(comment).map(_ ⇒ parseYaml[JsObject](comment))
     }
 
@@ -454,6 +457,14 @@ final case class SwaggerSpecGenerator(
       if (comment.startsWith("{"))
         Some(Json.parse(comment).as[JsObject])
       else None
+    }
+
+    def amendBodyParam(params: JsArray): JsArray = {
+      val bodyParam = findByName(params, "body")
+      bodyParam.fold(params) { param ⇒
+        val enhancedBodyParam = Json.obj("in" → JsString("body")) ++ param
+        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
+      }
     }
 
     val paramsFromController = {
@@ -477,14 +488,6 @@ final case class SwaggerSpecGenerator(
         val enhance = Json.obj("in" → in)
         jos.map(enhance ++ _)
       })
-    }
-
-    def amendBodyParam(params: JsArray): JsArray = {
-      val bodyParam = findByName(params, "body")
-      bodyParam.fold(params) { param ⇒
-        val enhancedBodyParam = Json.obj("in" → JsString("body")) ++ param
-        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
-      }
     }
 
     val jsonFromComment = {

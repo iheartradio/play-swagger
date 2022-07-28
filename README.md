@@ -435,6 +435,8 @@ POST   /tracks       controller.Api.createTrack()
 
 By placing a json or YAML file in `conf/${dir}/${file}` and referencing it with `$ref` in a comment, the file can be generated embedded in swagger.json.
 
+⚠️ **Warning**: If a file that does not exist in `/conf` is specified, or if a typo is used for the filename, `$ref:"${filename}"` will be output as is.
+
 example `conf/routes` file.
 
 ```
@@ -450,7 +452,7 @@ GET     /            controllers.HomeController.index
 example `conf/swagger/home_200.yml` file.
 
 ```yaml
-description: success
+description: "success"
 ```
 
 Of course, writing `schema` etc. will also be embedded.
@@ -482,6 +484,27 @@ Generated `swagger.json`.
 See the following document for information on how to refer to other files by "$ref".
 
 https://swagger.io/docs/specification/using-ref/
+
+##### You can also cut out the entire comment.
+
+This feature is very useful, but OpenAPI does not allow top-level `$ref`, so failing to embed it may result in an invalid `swagger.json`!
+
+```
+###
+#  $ref: './swagger/home.yml'
+###
+GET     /            controllers.HomeController.index
+```
+
+example `home.yml` file.
+
+```yaml
+summary: Top Page
+  responses:
+    200:
+      description: "success"
+```
+
 
 #### Is play java supported? 
 
