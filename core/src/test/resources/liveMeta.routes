@@ -36,3 +36,14 @@ POST     /api/station/playedTracks             controllers.LiveMeta.addPlayedTra
 
 ### NoDocs ###
 GET      /api/station/hidden                   controllers.LiveMeta.hiddenEndPoint()
+
+### NoDocsStart ###
+GET      /api/station/hidden/a                 controllers.LiveMeta.hiddenEndPointA()
+
+GET      /api/station/hidden/b                 controllers.LiveMeta.hiddenEndPointB()
+
+### NoDocsEnd ###
+###
+#  summary: I'm not hiding!
+###
+GET      /api/station/hidden/c                 controllers.LiveMeta.hiddenEndPointC()

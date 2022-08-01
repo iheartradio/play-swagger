@@ -272,6 +272,23 @@ e.g.
 GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 ```
 
+Multiple lines can be skipped.
+
+※NoDocsEnd must always be listed directly before one line as a comment on <b>the endpoint not to be skipped</b>, or on the last line of the routes fill.
+
+```
+### NoDocsStart ###
+GET      /api/hidden/a                 controllers.hiddenEndPointA()
+
+GET      /api/hidden/b                 controllers.hiddenEndPointB()
+
+### NoDocsEnd ###
+###
+#  summary: I'm not hiding!
+###
+GET      /api/hidden/c                 controllers.hiddenEndPointC()
+```
+
 #### How to specify body content in a POST endpoint 
 Body content is specified as a special parameter in swagger. So you need to create a parameter in your swagger spec comment as "body", for example
 ```

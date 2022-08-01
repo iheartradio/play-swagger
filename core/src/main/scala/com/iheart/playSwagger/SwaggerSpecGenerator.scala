@@ -18,6 +18,7 @@ import play.routes.compiler._
 
 object SwaggerSpecGenerator {
   private val marker = "##"
+  private val noDocsEnd = s"$marker\\s*NoDocsEnd\\s*$marker#"
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
 
@@ -405,7 +406,13 @@ final case class SwaggerSpecGenerator(
 
   private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
     JsObject {
-      val endPointEntries = routes.flatMap(route ⇒ endPointEntry(route, prefix, tag))
+      val endPointEntries = routes.foldLeft[(Seq[(String, JsObject)], Boolean)]((Nil, false)) {
+        case ((o, skipping), route) ⇒
+          endPointEntry(route, prefix, tag, skipping) match {
+            case (Some(route), skipping) => (o :+ route, skipping)
+            case (None, skipping) => (o, skipping)
+          }
+      }._1
 
       // maintain the routes order as per the original routing file
       val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
@@ -416,19 +423,36 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private def endPointEntry(route: Route, prefix: String, tag: Option[String]): Option[(String, JsObject)] = {
+  private def endPointEntry(
+      route: Route,
+      prefix: String,
+      tag: Option[String],
+      skipping: Boolean
+  ): (Option[(String, JsObject)], Boolean) = {
     import SwaggerSpecGenerator.marker
+    import SwaggerSpecGenerator.noDocsEnd
 
     val comments = route.comments.map(_.comment).mkString("\n")
+
     if (s"$marker\\s*NoDocs\\s*$marker".r.findFirstIn(comments).isDefined) {
-      None
+      (None, skipping)
+    } else if (s"$marker\\s*NoDocsStart\\s*$marker".r.findFirstIn(comments).isDefined) {
+      // NoDocsStart ならスキップを開始する
+      (None, true)
     } else {
-      val inRoutePath = route.path.parts.map {
-        case DynamicPart(name, _, _) ⇒ s"{$name}"
-        case StaticPart(value) ⇒ value
-      }.mkString
-      val method = route.verb.value.toLowerCase
-      Some(fullPath(prefix, inRoutePath) → Json.obj(method → endPointSpec(route, tag)))
+      val docsEnd = noDocsEnd.r.findFirstIn(comments).isDefined
+      // スキップ中かつ、 NoDocsEnd が指定されていないならスキップする
+      if (!docsEnd && skipping) {
+        (None, skipping)
+      } else {
+        // それ以外はスキップしない
+        val inRoutePath = route.path.parts.map {
+          case DynamicPart(name, _, _) ⇒ s"{$name}"
+          case StaticPart(value) ⇒ value
+        }.mkString
+        val method = route.verb.value.toLowerCase
+        (Some(fullPath(prefix, inRoutePath) → Json.obj(method → endPointSpec(route, tag))), false)
+      }
     }
   }
 
@@ -492,11 +516,17 @@ final case class SwaggerSpecGenerator(
 
     val jsonFromComment = {
       import SwaggerSpecGenerator.marker
+      import SwaggerSpecGenerator.noDocsEnd
 
       val comments = route.comments.map(_.comment)
       val commentDocLines = comments match {
         case `marker` +: docs :+ `marker` ⇒ docs
-        case _ ⇒ Nil
+        case first +: `marker` +: docs :+ `marker` if first.matches(noDocsEnd) ⇒
+          println(docs)
+          docs
+        case docs ⇒
+          println(docs)
+          Nil
       }
 
       for {
