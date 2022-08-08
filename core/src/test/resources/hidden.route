@@ -1,0 +1,7 @@
+### SkipFileForDocs ###
+
+GET      a                 controllers.LiveMeta.hiddenEndPointA()
+
+GET      b                 controllers.LiveMeta.hiddenEndPointB()
+
+GET      c                 controllers.LiveMeta.hiddenEndPointC()

@@ -95,45 +95,49 @@ final case class SwaggerSpecGenerator(
 
       // TODO: better error handling
       ResourceReader.read(routesFile).flatMap { lines ⇒
-        val content = lines.mkString("\n")
-        // artificial file to conform to api, used by play for error reporting
-        val file = new File(routesFile)
+        lines.headOption match {
+          case Some("### SkipFileForDocs ###") => Success { ListMap.empty }
+          case _ =>
+            val content = lines.mkString("\n")
 
-        def errorMessage(error: RoutesCompilationError) = {
-          val lineNumber = error.line.fold("")(":" + _ + error.column.fold("")(":" + _))
-          val errorLine = error.line.flatMap { line ⇒
-            val caret = error.column.map(c ⇒ (" " * (c - 1)) + "^").getOrElse("")
-            lines.lift(line - 1).map(_ + "\n" + caret)
-          }.getOrElse("")
-          s"""|Error parsing routes file: ${error.source.getName}$lineNumber ${error.message}
-              |$errorLine
-              |""".stripMargin
-        }
+            // artificial file to conform to api, used by play for error reporting
+            val file = new File(routesFile)
 
-        RoutesFileParser.parseContent(content, file).fold(
-          { errors ⇒
-            val message = errors.map(errorMessage).mkString("\n")
-            Failure(new Exception(message))
-          },
-          { rules ⇒
-            val routerName = tagFromFile(routesFile)
-            val init: RoutesData = Success(ListMap(routerName → (path, Seq.empty)))
-            rules.foldLeft(init) {
-              case (Success(acc), route: Route) ⇒
-                val (prefix, routes) = acc(routerName)
-                Success(acc + (routerName → (prefix, routes :+ route)))
-              case (Success(acc), Include(prefix, router)) ⇒
-                val reference = router.replace(".Routes", ".routes")
-                val isIncludedRoutesFile = cl.getResource(reference) != null
-                if (isIncludedRoutesFile) {
-                  val updated = if (path.nonEmpty) path + "/" + prefix else prefix
-                  loop(updated, reference).map(acc ++ _)
-                } else Success(acc)
-
-              case (l @ Failure(_), _) ⇒ l
+            def errorMessage(error: RoutesCompilationError) = {
+              val lineNumber = error.line.fold("")(":" + _ + error.column.fold("")(":" + _))
+              val errorLine = error.line.flatMap { line ⇒
+                val caret = error.column.map(c ⇒ (" " * (c - 1)) + "^").getOrElse("")
+                lines.lift(line - 1).map(_ + "\n" + caret)
+              }.getOrElse("")
+              s"""|Error parsing routes file: ${error.source.getName}$lineNumber ${error.message}
+                  |$errorLine
+                  |""".stripMargin
             }
-          }
-        )
+
+            RoutesFileParser.parseContent(content, file).fold(
+              { errors ⇒
+                val message = errors.map(errorMessage).mkString("\n")
+                Failure(new Exception(message))
+              },
+              { rules ⇒
+                val routerName = tagFromFile(routesFile)
+                val init: RoutesData = Success(ListMap(routerName → (path, Seq.empty)))
+                rules.foldLeft(init) {
+                  case (Success(acc), route: Route) ⇒
+                    val (prefix, routes) = acc(routerName)
+                    Success(acc + (routerName → (prefix, routes :+ route)))
+                  case (Success(acc), Include(prefix, router)) ⇒
+                    val reference = router.replace(".Routes", ".routes")
+                    val isIncludedRoutesFile = cl.getResource(reference) != null
+                    if (isIncludedRoutesFile) {
+                      val updated = if (path.nonEmpty) path + "/" + prefix else prefix
+                      loop(updated, reference).map(acc ++ _)
+                    } else Success(acc)
+                  case (l @ Failure(_), _) ⇒ l
+                }
+              }
+            )
+        }
       }
     }
 

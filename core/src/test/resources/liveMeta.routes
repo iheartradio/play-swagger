@@ -36,3 +36,5 @@ POST     /api/station/playedTracks             controllers.LiveMeta.addPlayedTra
 
 ### NoDocs ###
 GET      /api/station/hidden                   controllers.LiveMeta.hiddenEndPoint()
+
+-> /api/station/hidden hidden.Routes
