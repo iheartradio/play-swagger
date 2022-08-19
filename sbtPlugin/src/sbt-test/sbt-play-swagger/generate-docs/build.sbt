@@ -31,7 +31,7 @@ TaskKey[Unit]("check") := {
       |   "paths":{
       |      "/tracks/{trackId}":{
       |         "get":{
-      |           "operationId":"versioned",
+      |           "operationId":"Assets.versioned",
       |            "tags":[
       |               "${swaggerRoutesFile.value}"
       |            ],
@@ -126,20 +126,20 @@ TaskKey[Unit]("check") := {
       |      }
       |   ]
       |}
-    """.stripMargin)
+    """.stripMargin
+  )
 
   val result = uniform(IO.read(swaggerTarget.value / swaggerFileName.value))
-
 
   if (result != expected) {
     val rs = result.split('\n')
     val ep = expected.split('\n')
     val compare = rs.zip(ep).map {
       case (resultLine, expectedLine) =>
-        if(resultLine != expectedLine)
+        if (resultLine != expectedLine)
           "DIFF >>>>>>>>>>>\n" +
-          s"Result > $resultLine\n" +
-          s"Expect < $expectedLine"
+            s"Result > $resultLine\n" +
+            s"Expect < $expectedLine"
         else
           s"Result > $resultLine"
     }.mkString("\n")
@@ -152,7 +152,8 @@ TaskKey[Unit]("check") := {
 
          >>>>> extra expected lines:
          $left
-       """.stripMargin)
+       """.stripMargin
+    )
   }
 }
 
