@@ -113,7 +113,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
     }
 
-    lazy val json = SwaggerSpecGenerator(false, "com.iheart").generate("test.routes").get
+    lazy val json = SwaggerSpecGenerator(false, false, "com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]
@@ -671,7 +671,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       required.value must contain(JsString("keeper"))
     }
 
-    "add operation ids" >> {
+    "add operation id" >> {
+      (addTrackJson \ "operationId").as[String] ==== "addPlayedTracks"
+    }
+
+    "fully operation id" >> {
+      lazy val json = SwaggerSpecGenerator(false, true, "com.iheart").generate("test.routes").get
+      lazy val addTrackJson = (json \ "paths" \ "/api/station/playedTracks" \ "post").as[JsObject]
       (addTrackJson \ "operationId").as[String] ==== "LiveMeta.addPlayedTracks"
     }
 
@@ -705,7 +711,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
   }
 
   "integration v3" >> {
-    lazy val json = SwaggerSpecGenerator(true, "com.iheart").generate("testV3.routes").get
+    lazy val json = SwaggerSpecGenerator(true, false, "com.iheart").generate("testV3.routes").get
     lazy val componentSchemasJson = json \ "components" \ "schemas"
     lazy val trackJson = (componentSchemasJson \ "com.iheart.playSwagger.Track").as[JsObject]
 

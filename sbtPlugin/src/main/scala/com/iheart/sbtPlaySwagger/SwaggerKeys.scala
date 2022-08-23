@@ -30,4 +30,10 @@ trait SwaggerKeys {
 
   val swaggerNamingStrategy: SettingKey[String] =
     SettingKey[String]("swaggerNamingStrategy", "Naming strategy to decode case class fields")
+
+  val swaggerOperationIdNamingFully: SettingKey[Boolean] =
+    SettingKey[Boolean](
+      "swaggerOperationIdNaming",
+      "Either use the operationId of the generated json as the method name"
+    )
 }

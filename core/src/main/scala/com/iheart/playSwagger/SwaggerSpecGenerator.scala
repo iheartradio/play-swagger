@@ -38,8 +38,14 @@ object SwaggerSpecGenerator {
     )
   }
 
-  def apply(swaggerV3: Boolean, domainNameSpaces: String*)(implicit cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(NamingStrategy.None, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+  def apply(swaggerV3: Boolean, operationIdFully: Boolean, domainNameSpaces: String*)(implicit
+  cl: ClassLoader): SwaggerSpecGenerator = {
+    SwaggerSpecGenerator(
+      NamingStrategy.None,
+      PrefixDomainModelQualifier(domainNameSpaces: _*),
+      swaggerV3 = swaggerV3,
+      operationIdFully = operationIdFully
+    )
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
@@ -62,7 +68,8 @@ final case class SwaggerSpecGenerator(
     outputTransformers: Seq[OutputTransformer] = Nil,
     swaggerV3: Boolean = false,
     swaggerPlayJava: Boolean = false,
-    apiVersion: Option[String] = None
+    apiVersion: Option[String] = None,
+    operationIdFully: Boolean = false
 )(implicit cl: ClassLoader) {
 
   import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
@@ -517,7 +524,7 @@ final case class SwaggerSpecGenerator(
     val parameterJson = if (mergedParams.value.nonEmpty) Json.obj("parameters" → mergedParams) else Json.obj()
 
     val operationId = Json.obj(
-      "operationId" → s"${route.call.controller}.${route.call.method}"
+      "operationId" → (if (operationIdFully) s"${route.call.controller}.${route.call.method}" else route.call.method)
     )
 
     val rawPathJson = operationId ++ tag.fold(Json.obj()) { t ⇒
