@@ -9,11 +9,12 @@ import play.api.libs.json.{JsValue, Json}
 object SwaggerSpecRunner extends App {
   implicit def cl: ClassLoader = getClass.getClassLoader
 
-  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString :: namingStrategy :: Nil =
+  val targetFile :: routesFile :: domainNameSpaceArgs :: outputTransformersArgs :: swaggerV3String :: apiVersion :: swaggerPrettyJson :: swaggerPlayJavaString :: namingStrategy :: operationIdNamingFullyString :: Nil =
     args.toList
   private def fileArg = Paths.get(targetFile)
   private def swaggerJson = {
     val swaggerV3 = java.lang.Boolean.parseBoolean(swaggerV3String)
+    val swaggerOperationIdNamingFully = java.lang.Boolean.parseBoolean(operationIdNamingFullyString)
     val swaggerPlayJava = java.lang.Boolean.parseBoolean(swaggerPlayJavaString)
     val domainModelQualifier = PrefixDomainModelQualifier(domainNameSpaceArgs.split(","): _*)
     val transformersStrs: Seq[String] = if (outputTransformersArgs.isEmpty) Seq() else outputTransformersArgs.split(",")
@@ -34,7 +35,8 @@ object SwaggerSpecRunner extends App {
       outputTransformers = transformers,
       swaggerV3 = swaggerV3,
       swaggerPlayJava = swaggerPlayJava,
-      apiVersion = Some(apiVersion)
+      apiVersion = Some(apiVersion),
+      operationIdFully = swaggerOperationIdNamingFully
     ).generate(routesFile).get
 
     if (swaggerPrettyJson.toBoolean) Json.prettyPrint(swaggerSpec)

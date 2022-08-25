@@ -522,6 +522,14 @@ summary: Top Page
       description: "success"
 ```
 
+#### Duplicate operationId?
+
+It can be configured in `build.sbt`. 
+This setting allows you to set the `${controllerName}.${methodName}` to name the operationId.
+
+```
+swaggerOperationIdNamingFully := true
+```
 
 #### Is play java supported? 
 

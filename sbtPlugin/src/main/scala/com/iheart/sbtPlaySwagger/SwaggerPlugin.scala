@@ -9,7 +9,7 @@ import sbt.{AutoPlugin, _}
 
 object SwaggerPlugin extends AutoPlugin {
   lazy val SwaggerConfig: Configuration = config("play-swagger").hide
-  lazy val playSwaggerVersion = com.iheart.playSwagger.BuildInfo.version
+  lazy val playSwaggerVersion: String = com.iheart.playSwagger.BuildInfo.version
 
   object autoImport extends SwaggerKeys
 
@@ -36,6 +36,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerPrettyJson := false,
     swaggerPlayJava := false,
     swaggerNamingStrategy := "none",
+    swaggerOperationIdNamingFully := false,
     swagger := Def.task[File] {
       (swaggerTarget.value).mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
@@ -48,6 +49,7 @@ object SwaggerPlugin extends AutoPlugin {
         swaggerPrettyJson.value.toString ::
         swaggerPlayJava.value.toString ::
         swaggerNamingStrategy.value.toString ::
+        swaggerOperationIdNamingFully.value.toString ::
         Nil
       val swaggerClasspath =
         data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
