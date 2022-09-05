@@ -17,6 +17,7 @@ object Domain {
     def required: Boolean
     def nullable: Option[Boolean]
     def default: Option[JsValue]
+    def description: Option[String]
 
     def update(required: Boolean, nullable: Boolean, default: Option[JsValue]): SwaggerParameter
   }
@@ -31,7 +32,8 @@ object Domain {
       default: Option[JsValue] = None,
       example: Option[JsValue] = None,
       items: Option[SwaggerParameter] = None,
-      enum: Option[Seq[String]] = None
+      enum: Option[Seq[String]] = None,
+      description: Option[String] = None
   ) extends SwaggerParameter {
     def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]): GenSwaggerParameter =
       copy(required = _required, nullable = Some(_nullable), default = _default)
@@ -43,7 +45,8 @@ object Domain {
       specAsProperty: Option[JsObject],
       required: Boolean = true,
       nullable: Option[Boolean] = None,
-      default: Option[JsValue] = None
+      default: Option[JsValue] = None,
+      description: Option[String] = None
   ) extends SwaggerParameter {
     def update(_required: Boolean, _nullable: Boolean, _default: Option[JsValue]): CustomSwaggerParameter =
       copy(required = _required, nullable = Some(_nullable), default = _default)

@@ -19,6 +19,9 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 
 case class Subject(name: String)
 
+/**
+  * @param name e.g. Sunday, Monday, TuesDay...
+  */
 case class DayOfWeek(name: String)
 
 case class PolymorphicContainer(item: PolymorphicItem)
@@ -507,6 +510,11 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "parse class referenced in referenced external file" >> {
       dayOfWeekJson must beSome[JsObject]
       (dayOfWeekJson.get \ "properties" \ "name" \ "type").as[String] === "string"
+    }
+
+    "embedded scaladoc strings" >> {
+      dayOfWeekJson must beSome[JsObject]
+      (dayOfWeekJson.get \ "properties" \ "name" \ "description").as[String] === "e.g. Sunday, Monday, TuesDay..."
     }
 
     "parse mixin referenced external file" >> {

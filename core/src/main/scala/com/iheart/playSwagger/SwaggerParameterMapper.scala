@@ -15,7 +15,8 @@ object SwaggerParameterMapper {
   def mapParam(
       parameter: Parameter,
       modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-      customMappings: CustomMappings = Nil
+      customMappings: CustomMappings = Nil,
+      description: Option[String] = None
   )(implicit cl: ClassLoader): SwaggerParameter = {
 
     def removeKnownPrefixes(name: String) =
@@ -57,14 +58,15 @@ object SwaggerParameterMapper {
         tp: String,
         format: Option[String] = None,
         enum: Option[Seq[String]] = None
-    ) =
+    ): GenSwaggerParameter =
       GenSwaggerParameter(
         parameter.name,
         `type` = Some(tp),
         format = format,
         required = defaultValueO.isEmpty,
         default = defaultValueO,
-        enum = enum
+        enum = enum,
+        description = description
       )
 
     val enumParamMF: MappingFunction = {

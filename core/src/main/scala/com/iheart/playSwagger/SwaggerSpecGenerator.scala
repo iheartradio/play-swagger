@@ -280,7 +280,8 @@ final case class SwaggerSpecGenerator(
         (under \ 'default).writeNullable[JsValue] ~
         (under \ 'example).writeNullable[JsValue] ~
         (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
-        (under \ "enum").writeNullable[Seq[String]]
+        (under \ "enum").writeNullable[Seq[String]] ~
+        (__ \ "description").writeNullable[String]
     )(unlift(GenSwaggerParameter.unapply))
   }
 
@@ -330,9 +331,20 @@ final case class SwaggerSpecGenerator(
         (__ \ 'example).writeNullable[JsValue] ~
         (__ \ "$ref").writeNullable[String] ~
         (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
-        (__ \ "enum").writeNullable[Seq[String]]
+        (__ \ "enum").writeNullable[Seq[String]] ~
+        (__ \ "description").writeNullable[String]
     )(p ⇒
-      (p.`type`, p.format, p.nullable, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum)
+      (
+        p.`type`,
+        p.format,
+        p.nullable,
+        p.default,
+        p.example,
+        p.referenceType.map(referencePrefix + _),
+        p.items,
+        p.enum,
+        p.description
+      )
     )
   }
 
