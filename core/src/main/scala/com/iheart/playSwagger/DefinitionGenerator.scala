@@ -21,7 +21,8 @@ final case class DefinitionGenerator(
     mappings: CustomMappings = Nil,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
-    namingStrategy: NamingStrategy = NamingStrategy.None
+    namingStrategy: NamingStrategy = NamingStrategy.None,
+    embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
   private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+])?)".r
@@ -70,27 +71,31 @@ final case class DefinitionGenerator(
           case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
         }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
-        val scaladoc = for {
-          annotation <- tpe.typeSymbol.annotations
-          if typeOf[Scaladoc] == annotation.tree.tpe
-          value <- annotation.tree.children.tail.headOption
-          docTree <- value.children.tail.headOption
-          docString = docTree.toString().tail.init.replace("\\n", "\n")
-          doc <- ScaladocParser.parse(docString)
-        } yield doc
+        val paramDescriptions = if (embedScaladoc) {
+          val scaladoc = for {
+            annotation <- tpe.typeSymbol.annotations
+            if typeOf[Scaladoc] == annotation.tree.tpe
+            value <- annotation.tree.children.tail.headOption
+            docTree <- value.children.tail.headOption
+            docString = docTree.toString().tail.init.replace("\\n", "\n")
+            doc <- ScaladocParser.parse(docString)
+          } yield doc
 
-        val paramDescriptions = (for {
-          doc <- scaladoc
-          paragraph <- doc.para
-          term <- paragraph.terms
-          tag <- term match {
-            case iScaladoc.Tag(iScaladoc.TagType.Param, Some(iScaladoc.Word(key)), Seq(text)) =>
-              Some(key -> text)
-            case _ => None
-          }
-        } yield tag).map {
-          case (name, term) => name -> scalaDocToMarkdown(term).toString
-        }.toMap
+          (for {
+            doc <- scaladoc
+            paragraph <- doc.para
+            term <- paragraph.terms
+            tag <- term match {
+              case iScaladoc.Tag(iScaladoc.TagType.Param, Some(iScaladoc.Word(key)), Seq(text)) =>
+                Some(key -> text)
+              case _ => None
+            }
+          } yield tag).map {
+            case (name, term) => name -> scalaDocToMarkdown(term).toString
+          }.toMap
+        } else {
+          Map.empty[String, String]
+        }
 
         fields.map { field: Symbol ⇒
           // TODO: find a better way to get the string representation of typeSignature
@@ -194,11 +199,13 @@ object DefinitionGenerator {
   def apply(
       domainNameSpace: String,
       customParameterTypeMappings: CustomMappings,
-      namingStrategy: NamingStrategy
+      namingStrategy: NamingStrategy,
+      embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace),
       customParameterTypeMappings,
-      namingStrategy = namingStrategy
+      namingStrategy = namingStrategy,
+      embedScaladoc = embedScaladoc
     )
 }

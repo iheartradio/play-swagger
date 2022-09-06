@@ -69,7 +69,12 @@ class DefinitionGeneratorSpec extends Specification {
 
     "generate properties" >> {
 
-      val result = DefinitionGenerator("com.iheart.playSwagger", Nil, NamingStrategy.None).definition[Foo].properties
+      val result = DefinitionGenerator(
+        "com.iheart.playSwagger",
+        Nil,
+        NamingStrategy.None,
+        embedScaladoc = false
+      ).definition[Foo].properties
 
       result.length === 7
 
@@ -118,7 +123,9 @@ class DefinitionGeneratorSpec extends Specification {
     "generate properties using snake case naming strategy" >> {
 
       val result =
-        DefinitionGenerator("com.iheart.playSwagger", Nil, NamingStrategy.SnakeCase).definition[Foo].properties
+        DefinitionGenerator("com.iheart.playSwagger", Nil, NamingStrategy.SnakeCase, embedScaladoc = false).definition[
+          Foo
+        ].properties
 
       result.length === 7
 
@@ -167,7 +174,9 @@ class DefinitionGeneratorSpec extends Specification {
     "generate properties using kebab case naming strategy" >> {
 
       val result =
-        DefinitionGenerator("com.iheart.playSwagger", Nil, NamingStrategy.KebabCase).definition[Foo].properties
+        DefinitionGenerator("com.iheart.playSwagger", Nil, NamingStrategy.KebabCase, embedScaladoc = false).definition[
+          Foo
+        ].properties
 
       result.length === 7
 
@@ -214,14 +223,14 @@ class DefinitionGeneratorSpec extends Specification {
     }
 
     "read class in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition(
+      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.MyObject.MyInnerClass"
       )
       result.properties.head.name === "bar"
     }
 
     "read alias type in Object" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition(
+      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.MyObject.MyInnerClass"
       )
 
@@ -233,14 +242,16 @@ class DefinitionGeneratorSpec extends Specification {
 
     "read sequence items" >> {
       val result =
-        DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition("com.iheart.playSwagger.FooWithSeq")
+        DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
+          "com.iheart.playSwagger.FooWithSeq"
+        )
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[
         GenSwaggerParameter
       ].referenceType === Some("com.iheart.playSwagger.SeqItem")
     }
 
     "read primitive sequence items" >> {
-      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition(
+      val result = DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.WithListOfPrimitive"
       )
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[
@@ -251,7 +262,9 @@ class DefinitionGeneratorSpec extends Specification {
 
     "read Optional items " >> {
       val result =
-        DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition("com.iheart.playSwagger.FooWithOption")
+        DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
+          "com.iheart.playSwagger.FooWithOption"
+        )
       result.properties.head.asInstanceOf[GenSwaggerParameter].referenceType must beSome(
         "com.iheart.playSwagger.OptionItem"
       )
@@ -260,7 +273,9 @@ class DefinitionGeneratorSpec extends Specification {
     "with dates" >> {
       "no override" >> {
         val result =
-          DefinitionGenerator("com.iheart", Nil, NamingStrategy.None).definition("com.iheart.playSwagger.WithDate")
+          DefinitionGenerator("com.iheart", Nil, NamingStrategy.None, embedScaladoc = false).definition(
+            "com.iheart.playSwagger.WithDate"
+          )
         val prop = result.properties.head.asInstanceOf[GenSwaggerParameter]
         prop.`type` must beSome("integer")
         prop.format must beSome("epoch")
@@ -275,7 +290,9 @@ class DefinitionGeneratorSpec extends Specification {
           )
         )
         val result =
-          DefinitionGenerator("com.iheart", mappings, NamingStrategy.None).definition("com.iheart.playSwagger.WithDate")
+          DefinitionGenerator("com.iheart", mappings, NamingStrategy.None, embedScaladoc = false).definition(
+            "com.iheart.playSwagger.WithDate"
+          )
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
         prop.specAsParameter === customJson
       }
@@ -289,7 +306,7 @@ class DefinitionGeneratorSpec extends Specification {
             specAsParameter = customJson
           )
         )
-        val result = DefinitionGenerator("com.iheart", mappings, NamingStrategy.None).definition(
+        val result = DefinitionGenerator("com.iheart", mappings, NamingStrategy.None, embedScaladoc = false).definition(
           "com.iheart.playSwagger.WithOptionalDate"
         )
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
@@ -304,7 +321,7 @@ class DefinitionGeneratorSpec extends Specification {
         `type` = "com.iheart.playSwagger.WrappedString",
         specAsParameter = customJson
       )
-      val generator = DefinitionGenerator("com.iheart", List(customMapping), NamingStrategy.None)
+      val generator = DefinitionGenerator("com.iheart", List(customMapping), NamingStrategy.None, embedScaladoc = false)
       val definition = generator.definition[FooWithWrappedStringProperties]
 
       "support simple property types" >> {

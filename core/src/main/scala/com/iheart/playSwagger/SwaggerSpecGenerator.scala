@@ -38,13 +38,14 @@ object SwaggerSpecGenerator {
     )
   }
 
-  def apply(swaggerV3: Boolean, operationIdFully: Boolean, domainNameSpaces: String*)(implicit
+  def apply(swaggerV3: Boolean, operationIdFully: Boolean, embedScaladoc: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
       NamingStrategy.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       swaggerV3 = swaggerV3,
-      operationIdFully = operationIdFully
+      operationIdFully = operationIdFully,
+      embedScaladoc = embedScaladoc
     )
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit
@@ -69,7 +70,8 @@ final case class SwaggerSpecGenerator(
     swaggerV3: Boolean = false,
     swaggerPlayJava: Boolean = false,
     apiVersion: Option[String] = None,
-    operationIdFully: Boolean = false
+    operationIdFully: Boolean = false,
+    embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
   import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
@@ -202,7 +204,8 @@ final case class SwaggerSpecGenerator(
         modelQualifier = modelQualifier,
         mappings = customMappings,
         swaggerPlayJava = swaggerPlayJava,
-        namingStrategy = namingStrategy
+        namingStrategy = namingStrategy,
+        embedScaladoc = embedScaladoc
       ).allDefinitions(referredClasses)
     }
 
