@@ -527,8 +527,49 @@ summary: Top Page
 It can be configured in `build.sbt`. 
 This setting allows you to set the `${controllerName}.${methodName}` to name the operationId.
 
-```
+```sbt
 swaggerOperationIdNamingFully := true
+```
+
+#### Need a schema description?
+
+Using [runtime-scaladoc-reader](https://github.com/takezoe/runtime-scaladoc-reader), a description can be generated from Scaladoc comments written in the case class.
+
+⚠️ Schema generation from documentation comments is very useful, but **should never be used** if the scope of scaladoc documentation is different from the scope of OpenAPI documentation.
+
+Add the required dependencies and Compiler Plugin to `build.sbt` and configure it for use.
+
+```sbt
+embedScaladoc := true
+addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3")
+libraryDependencies +=  "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"
+```
+
+For example, a case class might be written as follows.
+
+```scala
+/**
+  * @param name e.g. Sunday, Monday, TuesDay...
+  */
+case class DayOfWeek(name: String)
+```
+
+The generated JSON will look like this.
+
+```json
+{
+  "DayOfWeek": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "e.g. Sunday, Monday, TuesDay..."
+      }
+    },
+    "required": [
+      "name"
+    ]
+  }
+}
 ```
 
 #### Is play java supported? 
