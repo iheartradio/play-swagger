@@ -36,4 +36,10 @@ trait SwaggerKeys {
       "swaggerOperationIdNaming",
       "Either use the operationId of the generated json as the method name"
     )
+
+  val embedScaladoc: SettingKey[Boolean] =
+    SettingKey[Boolean](
+      "embedScaladoc",
+      "Output schema description using scaladoc of case class"
+    )
 }

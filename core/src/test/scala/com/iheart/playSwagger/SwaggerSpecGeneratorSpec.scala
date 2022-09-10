@@ -19,6 +19,9 @@ case class Keeper(internalFieldName1: String, internalFieldName2: Int)
 
 case class Subject(name: String)
 
+/**
+  * @param name e.g. Sunday, Monday, TuesDay...
+  */
 case class DayOfWeek(name: String)
 
 case class PolymorphicContainer(item: PolymorphicItem)
@@ -113,7 +116,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
     }
 
-    lazy val json = SwaggerSpecGenerator(false, false, "com.iheart").generate("test.routes").get
+    lazy val json = SwaggerSpecGenerator(false, false, false, "com.iheart").generate("test.routes").get
     lazy val pathJson = json \ "paths"
     lazy val definitionsJson = json \ "definitions"
     lazy val postBodyJson = (pathJson \ "/post-body" \ "post").as[JsObject]
@@ -509,6 +512,19 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
       (dayOfWeekJson.get \ "properties" \ "name" \ "type").as[String] === "string"
     }
 
+    "embedded scaladoc strings" >> {
+      lazy val json = SwaggerSpecGenerator(false, false, embedScaladoc = true, "com.iheart").generate("test.routes").get
+      lazy val definitionsJson = json \ "definitions"
+      lazy val dayOfWeekJson = (definitionsJson \ "com.iheart.playSwagger.DayOfWeek").asOpt[JsObject]
+      dayOfWeekJson must beSome[JsObject]
+      (dayOfWeekJson.get \ "properties" \ "name" \ "description").as[String] === "e.g. Sunday, Monday, TuesDay..."
+    }
+
+    "don't embedded scaladoc strings" >> {
+      dayOfWeekJson must beSome[JsObject]
+      (dayOfWeekJson.get \ "properties" \ "name" \ "description").asOpt[String] === None
+    }
+
     "parse mixin referenced external file" >> {
       lazy val subjectJson = (pathJson \ "/api/subjects/dow/{subject}" \ "get").as[JsObject]
 
@@ -676,7 +692,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "fully operation id" >> {
-      lazy val json = SwaggerSpecGenerator(false, true, "com.iheart").generate("test.routes").get
+      lazy val json = SwaggerSpecGenerator(false, true, false, "com.iheart").generate("test.routes").get
       lazy val addTrackJson = (json \ "paths" \ "/api/station/playedTracks" \ "post").as[JsObject]
       (addTrackJson \ "operationId").as[String] ==== "LiveMeta.addPlayedTracks"
     }
@@ -711,7 +727,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
   }
 
   "integration v3" >> {
-    lazy val json = SwaggerSpecGenerator(true, false, "com.iheart").generate("testV3.routes").get
+    lazy val json = SwaggerSpecGenerator(true, false, false, "com.iheart").generate("testV3.routes").get
     lazy val componentSchemasJson = json \ "components" \ "schemas"
     lazy val trackJson = (componentSchemasJson \ "com.iheart.playSwagger.Track").as[JsObject]
 

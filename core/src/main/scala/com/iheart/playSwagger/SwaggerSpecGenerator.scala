@@ -38,13 +38,14 @@ object SwaggerSpecGenerator {
     )
   }
 
-  def apply(swaggerV3: Boolean, operationIdFully: Boolean, domainNameSpaces: String*)(implicit
+  def apply(swaggerV3: Boolean, operationIdFully: Boolean, embedScaladoc: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
       NamingStrategy.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       swaggerV3 = swaggerV3,
-      operationIdFully = operationIdFully
+      operationIdFully = operationIdFully,
+      embedScaladoc = embedScaladoc
     )
   }
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit
@@ -69,7 +70,8 @@ final case class SwaggerSpecGenerator(
     swaggerV3: Boolean = false,
     swaggerPlayJava: Boolean = false,
     apiVersion: Option[String] = None,
-    operationIdFully: Boolean = false
+    operationIdFully: Boolean = false,
+    embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
   import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
@@ -177,39 +179,10 @@ final case class SwaggerSpecGenerator(
       paths: ListMap[String, JsObject],
       baseJson: JsObject = Json.obj()
   ): JsObject = {
-    implicit class JsValueUpdate(jsValue: JsValue) {
-      def update(target: String)(f: JsValue => JsObject): JsValue = jsValue.result match {
-        case JsDefined(obj: JsObject) =>
-          JsObject(obj.update(target)(f))
-
-        case JsDefined(arr: JsArray) =>
-          JsArray(arr.value.map(_.update(target)(f)))
-
-        case JsDefined(js) => js
-
-        case _ => JsNull
-      }
-    }
-
-    implicit class JsObjectUpdate(jsObject: JsObject) {
-      def update(target: String)(f: JsValue => JsObject): collection.Seq[(String, JsValue)] = jsObject.fields.flatMap {
-        case (k, v) if k == target => f(v).fields
-        case (k, v) => Seq(k -> v.update(target)(f))
-      }
-    }
 
     val refKey = "$ref"
 
-    val pathsJson = JsObject(paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields)).update(refKey) {
-      case JsString(v) =>
-        val pattern = "^([^#]+)(?:#(?:/[a-zA-Z])+)?$".r
-        v match {
-          case pattern(path) if PathValidator.isValid(path) =>
-            readCfgFile[JsObject](path).getOrElse(JsObject(Seq(refKey -> JsString(v))))
-          case _ => JsObject(Seq(refKey -> JsString(v)))
-        }
-      case v => JsObject(Seq(refKey -> v))
-    })
+    val pathsJson = paths.values.reduce((acc, p) ⇒ JsObject(acc.fields ++ p.fields))
 
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
     val customMappingRefs = for {
@@ -231,7 +204,8 @@ final case class SwaggerSpecGenerator(
         modelQualifier = modelQualifier,
         mappings = customMappings,
         swaggerPlayJava = swaggerPlayJava,
-        namingStrategy = namingStrategy
+        namingStrategy = namingStrategy,
+        embedScaladoc = embedScaladoc
       ).allDefinitions(referredClasses)
     }
 
@@ -280,7 +254,8 @@ final case class SwaggerSpecGenerator(
         (under \ 'default).writeNullable[JsValue] ~
         (under \ 'example).writeNullable[JsValue] ~
         (under \ "items").writeNullable[SwaggerParameter](propWrites) ~
-        (under \ "enum").writeNullable[Seq[String]]
+        (under \ "enum").writeNullable[Seq[String]] ~
+        (__ \ "description").writeNullable[String]
     )(unlift(GenSwaggerParameter.unapply))
   }
 
@@ -330,9 +305,20 @@ final case class SwaggerSpecGenerator(
         (__ \ 'example).writeNullable[JsValue] ~
         (__ \ "$ref").writeNullable[String] ~
         (__ \ "items").lazyWriteNullable[SwaggerParameter](propWrites) ~
-        (__ \ "enum").writeNullable[Seq[String]]
+        (__ \ "enum").writeNullable[Seq[String]] ~
+        (__ \ "description").writeNullable[String]
     )(p ⇒
-      (p.`type`, p.format, p.nullable, p.default, p.example, p.referenceType.map(referencePrefix + _), p.items, p.enum)
+      (
+        p.`type`,
+        p.format,
+        p.nullable,
+        p.default,
+        p.example,
+        p.referenceType.map(referencePrefix + _),
+        p.items,
+        p.enum,
+        p.description
+      )
     )
   }
 
@@ -510,11 +496,48 @@ final case class SwaggerSpecGenerator(
         case _ ⇒ Nil
       }
 
-      for {
+      val commentsJsonOpt = for {
         leadingSpace ← commentDocLines.headOption.flatMap("""^(\s*)""".r.findFirstIn)
         comment = commentDocLines.map(_.drop(leadingSpace.length)).mkString("\n")
         result ← tryParseJson(comment) orElse tryParseYaml(comment)
       } yield result
+
+      commentsJsonOpt.map { commentsJson =>
+        implicit class JsValueUpdate(jsValue: JsValue) {
+          def update(target: String)(f: JsValue => JsObject): JsValue = jsValue.result match {
+            case JsDefined(obj: JsObject) =>
+              JsObject(obj.update(target)(f))
+
+            case JsDefined(arr: JsArray) =>
+              JsArray(arr.value.map(_.update(target)(f)))
+
+            case JsDefined(js) => js
+
+            case _ => JsNull
+          }
+        }
+
+        implicit class JsObjectUpdate(jsObject: JsObject) {
+          def update(target: String)(f: JsValue => JsObject): collection.Seq[(String, JsValue)] =
+            jsObject.fields.flatMap {
+              case (k, v) if k == target => f(v).fields
+              case (k, v) => Seq(k -> v.update(target)(f))
+            }
+        }
+
+        val refKey = "$ref"
+
+        JsObject(commentsJson.update(refKey) {
+          case JsString(v) =>
+            val pattern = "^([^#]+)(?:#(?:/[a-zA-Z])+)?$".r
+            v match {
+              case pattern(path) if PathValidator.isValid(path) =>
+                readCfgFile[JsObject](path).getOrElse(JsObject(Seq(refKey -> JsString(v))))
+              case _ => JsObject(Seq(refKey -> JsString(v)))
+            }
+          case v => JsObject(Seq(refKey -> v))
+        })
+      }
     }
 
     val paramsFromComment = jsonFromComment.flatMap(jc ⇒ (jc \ "parameters").asOpt[JsArray]).map(amendBodyParam)

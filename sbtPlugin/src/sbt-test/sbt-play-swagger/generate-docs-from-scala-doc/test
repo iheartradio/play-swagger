@@ -1,0 +1,25 @@
+> swagger
+
+> check
+> clean
+> dist
+
+
+$ absent target/jar/public/swagger.json
+> unzip1
+$ exists target/jar/public/swagger.json
+
+
+$ absent target/dist/jar/public/swagger.json
+> unzip2
+> unzip3
+$ exists target/dist/jar/public/swagger.json
+
+
+> clean
+> stage
+
+$ absent target/jar/public/swagger.json
+> unzip4
+$ exists target/jar/public/swagger.json
+

@@ -1,11 +1,19 @@
 package com.iheart.playSwagger
 
 import scala.collection.JavaConverters
+import scala.meta.internal.parsers.ScaladocParser
+import scala.meta.internal.{Scaladoc => iScaladoc}
 import scala.reflect.runtime.universe._
 
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
+import com.github.takezoe.scaladoc.Scaladoc
 import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
+import net.steppschuh.markdowngenerator.MarkdownElement
+import net.steppschuh.markdowngenerator.table.Table
+import net.steppschuh.markdowngenerator.text.Text
+import net.steppschuh.markdowngenerator.text.code.CodeBlock
+import net.steppschuh.markdowngenerator.text.heading.Heading
 import play.routes.compiler.Parameter
 
 final case class DefinitionGenerator(
@@ -13,10 +21,11 @@ final case class DefinitionGenerator(
     mappings: CustomMappings = Nil,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
-    namingStrategy: NamingStrategy = NamingStrategy.None
+    namingStrategy: NamingStrategy = NamingStrategy.None,
+    embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
-  private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+\])?)".r
+  private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+])?)".r
 
   def dealiasParams(t: Type): Type = {
     t.toString match {
@@ -31,6 +40,28 @@ final case class DefinitionGenerator(
     }
   }
 
+  private def scalaDocToMarkdown: PartialFunction[iScaladoc.Term, MarkdownElement] = {
+    case value: iScaladoc.Text =>
+      new Text(value.parts.map {
+        case word: iScaladoc.Word => word.value
+        case link: iScaladoc.Link => s"[${link.anchor.mkString(" ")}](${link.ref})}"
+        case code: iScaladoc.CodeExpr => s"`${code.code}`"
+      }.mkString(" "))
+    case code: iScaladoc.CodeBlock => new CodeBlock(code, "scala")
+    case code: iScaladoc.MdCodeBlock =>
+      new CodeBlock(code.code.mkString("\n"), code.info.mkString(":"))
+    case head: iScaladoc.Heading => new Heading(head, 1)
+    case table: iScaladoc.Table =>
+      val builder = new Table.Builder().withAlignments(Table.ALIGN_RIGHT, Table.ALIGN_LEFT).addRow(
+        table.header.cols: _*
+      )
+      table.rows.foreach(row => builder.addRow(row.cols: _*))
+      builder.build()
+    // TODO: Support List
+    // https://github.com/Steppschuh/Java-Markdown-Generator/pull/13
+    case _ => new Text("")
+  }
+
   def definition: ParametricType ⇒ Definition = {
     case parametricType @ ParametricType(tpe, reifiedTypeName, _, _) ⇒
       val properties = if (swaggerPlayJava) {
@@ -40,7 +71,33 @@ final case class DefinitionGenerator(
           case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
         }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
-        fields.map { field ⇒
+        val paramDescriptions = if (embedScaladoc) {
+          val scaladoc = for {
+            annotation <- tpe.typeSymbol.annotations
+            if typeOf[Scaladoc] == annotation.tree.tpe
+            value <- annotation.tree.children.tail.headOption
+            docTree <- value.children.tail.headOption
+            docString = docTree.toString().tail.init.replace("\\n", "\n")
+            doc <- ScaladocParser.parse(docString)
+          } yield doc
+
+          (for {
+            doc <- scaladoc
+            paragraph <- doc.para
+            term <- paragraph.terms
+            tag <- term match {
+              case iScaladoc.Tag(iScaladoc.TagType.Param, Some(iScaladoc.Word(key)), Seq(text)) =>
+                Some(key -> text)
+              case _ => None
+            }
+          } yield tag).map {
+            case (name, term) => name -> scalaDocToMarkdown(term).toString
+          }.toMap
+        } else {
+          Map.empty[String, String]
+        }
+
+        fields.map { field: Symbol ⇒
           // TODO: find a better way to get the string representation of typeSignature
           val name = namingStrategy(field.name.decodedName.toString)
 
@@ -51,7 +108,7 @@ final case class DefinitionGenerator(
           val typeName = parametricType.resolve(rawTypeName)
           // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
           val param = Parameter(name, typeName, None, None)
-          mapParam(param, modelQualifier, mappings)
+          mapParam(param, modelQualifier, mappings, paramDescriptions.get(field.name.decodedName.toString))
         }
       }
 
@@ -142,11 +199,13 @@ object DefinitionGenerator {
   def apply(
       domainNameSpace: String,
       customParameterTypeMappings: CustomMappings,
-      namingStrategy: NamingStrategy
+      namingStrategy: NamingStrategy,
+      embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =
     DefinitionGenerator(
       PrefixDomainModelQualifier(domainNameSpace),
       customParameterTypeMappings,
-      namingStrategy = namingStrategy
+      namingStrategy = namingStrategy,
+      embedScaladoc = embedScaladoc
     )
 }
