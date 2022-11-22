@@ -20,7 +20,7 @@ class SwaggerParameterMapperSpec extends Specification {
 
     "override mapping to map DateTime to string with format date-time" >> {
       "single DateTime" >> {
-        val specAsParameter = List(Json.obj("type" → "string", "format" → "date-time"))
+        val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
         val mappings: CustomMappings = List(CustomTypeMapping(
           "org.joda.time.DateTime",
           specAsParameter = specAsParameter
@@ -36,7 +36,7 @@ class SwaggerParameterMapperSpec extends Specification {
       }
 
       "sequence of DateTimes" >> {
-        val specAsProperty = Json.obj("type" → "string", "format" → "date-time")
+        val specAsProperty = Json.obj("type" -> "string", "format" -> "date-time")
         val mappings: CustomMappings = List(CustomTypeMapping(
           "org.joda.time.DateTime",
           specAsProperty = Some(specAsProperty)
@@ -58,7 +58,7 @@ class SwaggerParameterMapperSpec extends Specification {
     }
 
     "add new custom type mapping" >> {
-      val specAsParameter = List(Json.obj("type" → "string", "format" → "date-time"))
+      val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
       val mappings: CustomMappings = List(CustomTypeMapping(
         "java.util.Date",
         specAsParameter = specAsParameter
@@ -126,7 +126,7 @@ class SwaggerParameterMapperSpec extends Specification {
 
     "map String to string without override interference" >> {
 
-      val specAsParameter = List(Json.obj("type" → "string", "format" → "date-time"))
+      val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
       val mappings: CustomMappings = List(
         CustomTypeMapping(
           "java.time.LocalDate",

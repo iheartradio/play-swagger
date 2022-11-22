@@ -282,7 +282,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       }
       "with override" >> {
-        val customJson = List(Json.obj("type" → "string", "format" → "date-time"))
+        val customJson = List(Json.obj("type" -> "string", "format" -> "date-time"))
         val mappings = List(
           CustomTypeMapping(
             `type` = "org.joda.time.DateTime",
@@ -299,7 +299,7 @@ class DefinitionGeneratorSpec extends Specification {
     }
     "with optional date" >> {
       "with override" >> {
-        val customJson = List(Json.obj("type" → "string", "format" → "date-time"))
+        val customJson = List(Json.obj("type" -> "string", "format" -> "date-time"))
         val mappings = List(
           CustomTypeMapping(
             `type` = "org.joda.time.DateTime",
@@ -316,7 +316,7 @@ class DefinitionGeneratorSpec extends Specification {
     }
 
     "with property overrides" >> {
-      val customJson = List(Json.obj("type" → "string"))
+      val customJson = List(Json.obj("type" -> "string"))
       val customMapping = CustomTypeMapping(
         `type` = "com.iheart.playSwagger.WrappedString",
         specAsParameter = customJson
