@@ -12,6 +12,10 @@ class NamingStrategySpec extends Specification {
       NamingStrategy.from("snake_case")("attributeName") must equalTo("attribute_name")
     }
 
+    "snake_case_skip_number" >> {
+      NamingStrategy.from("snake_case_skip_number")("attributeName1") must equalTo("attribute_name1")
+    }
+
     "kebab-case" >> {
       NamingStrategy.from("kebab-case")("attributeName") must equalTo("attribute-name")
     }

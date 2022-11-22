@@ -252,7 +252,7 @@ To use a custom naming strategies to override your case classes field names, you
 
 ```scala
 //default is 'none', which is your camelCased case class
-swaggerNamingStrategy := "snake_case" //kebab-case, lowercase and UpperCamelCase also available
+swaggerNamingStrategy := "snake_case" //snake_case_skip_number, kebab-case, lowercase and UpperCamelCase also available
 ```
 
 #### The spec is missing when built to a docker image using sbt-native-pakcager

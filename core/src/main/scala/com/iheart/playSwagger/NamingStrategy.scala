@@ -8,6 +8,7 @@ sealed abstract class NamingStrategy(f: String ⇒ String) extends (String ⇒ S
 
 object NamingStrategy {
   val regex: Regex = "[A-Z\\d]".r
+  val skipNumberRegex: Regex = "[A-Z]".r
 
   object None extends NamingStrategy(identity)
   object SnakeCase extends NamingStrategy(x ⇒ regex.replaceAllIn(x, { m ⇒ "_" + m.group(0).toLowerCase() }))
@@ -17,9 +18,13 @@ object NamingStrategy {
         val (head, tail) = x.splitAt(1)
         head.toUpperCase() + tail
       })
+  object SnakeCaseSkipNumber extends NamingStrategy(x =>
+        skipNumberRegex.replaceAllIn(x, { m => "_" + m.group(0).toLowerCase() })
+      )
 
   def from(naming: String): NamingStrategy = naming match {
     case "snake_case" ⇒ SnakeCase
+    case "snake_case_skip_number" => SnakeCaseSkipNumber
     case "kebab-case" ⇒ KebabCase
     case "lowercase" ⇒ LowerCase
     case "UpperCamelCase" ⇒ UpperCamelCase
