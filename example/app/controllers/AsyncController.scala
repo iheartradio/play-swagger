@@ -34,7 +34,7 @@ exec: ExecutionContext) extends AbstractController(components) {
     * a path of `/message`.
     */
   def message: Action[AnyContent] = Action.async {
-    getFutureMessage(1.second).map { msg ⇒ Ok(Json.toJson(msg)) }
+    getFutureMessage(1.second).map { msg => Ok(Json.toJson(msg)) }
   }
 
   private def getFutureMessage(delayTime: FiniteDuration): Future[Message] = {

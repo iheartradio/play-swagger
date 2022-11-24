@@ -33,7 +33,7 @@ final case class DefinitionGenerator(
       case _ =>
         appliedType(
           t.dealias.typeConstructor,
-          t.typeArgs.map { arg ⇒
+          t.typeArgs.map { arg =>
             dealiasParams(arg.dealias)
           }
         )
@@ -62,13 +62,13 @@ final case class DefinitionGenerator(
     case _ => new Text("")
   }
 
-  def definition: ParametricType ⇒ Definition = {
-    case parametricType @ ParametricType(tpe, reifiedTypeName, _, _) ⇒
+  def definition: ParametricType => Definition = {
+    case parametricType @ ParametricType(tpe, reifiedTypeName, _, _) =>
       val properties = if (swaggerPlayJava) {
         definitionForPOJO(tpe)
       } else {
         val fields = tpe.decls.collectFirst {
-          case m: MethodSymbol if m.isPrimaryConstructor ⇒ m
+          case m: MethodSymbol if m.isPrimaryConstructor => m
         }.toList.flatMap(_.paramLists).headOption.getOrElse(Nil)
 
         val paramDescriptions = if (embedScaladoc) {
@@ -97,7 +97,7 @@ final case class DefinitionGenerator(
           Map.empty[String, String]
         }
 
-        fields.map { field: Symbol ⇒
+        fields.map { field: Symbol =>
           // TODO: find a better way to get the string representation of typeSignature
           val name = namingStrategy(field.name.decodedName.toString)
 
@@ -126,7 +126,7 @@ final case class DefinitionGenerator(
     val beanProperties = beanDesc.findProperties
     val ignoreProperties = beanDesc.getIgnoredPropertyNames
     val propertySet = JavaConverters.asScalaIteratorConverter(beanProperties.iterator()).asScala.toSeq
-    propertySet.filter(bd ⇒ !ignoreProperties.contains(bd.getName)).map { entry ⇒
+    propertySet.filter(bd => !ignoreProperties.contains(bd.getName)).map { entry =>
       val name = entry.getName
       val className = entry.getPrimaryMember.getType.getRawClass.getName
       val generalTypeName = if (entry.getField != null && entry.getField.getType.hasGenericTypes) {
@@ -151,7 +151,7 @@ final case class DefinitionGenerator(
 
   def allDefinitions(typeNames: Seq[String]): List[Definition] = {
     def genSwaggerParameter: PartialFunction[SwaggerParameter, GenSwaggerParameter] = {
-      case p: GenSwaggerParameter ⇒ p
+      case p: GenSwaggerParameter => p
     }
 
     def allReferredDefs(defName: String, memo: List[Definition]): List[Definition] = {
@@ -161,8 +161,8 @@ final case class DefinitionGenerator(
         }
 
       memo.find(_.name == defName) match {
-        case Some(_) ⇒ memo
-        case None ⇒
+        case Some(_) => memo
+        case None =>
           val thisDef = definition(defName)
           val refNames: Seq[String] = for {
             p ← thisDef.properties.collect(genSwaggerParameter)
@@ -170,13 +170,13 @@ final case class DefinitionGenerator(
             if modelQualifier.isModel(className)
           } yield className
 
-          refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) ⇒
+          refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) =>
             allReferredDefs(refName, foundDefs)
           }
       }
     }
 
-    typeNames.foldLeft(List.empty[Definition]) { (memo, typeName) ⇒
+    typeNames.foldLeft(List.empty[Definition]) { (memo, typeName) =>
       allReferredDefs(typeName, memo)
     }
   }

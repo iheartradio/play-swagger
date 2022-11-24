@@ -36,20 +36,20 @@ object SwaggerParameterMapper {
     val typeName = removeKnownPrefixes(parameter.typeName)
 
     val defaultValueO: Option[JsValue] = {
-      parameter.default.map { value ⇒
+      parameter.default.map { value =>
         typeName match {
-          case ci"Int" | ci"Long" ⇒ JsNumber(value.toLong)
-          case ci"Double" | ci"Float" | ci"BigDecimal" ⇒ JsNumber(value.toDouble)
-          case ci"Boolean" ⇒ JsBoolean(value.toBoolean)
-          case ci"String" ⇒ {
+          case ci"Int" | ci"Long" => JsNumber(value.toLong)
+          case ci"Double" | ci"Float" | ci"BigDecimal" => JsNumber(value.toDouble)
+          case ci"Boolean" => JsBoolean(value.toBoolean)
+          case ci"String" => {
             val noquotes = value match {
-              case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") ⇒ c.substring(3, c.length - 3)
-              case c if c.startsWith("\"") && c.endsWith("\"") ⇒ c.substring(1, c.length - 1)
-              case c ⇒ c
+              case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") => c.substring(3, c.length - 3)
+              case c if c.startsWith("\"") && c.endsWith("\"") => c.substring(1, c.length - 1)
+              case c => c
             }
             JsString(noquotes)
           }
-          case _ ⇒ JsString(value)
+          case _ => JsString(value)
         }
       }
     }
@@ -70,9 +70,9 @@ object SwaggerParameterMapper {
       )
 
     val enumParamMF: MappingFunction = {
-      case JavaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
-      case ScalaEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
-      case EnumeratumEnum(enumConstants) ⇒ genSwaggerParameter("string", enum = Option(enumConstants))
+      case JavaEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
+      case ScalaEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
+      case EnumeratumEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
     }
 
     def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
@@ -97,37 +97,37 @@ object SwaggerParameterMapper {
       asRequired.update(required = false, nullable = true, default = asRequired.default)
     }
 
-    def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter ⇒ GenSwaggerParameter): SwaggerParameter =
+    def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter => GenSwaggerParameter): SwaggerParameter =
       param match {
-        case p: GenSwaggerParameter ⇒ update(p)
-        case _ ⇒ param
+        case p: GenSwaggerParameter => update(p)
+        case _ => param
       }
 
     val referenceParamMF: MappingFunction = {
-      case tpe if isReference(tpe) ⇒ referenceParam(tpe)
+      case tpe if isReference(tpe) => referenceParam(tpe)
     }
 
     val optionalParamMF: MappingFunction = {
-      case tpe if higherOrderType("Option", typeName, None).isDefined ⇒
+      case tpe if higherOrderType("Option", typeName, None).isDefined =>
         optionalParam(higherOrderType("Option", typeName, None).get)
     }
 
     val generalParamMF: MappingFunction = {
-      case ci"Int" | ci"Integer" ⇒ genSwaggerParameter("integer", Some("int32"))
-      case ci"Long" ⇒ genSwaggerParameter("integer", Some("int64"))
-      case ci"Double" | ci"BigDecimal" ⇒ genSwaggerParameter("number", Some("double"))
-      case ci"Float" ⇒ genSwaggerParameter("number", Some("float"))
-      case ci"DateTime" ⇒ genSwaggerParameter("integer", Some("epoch"))
-      case ci"java.time.Instant" ⇒ genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.LocalDate" ⇒ genSwaggerParameter("string", Some("date"))
-      case ci"java.time.LocalDateTime" ⇒ genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.Duration" ⇒ genSwaggerParameter("string")
-      case ci"Any" ⇒ genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
-      case unknown ⇒ genSwaggerParameter(unknown.toLowerCase())
+      case ci"Int" | ci"Integer" => genSwaggerParameter("integer", Some("int32"))
+      case ci"Long" => genSwaggerParameter("integer", Some("int64"))
+      case ci"Double" | ci"BigDecimal" => genSwaggerParameter("number", Some("double"))
+      case ci"Float" => genSwaggerParameter("number", Some("float"))
+      case ci"DateTime" => genSwaggerParameter("integer", Some("epoch"))
+      case ci"java.time.Instant" => genSwaggerParameter("string", Some("date-time"))
+      case ci"java.time.LocalDate" => genSwaggerParameter("string", Some("date"))
+      case ci"java.time.LocalDateTime" => genSwaggerParameter("string", Some("date-time"))
+      case ci"java.time.Duration" => genSwaggerParameter("string")
+      case ci"Any" => genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
+      case unknown => genSwaggerParameter(unknown.toLowerCase())
     }
 
     val itemsParamMF: MappingFunction = {
-      case tpe if collectionItemType(tpe).isDefined ⇒
+      case tpe if collectionItemType(tpe).isDefined =>
         // TODO: This could use a different type to represent ItemsObject(http://swagger.io/specification/#itemsObject),
         // since the structure is not quite the same, and still has to be handled specially in a json transform (see propWrites in SwaggerSpecGenerator)
         // However, that spec conflicts with example code elsewhere that shows other fields in the object, such as properties:
@@ -139,10 +139,10 @@ object SwaggerParameterMapper {
         ))
     }
 
-    val customMappingMF: MappingFunction = customMappings.map { mapping ⇒
+    val customMappingMF: MappingFunction = customMappings.map { mapping =>
       val re = StringContext(removeKnownPrefixes(mapping.`type`)).ci
       val mf: MappingFunction = {
-        case re() ⇒
+        case re() =>
           CustomSwaggerParameter(
             parameter.name,
             mapping.specAsParameter,
