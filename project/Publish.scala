@@ -1,13 +1,11 @@
 import com.jsuereth.sbtpgp.PgpKeys
 import xerial.sbt.Sonatype.autoImport._
 import sbt._, Keys._
-import sbtrelease.ReleasePlugin.autoImport._
-import ReleaseTransformations._
 
 object Publish {
 
   val coreSettings = Seq(
-    organization in ThisBuild := "com.iheart",
+    ThisBuild / organization := "com.iheart",
     publishMavenStyle := true,
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("http://iheartradio.github.io/play-swagger")),
@@ -24,24 +22,8 @@ object Publish {
       )
     ),
     pomIncludeRepository := { _ ⇒ false },
-    publishArtifact in Test := false,
-    releaseCrossBuild := true,
-    publishTo := sonatypePublishToBundle.value,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      releaseStepCommandAndRemaining("+clean"),
-      releaseStepCommandAndRemaining("+test"),
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepCommand("sonatypeBundleRelease"),
-      setNextVersion,
-      commitNextVersion,
-      pushChanges
-    )
+    Test / publishArtifact := false,
+    publishTo := sonatypePublishToBundle.value
   )
 
 }

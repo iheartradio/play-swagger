@@ -32,4 +32,4 @@ jobs:
         sbt ';project playSwagger;clean;+test'
     - name: Example compile
       run: 
-        cd example && sbt clean scalafmtSbtCheck scalafmtCheckAll scalafixEnable "scalafixAll --check" compile
+        sbt publishForExample && cd example && sbt clean scalafmtSbtCheck scalafmtCheckAll scalafixEnable "scalafixAll --check" compile
