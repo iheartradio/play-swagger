@@ -1,12 +1,17 @@
 organization in ThisBuild := "com.iheart"
 
-scalafixDependencies in ThisBuild ++= Seq(
+ThisBuild / scalafixDependencies  ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
   "net.pixiv" %% "scalafix-pixiv-rule" % "2.4.0"
 )
 
+addCommandAlias(
+  "publishForExample",
+  ";set ThisBuild / version := \"0.0.1-EXAMPLE\"; +publishLocal"
+)
+
 lazy val noPublishSettings = Seq(
-  skip in publish := true,
+  publish / skip := true,
   publish := (),
   publishLocal := (),
   publishArtifact := false
