@@ -1,4 +1,3 @@
-
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.0")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.2")
