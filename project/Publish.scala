@@ -23,8 +23,6 @@ object Publish {
         url("https://kailuowang.com")
       )
     ),
-    sonatypeCredentialHost := "s01.oss.sonatype.org",
-    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     pomIncludeRepository := { _ ⇒ false },
     publishArtifact in Test := false,
     releaseCrossBuild := true,
