@@ -17,7 +17,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val scalaV = "2.12.16"
+lazy val scalaV = "2.12.17"
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
