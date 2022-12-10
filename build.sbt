@@ -42,7 +42,7 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.test ++
       Dependencies.yaml ++ Seq(
         "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
-        "org.scalameta" %% "scalameta" % "4.5.13",
+        "org.scalameta" %% "scalameta" % "4.6.0",
         "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1"
       ),
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
