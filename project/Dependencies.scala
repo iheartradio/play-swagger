@@ -2,10 +2,10 @@ import sbt._
 
 object Dependencies {
   object Versions {
-    val play = "2.8.16"
+    val play = "2.8.18"
     val playJson = "2.8.2"
     val specs2 = "4.16.1"
-    val enumeratum = "1.7.0"
+    val enumeratum = "1.7.2"
     val refined = "0.10.1"
   }
 
@@ -22,7 +22,7 @@ object Dependencies {
   )
 
   val yaml = Seq(
-    "org.yaml" % "snakeyaml" % "1.32"
+    "org.yaml" % "snakeyaml" % "1.33"
   )
 
   val enumeratum = Seq(

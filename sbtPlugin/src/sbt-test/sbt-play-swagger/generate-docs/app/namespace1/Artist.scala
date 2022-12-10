@@ -1,6 +1,7 @@
 package namespace1
 
 case class Artist(
-  name:      String,
-  age:       Int,
-  birthdate: java.time.LocalDate)
+    name: String,
+    age: Int,
+    birthdate: java.time.LocalDate
+)
