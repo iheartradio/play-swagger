@@ -120,11 +120,7 @@ TaskKey[Unit]("check") := {
       |      "title":"Poweramp API",
       |      "description":"My API is the best"
       |   },
-      |   "tags":[
-      |      {
-      |         "name":"${swaggerRoutesFile.value}"
-      |      }
-      |   ]
+      |   "tags":[]
       |}
     """.stripMargin
   )
