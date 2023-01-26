@@ -2,7 +2,7 @@ organization in ThisBuild := "com.iheart"
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
-  "net.pixiv" %% "scalafix-pixiv-rule" % "2.4.0"
+  "net.pixiv" %% "scalafix-pixiv-rule" % "3.0.1"
 )
 
 addCommandAlias(
