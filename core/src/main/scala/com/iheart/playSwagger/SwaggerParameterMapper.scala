@@ -92,7 +92,8 @@ object SwaggerParameterMapper {
           }
         ),
         modelQualifier = modelQualifier,
-        customMappings = customMappings
+        customMappings = customMappings,
+        description = description
       )
       asRequired.update(required = false, nullable = true, default = asRequired.default)
     }

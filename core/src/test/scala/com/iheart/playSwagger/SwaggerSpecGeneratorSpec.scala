@@ -22,7 +22,7 @@ case class Subject(name: String)
 /**
   * @param name e.g. Sunday, Monday, TuesDay...
   */
-case class DayOfWeek(name: String)
+case class DayOfWeek(name: Option[String])
 
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
