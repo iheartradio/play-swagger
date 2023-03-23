@@ -45,7 +45,7 @@ lazy val playSwagger = project.in(file("core"))
         "org.scalameta" %% "scalameta" % "4.7.5",
         "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
         "joda-time" % "joda-time" % "2.10.14" % Test,
-        "com.google.errorprone" % "error_prone_annotations" % "2.17.0" % Test
+        "com.google.errorprone" % "error_prone_annotations" % "2.18.0" % Test
       ),
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
