@@ -22,7 +22,7 @@ case class Subject(name: String)
 /**
   * @param name e.g. Sunday, Monday, TuesDay...
   */
-case class DayOfWeek(name: String)
+case class DayOfWeek(name: Option[String])
 
 case class PolymorphicContainer(item: PolymorphicItem)
 trait PolymorphicItem
@@ -114,6 +114,10 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "Use default routes file when no argument is given" >> {
       val json = defaultRoutesFile.get
       (json \ "paths" \ "/player/{pid}/context/{bid}").asOpt[JsObject] must beSome
+    }
+    "Default routes tag must not be present" >> {
+      val json = defaultRoutesFile.get
+      (json \ "tags").asOpt[JsObject] must beNone
     }
 
     lazy val json = SwaggerSpecGenerator(false, false, false, "com.iheart").generate("test.routes").get
@@ -329,11 +333,29 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO => (tO \ "name").as[String]).sorted must containAllOf(Seq(
+      tags.get.map(tO => (tO \ "name").as[String]).sorted must contain(exactly("player"))
+
+      val allTags =
+        pathJson.as[JsObject].value.values.flatMap { pathObj =>
+          pathObj.as[JsObject].value.values.flatMap { opObj =>
+            val tag = (opObj \ "tags").asOpt[Seq[String]]
+
+            tag must beSome[Seq[String]]
+            tag.get must have size 1
+            tag.get
+          }
+        }.toSet
+
+      allTags must containAllOf(Seq(
+        "test",
+        "students",
+        "player",
+        "resource",
+        "level2",
         "customResource",
         "liveMeta",
-        "player",
-        "resource"
+        "referencing",
+        "zoo"
       ))
     }
 
