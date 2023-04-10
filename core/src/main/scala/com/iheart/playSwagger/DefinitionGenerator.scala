@@ -10,9 +10,10 @@ import com.github.takezoe.scaladoc.Scaladoc
 import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
 import net.steppschuh.markdowngenerator.MarkdownElement
+import net.steppschuh.markdowngenerator.link.Link
 import net.steppschuh.markdowngenerator.table.Table
 import net.steppschuh.markdowngenerator.text.Text
-import net.steppschuh.markdowngenerator.text.code.CodeBlock
+import net.steppschuh.markdowngenerator.text.code.{Code, CodeBlock}
 import net.steppschuh.markdowngenerator.text.heading.Heading
 import play.routes.compiler.Parameter
 
@@ -43,9 +44,9 @@ final case class DefinitionGenerator(
   private def scalaDocToMarkdown: PartialFunction[iScaladoc.Term, MarkdownElement] = {
     case value: iScaladoc.Text =>
       new Text(value.parts.map {
-        case word: iScaladoc.Word => word.value
-        case link: iScaladoc.Link => s"[${link.anchor.mkString(" ")}](${link.ref})}"
-        case code: iScaladoc.CodeExpr => s"`${code.code}`"
+        case word: iScaladoc.Word => new Text(word.value)
+        case link: iScaladoc.Link => new Link(link.anchor.mkString(" "), link.ref)
+        case code: iScaladoc.CodeExpr => new Code(code.code)
       }.mkString(" "))
     case code: iScaladoc.CodeBlock => new CodeBlock(code, "scala")
     case code: iScaladoc.MdCodeBlock =>
