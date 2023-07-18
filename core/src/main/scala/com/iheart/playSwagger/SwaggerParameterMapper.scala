@@ -37,19 +37,22 @@ object SwaggerParameterMapper {
 
     val defaultValueO: Option[JsValue] = {
       parameter.default.map { value =>
-        typeName match {
-          case ci"Int" | ci"Long" => JsNumber(value.toLong)
-          case ci"Double" | ci"Float" | ci"BigDecimal" => JsNumber(value.toDouble)
-          case ci"Boolean" => JsBoolean(value.toBoolean)
-          case ci"String" => {
-            val noquotes = value match {
-              case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") => c.substring(3, c.length - 3)
-              case c if c.startsWith("\"") && c.endsWith("\"") => c.substring(1, c.length - 1)
-              case c => c
-            }
-            JsString(noquotes)
+        if (value.equals("null")) {
+          JsNull
+        } else {
+          typeName match {
+            case ci"Int" | ci"Long" => JsNumber(value.toLong)
+            case ci"Double" | ci"Float" | ci"BigDecimal" => JsNumber(value.toDouble)
+            case ci"Boolean" => JsBoolean(value.toBoolean)
+            case ci"String" =>
+              val unquotedString = value match {
+                case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") => c.substring(3, c.length - 3)
+                case c if c.startsWith("\"") && c.endsWith("\"") => c.substring(1, c.length - 1)
+                case c => c
+              }
+              JsString(unquotedString)
+            case _ => JsString(value)
           }
-          case _ => JsString(value)
         }
       }
     }
