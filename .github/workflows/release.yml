@@ -16,7 +16,7 @@ jobs:
           java-version: 8
           cache: sbt
       - run: |
-          sh .github/decodekey.sh
+          .github/decodekey.sh
           sbt ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
