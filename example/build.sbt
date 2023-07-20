@@ -4,7 +4,7 @@ version := "1.0-SNAPSHOT"
 
 scalafixDependencies in ThisBuild ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
-  "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.1"
+  "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.2"
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SwaggerPlugin) //enable plugin
