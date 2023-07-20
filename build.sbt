@@ -17,7 +17,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val scalaV = "2.12.16"
+lazy val scalaV = "2.12.18"
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
@@ -47,6 +47,7 @@ lazy val playSwagger = project.in(file("core"))
         "joda-time" % "joda-time" % "2.12.5" % Test,
         "com.google.errorprone" % "error_prone_annotations" % "2.20.0" % Test
       ),
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
     crossScalaVersions := Seq(scalaVersion.value, "2.13.11"),
