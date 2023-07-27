@@ -1,7 +1,5 @@
-[![Scala CI](https://github.com/iheartradio/play-swagger/actions/workflows/scala.yml/badge.svg)](https://github.com/iheartradio/play-swagger/actions/workflows/scala.yml)
-[![Coverage Status](https://coveralls.io/repos/iheartradio/play-swagger/badge.svg?branch=master&service=github)](https://coveralls.io/github/iheartradio/play-swagger?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.iheart/sbt-play-swagger/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.iheart/sbt-play-swagger)
-[![Gitter](https://badges.gitter.im/iheartradio/play-swagger.svg)](https://gitter.im/iheartradio/play-swagger?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Scala CI](https://github.com/play-swagger/play-swagger/actions/workflows/scala.yml/badge.svg)](https://github.com/iheartradio/play-swagger/actions/workflows/scala.yml)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/play-swagger/sbt-play-swagger/badge.svg)](https://maven-badges.herokuapp.com/maven-central/play-swagger/sbt-play-swagger)
 
 # Swagger API spec generator for Play
 
@@ -82,42 +80,7 @@ You can find the setup in the example project as well.
 
 For play 2.8, Scala 2.13.x and Scala 2.12.x please use
 ```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.11.0")
-```
-
-⚠️ **Support for play versions prior to 2.7 has been discontinued. Past versions may work with past play.**
-
-**If you need support for past play versions, please contribute via issue or pull request!**
-
-**※ deprecated**
-For play 2.7, sbt 1.x please use
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.7")
-```
-
-**※ deprecated**
-For play 2.6, sbt 1.x, Scala 2.12.x and 2.11.x please use (No Longer maintained after 0.10.0)
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.10.0-PLAY2.6")
-```
-
-**※ deprecated**
-For play 2.6 and sbt 0.13.x please use a special release  (No longer maintained after 0.6.2)
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.2-PLAY2.6")
-```
-
-**※ deprecated**
-For Play 2.5 (No longer maintained after 0.6.5)
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.5") 
-```
-
-**※ deprecated**
-For play 2.4 (No longer maintained after 0.6.0)
-```scala
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.6.0-PLAY2.4")
-
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.2.2")
 ```
 
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
