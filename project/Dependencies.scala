@@ -14,7 +14,7 @@ object Dependencies {
   )
 
   val playRoutesCompiler = Seq(
-    "com.typesafe.play" %% "routes-compiler" % Versions.play
+    "com.typesafe.play" %% "play-routes-compiler" % Versions.play
   )
 
   val playJson = Seq(
