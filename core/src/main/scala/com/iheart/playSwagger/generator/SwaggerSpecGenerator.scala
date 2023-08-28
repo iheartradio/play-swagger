@@ -6,13 +6,11 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger._
 import com.iheart.playSwagger.generator.ResourceReader.read
 import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
-import org.yaml.snakeyaml.Yaml
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
 import play.routes.compiler._
@@ -375,7 +373,7 @@ final case class SwaggerSpecGenerator(
         ext match {
           case "json" => Json.parse(st).as[T]
           // TODO: improve error handling
-          case "yml" => parseYaml(read(st).get.mkString("\n"))
+          case "yml" => YAMLParser.parseYaml(read(st).get.mkString("\n"))
           case unknown =>
             throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yml. ")
         }
@@ -383,14 +381,6 @@ final case class SwaggerSpecGenerator(
         st.close()
       }
     }
-  }
-
-  private def parseYaml[T](yamlStr: String)(implicit fjs: Reads[T]): T = {
-    val yaml = new Yaml()
-    val map = yaml.load[T](yamlStr)
-    val mapper = new ObjectMapper()
-    val jsonString = mapper.writeValueAsString(map)
-    Json.parse(jsonString).as[T]
   }
 
   private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
@@ -440,7 +430,7 @@ final case class SwaggerSpecGenerator(
       // The purpose here is more to ensure that it is not in other formats such as JSON
       // If invalid YAML is passed, org.yaml.snakeyaml.parser.ParserException
       val pattern = "^\\w+|\\$ref:".r
-      pattern.findFirstIn(comment).map(_ => parseYaml[JsObject](comment))
+      pattern.findFirstIn(comment).map(_ => YAMLParser.parseYaml[JsObject](comment))
     }
 
     def tryParseJson(comment: String): Option[JsObject] = {
