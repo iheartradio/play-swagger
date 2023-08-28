@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger.ResourceReader.read
-import com.iheart.playSwagger.SwaggerParameterMapper.mapParam
+import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._

@@ -1,10 +1,11 @@
-package com.iheart.playSwagger
+package com.iheart.playSwagger.generator
 
 import scala.reflect.runtime.universe
 import scala.util.Try
 import scala.util.matching.Regex
 
 import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.{DomainModelQualifier, PrefixDomainModelQualifier}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
 
