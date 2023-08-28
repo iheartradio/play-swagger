@@ -1,7 +1,6 @@
 package com.iheart.playSwagger
-
-import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.domain.CustomTypeMapping
+import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter}
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsString, Json}
 import play.routes.compiler.Parameter
@@ -14,6 +13,7 @@ class SwaggerParameterMapperSpec extends Specification {
     "map org.joda.time.DateTime to integer with format epoch" >> {
       mapParam(Parameter("fieldWithDateTime", "org.joda.time.DateTime", None, None)) === GenSwaggerParameter(
         name = "fieldWithDateTime",
+        required = true,
         `type` = Option("integer"),
         format = Option("epoch")
       )
@@ -73,6 +73,7 @@ class SwaggerParameterMapperSpec extends Specification {
     "map Any to any with example value" >> {
       mapParam(Parameter("fieldWithAny", "Any", None, None)) === GenSwaggerParameter(
         name = "fieldWithAny",
+        required = true,
         `type` = Option("any"),
         example = Option(JsString("any JSON value"))
       )
@@ -81,6 +82,7 @@ class SwaggerParameterMapperSpec extends Specification {
     "map java enum to enum constants" >> {
       mapParam(Parameter("javaEnum", "com.iheart.playSwagger.SampleJavaEnum", None, None)) === GenSwaggerParameter(
         name = "javaEnum",
+        required = true,
         `type` = Option("string"),
         enum = Option(Seq("DISABLED", "ACTIVE"))
       )
@@ -91,6 +93,7 @@ class SwaggerParameterMapperSpec extends Specification {
         Parameter("scalaEnum", "com.iheart.playSwagger.SampleScalaEnum.Value", None, None)
       ) === GenSwaggerParameter(
         name = "scalaEnum",
+        required = true,
         `type` = Option("string"),
         enum = Option(Seq("One", "Two"))
       )
@@ -115,10 +118,12 @@ class SwaggerParameterMapperSpec extends Specification {
     "map scala.collection.immutable.Seq[T] to item type" >> {
       mapParam(Parameter("aField", "scala.collection.immutable.Seq[String]", None, None)) === GenSwaggerParameter(
         name = "aField",
+        required = true,
         nullable = None,
         `type` = Some("array"),
         items = Some(GenSwaggerParameter(
           name = "aField",
+          required = true,
           nullable = None,
           `type` = Some("string")
         ))

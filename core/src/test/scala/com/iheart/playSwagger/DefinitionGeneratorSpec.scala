@@ -2,6 +2,7 @@ package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.domain.CustomTypeMapping
+import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 
@@ -80,11 +81,16 @@ class DefinitionGeneratorSpec extends Specification {
       result.length === 7
 
       "with correct string property" >> {
-        result.head === GenSwaggerParameter(name = "barStr", `type` = Some("string"))
+        result.head === GenSwaggerParameter(name = "barStr", required = true, `type` = Some("string"))
       }
 
       "with correct int32 property" >> {
-        result(1) === GenSwaggerParameter(name = "barInt", `type` = Some("integer"), format = Some("int32"))
+        result(1) === GenSwaggerParameter(
+          name = "barInt",
+          required = true,
+          `type` = Some("integer"),
+          format = Some("int32")
+        )
       }
 
       "with correct optional long property" >> {
@@ -98,18 +104,35 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with reference type" >> {
-        result(3) === GenSwaggerParameter(name = "reffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(3) === GenSwaggerParameter(
+          name = "reffedFoo",
+          required = true,
+          referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+        )
       }
 
       "with sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "seqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
-        result(4) === GenSwaggerParameter(name = "seqReffedFoo", `type` = Some("array"), items = Some(itemsParam))
+          GenSwaggerParameter(
+            name = "seqReffedFoo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
+        result(4) === GenSwaggerParameter(
+          name = "seqReffedFoo",
+          required = true,
+          `type` = Some("array"),
+          items = Some(itemsParam)
+        )
       }
 
       "with optional sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "optionSeqReffedFoo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+          GenSwaggerParameter(
+            name = "optionSeqReffedFoo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
         result(5) === GenSwaggerParameter(
           name = "optionSeqReffedFoo",
           `type` = Some("array"),
@@ -131,11 +154,16 @@ class DefinitionGeneratorSpec extends Specification {
       result.length === 7
 
       "with correct string property" >> {
-        result.head === GenSwaggerParameter(name = "bar_str", `type` = Some("string"))
+        result.head === GenSwaggerParameter(name = "bar_str", required = true, `type` = Some("string"))
       }
 
       "with correct int32 property" >> {
-        result(1) === GenSwaggerParameter(name = "bar_int", `type` = Some("integer"), format = Some("int32"))
+        result(1) === GenSwaggerParameter(
+          name = "bar_int",
+          required = true,
+          `type` = Some("integer"),
+          format = Some("int32")
+        )
       }
 
       "with correct optional long property" >> {
@@ -149,18 +177,35 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with reference type" >> {
-        result(3) === GenSwaggerParameter(name = "reffed_foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(3) === GenSwaggerParameter(
+          name = "reffed_foo",
+          required = true,
+          referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+        )
       }
 
       "with sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "seq_reffed_foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
-        result(4) === GenSwaggerParameter(name = "seq_reffed_foo", `type` = Some("array"), items = Some(itemsParam))
+          GenSwaggerParameter(
+            name = "seq_reffed_foo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
+        result(4) === GenSwaggerParameter(
+          name = "seq_reffed_foo",
+          required = true,
+          `type` = Some("array"),
+          items = Some(itemsParam)
+        )
       }
 
       "with optional sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "option_seq_reffed_foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+          GenSwaggerParameter(
+            name = "option_seq_reffed_foo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
         result(5) === GenSwaggerParameter(
           name = "option_seq_reffed_foo",
           `type` = Some("array"),
@@ -182,11 +227,16 @@ class DefinitionGeneratorSpec extends Specification {
       result.length === 7
 
       "with correct string property" >> {
-        result.head === GenSwaggerParameter(name = "bar-str", `type` = Some("string"))
+        result.head === GenSwaggerParameter(name = "bar-str", required = true, `type` = Some("string"))
       }
 
       "with correct int32 property" >> {
-        result(1) === GenSwaggerParameter(name = "bar-int", `type` = Some("integer"), format = Some("int32"))
+        result(1) === GenSwaggerParameter(
+          name = "bar-int",
+          required = true,
+          `type` = Some("integer"),
+          format = Some("int32")
+        )
       }
 
       "with correct optional long property" >> {
@@ -200,18 +250,35 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with reference type" >> {
-        result(3) === GenSwaggerParameter(name = "reffed-foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+        result(3) === GenSwaggerParameter(
+          name = "reffed-foo",
+          required = true,
+          referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+        )
       }
 
       "with sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "seq-reffed-foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
-        result(4) === GenSwaggerParameter(name = "seq-reffed-foo", `type` = Some("array"), items = Some(itemsParam))
+          GenSwaggerParameter(
+            name = "seq-reffed-foo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
+        result(4) === GenSwaggerParameter(
+          name = "seq-reffed-foo",
+          required = true,
+          `type` = Some("array"),
+          items = Some(itemsParam)
+        )
       }
 
       "with optional sequence of reference type" >> {
         val itemsParam =
-          GenSwaggerParameter(name = "option-seq-reffed-foo", referenceType = Some("com.iheart.playSwagger.ReffedFoo"))
+          GenSwaggerParameter(
+            name = "option-seq-reffed-foo",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.ReffedFoo")
+          )
         result(5) === GenSwaggerParameter(
           name = "option-seq-reffed-foo",
           `type` = Some("array"),
@@ -469,9 +536,10 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with correct array property" >> {
-        val itemsParam = GenSwaggerParameter(name = "customKey", `type` = Some("string"))
+        val itemsParam = GenSwaggerParameter(name = "customKey", required = true, `type` = Some("string"))
         result.filter(r => r.name == "customKey").seq.head === GenSwaggerParameter(
           name = "customKey",
+          required = true,
           `type` = Some("array"),
           items = Some(itemsParam)
         )
@@ -497,7 +565,11 @@ class DefinitionGeneratorSpec extends Specification {
 
       "with java collection reference type" >> {
         val itemsParamList =
-          GenSwaggerParameter(name = "attributeList", referenceType = Some("com.iheart.playSwagger.Attribute"))
+          GenSwaggerParameter(
+            name = "attributeList",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.Attribute")
+          )
         result.filter(r => r.name == "attributeList").seq.head === GenSwaggerParameter(
           name = "attributeList",
           `type` = Some("array"),
@@ -507,7 +579,11 @@ class DefinitionGeneratorSpec extends Specification {
         )
 
         val itemsParamSet =
-          GenSwaggerParameter(name = "attributeSet", referenceType = Some("com.iheart.playSwagger.Attribute"))
+          GenSwaggerParameter(
+            name = "attributeSet",
+            required = true,
+            referenceType = Some("com.iheart.playSwagger.Attribute")
+          )
         result.filter(r => r.name == "attributeSet").seq.head === GenSwaggerParameter(
           name = "attributeSet",
           `type` = Some("array"),

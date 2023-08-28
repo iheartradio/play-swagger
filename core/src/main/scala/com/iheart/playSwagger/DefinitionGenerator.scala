@@ -7,8 +7,9 @@ import scala.reflect.runtime.universe._
 
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
-import com.iheart.playSwagger.Domain.{Definition, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.Domain.Definition
 import com.iheart.playSwagger.domain.CustomTypeMapping
+import com.iheart.playSwagger.domain.parameter.{GenSwaggerParameter, SwaggerParameter}
 import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
@@ -120,7 +121,7 @@ final case class DefinitionGenerator(
       )
   }
 
-  private def definitionForPOJO(tpe: Type): Seq[Domain.SwaggerParameter] = {
+  private def definitionForPOJO(tpe: Type): Seq[SwaggerParameter] = {
     val m = runtimeMirror(cl)
     val clazz = m.runtimeClass(tpe.typeSymbol.asClass)
     val `type` = _mapper.constructType(clazz)
