@@ -4,6 +4,7 @@ import java.time.LocalDate
 
 import com.iheart.playSwagger.Domain.CustomMappings
 import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 

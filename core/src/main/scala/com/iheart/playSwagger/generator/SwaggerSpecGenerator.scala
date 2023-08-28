@@ -1,4 +1,4 @@
-package com.iheart.playSwagger
+package com.iheart.playSwagger.generator
 
 import java.io.File
 
@@ -9,7 +9,8 @@ import scala.util.{Failure, Success, Try}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import com.iheart.playSwagger.ResourceReader.read
+import com.iheart.playSwagger._
+import com.iheart.playSwagger.generator.ResourceReader.read
 import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import org.yaml.snakeyaml.Yaml
 import play.api.libs.json.JsValue.jsValueToJsLookup
