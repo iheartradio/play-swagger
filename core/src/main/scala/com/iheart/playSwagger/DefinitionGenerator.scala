@@ -8,9 +8,8 @@ import scala.reflect.runtime.universe._
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
 import com.iheart.playSwagger.Domain.Definition
-import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{GenSwaggerParameter, SwaggerParameter}
-import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
+import com.iheart.playSwagger.generator.SwaggerParameterMapper
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
 import net.steppschuh.markdowngenerator.table.Table
@@ -20,8 +19,7 @@ import net.steppschuh.markdowngenerator.text.heading.Heading
 import play.routes.compiler.Parameter
 
 final case class DefinitionGenerator(
-    modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-    mappings: Seq[CustomTypeMapping] = Nil,
+    mapper: SwaggerParameterMapper,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
     namingStrategy: NamingStrategy = NamingStrategy.None,
@@ -111,7 +109,7 @@ final case class DefinitionGenerator(
           val typeName = parametricType.resolve(rawTypeName)
           // passing None for 'fixed' and 'default' here, since we're not dealing with route parameters
           val param = Parameter(name, typeName, None, None)
-          mapParam(param, modelQualifier, mappings, paramDescriptions.get(field.name.decodedName.toString))
+          mapper.mapParam(param, paramDescriptions.get(field.name.decodedName.toString))
         }
       }
 
@@ -144,7 +142,7 @@ final case class DefinitionGenerator(
         generalTypeName
       }
       val param = Parameter(name, typeName, None, None)
-      mapParam(param, modelQualifier, mappings)
+      mapper.mapParam(param, None)
     }
   }
 
@@ -168,9 +166,9 @@ final case class DefinitionGenerator(
         case None =>
           val thisDef = definition(defName)
           val refNames: Seq[String] = for {
-            p ← thisDef.properties.collect(genSwaggerParameter)
-            className ← findRefTypes(p)
-            if modelQualifier.isModel(className)
+            p <- thisDef.properties.collect(genSwaggerParameter)
+            className <- findRefTypes(p)
+            if mapper.isReference(className)
           } yield className
 
           refNames.foldLeft(thisDef :: memo) { (foundDefs, refName) =>
@@ -187,27 +185,23 @@ final case class DefinitionGenerator(
 
 object DefinitionGenerator {
   def apply(
-      domainNameSpace: String,
-      customParameterTypeMappings: Seq[CustomTypeMapping],
+      mapper: SwaggerParameterMapper,
       swaggerPlayJava: Boolean,
       namingStrategy: NamingStrategy
   )(implicit cl: ClassLoader): DefinitionGenerator =
-    DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace),
-      customParameterTypeMappings,
+    new DefinitionGenerator(
+      mapper,
       swaggerPlayJava,
       namingStrategy = namingStrategy
     )
 
   def apply(
-      domainNameSpace: String,
-      customParameterTypeMappings: Seq[CustomTypeMapping],
+      mapper: SwaggerParameterMapper,
       namingStrategy: NamingStrategy,
       embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =
-    DefinitionGenerator(
-      PrefixDomainModelQualifier(domainNameSpace),
-      customParameterTypeMappings,
+    new DefinitionGenerator(
+      mapper,
       namingStrategy = namingStrategy,
       embedScaladoc = embedScaladoc
     )

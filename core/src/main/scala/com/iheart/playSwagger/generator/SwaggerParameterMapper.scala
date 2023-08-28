@@ -4,162 +4,42 @@ import scala.reflect.runtime.universe
 import scala.util.Try
 import scala.util.matching.Regex
 
+import com.iheart.playSwagger.DomainModelQualifier
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
-import com.iheart.playSwagger.{DomainModelQualifier, PrefixDomainModelQualifier}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
 
-object SwaggerParameterMapper {
+class SwaggerParameterMapper(
+    customMappings: Seq[CustomTypeMapping] = Nil,
+    val modelQualifier: DomainModelQualifier
+) {
 
   type MappingFunction = PartialFunction[String, SwaggerParameter]
 
   def mapParam(
       parameter: Parameter,
-      modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-      customMappings: Seq[CustomTypeMapping] = Nil,
+      description: Option[String]
+  )(implicit cl: ClassLoader): SwaggerParameter = {
+    val typeName = removeKnownPrefixes(parameter.typeName)
+    mapParam(
+      typeName,
+      parameter.name,
+      parameter.default.map(defaultValueO(_, typeName)),
+      description
+    )
+  }
+
+  private def mapParam(
+      typeName: String,
+      name: String,
+      default: Option[JsValue],
       description: Option[String] = None
   )(implicit cl: ClassLoader): SwaggerParameter = {
-
-    def removeKnownPrefixes(name: String) =
-      name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
-
-    def higherOrderType(higherOrder: String, typeName: String, pkgPattern: Option[String]): Option[String] = {
-      s"^${pkgPattern.map(p => s"(?:$p\\.)?").getOrElse("")}$higherOrder\\[(\\S+)\\]".r
-        .findFirstMatchIn(typeName)
-        .map(_.group(1))
-    }
-
-    def collectionItemType(typeName: String): Option[String] =
-      List("Seq", "List", "Set", "Vector")
-        .map(higherOrderType(_, typeName, Some("collection(?:\\.(?:mutable|immutable))?")))
-        .reduce(_ orElse _)
-
-    val typeName = removeKnownPrefixes(parameter.typeName)
-
-    val defaultValueO: Option[JsValue] = {
-      parameter.default.map { value =>
-        if (value.equals("null")) {
-          JsNull
-        } else {
-          typeName match {
-            case ci"Int" | ci"Long" => JsNumber(value.toLong)
-            case ci"Double" | ci"Float" | ci"BigDecimal" => JsNumber(value.toDouble)
-            case ci"Boolean" => JsBoolean(value.toBoolean)
-            case ci"String" =>
-              val unquotedString = value match {
-                case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") => c.substring(3, c.length - 3)
-                case c if c.startsWith("\"") && c.endsWith("\"") => c.substring(1, c.length - 1)
-                case c => c
-              }
-              JsString(unquotedString)
-            case _ => JsString(value)
-          }
-        }
-      }
-    }
-
-    def genSwaggerParameter(
-        tp: String,
-        format: Option[String] = None,
-        enum: Option[Seq[String]] = None
-    ): GenSwaggerParameter =
-      GenSwaggerParameter(
-        parameter.name,
-        `type` = Some(tp),
-        format = format,
-        required = defaultValueO.isEmpty,
-        default = defaultValueO,
-        enum = enum,
-        description = description
-      )
-
-    val enumParamMF: MappingFunction = {
-      case JavaEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
-      case ScalaEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
-      case EnumeratumEnum(enumConstants) => genSwaggerParameter("string", enum = Option(enumConstants))
-    }
-
-    def isReference(tpeName: String = typeName): Boolean = modelQualifier.isModel(tpeName)
-
-    def referenceParam(referenceType: String) =
-      GenSwaggerParameter(parameter.name, required = true, referenceType = Some(referenceType))
-
-    def optionalParam(optionalTpe: String) = {
-      val asRequired = mapParam(
-        parameter.copy(
-          typeName = optionalTpe,
-          default = parameter.default match {
-            // If `Some("None")`, then `variable: Option[T] ? = None` is specified. So `default` is treated as if it does not exist.
-            case Some("None") => None
-            // Maybe only `None`.
-            case default => default
-          }
-        ),
-        modelQualifier = modelQualifier,
-        customMappings = customMappings,
-        description = description
-      )
-      asRequired.update(required = false, nullable = true, default = asRequired.default)
-    }
-
-    def updateGenParam(param: SwaggerParameter)(update: GenSwaggerParameter => GenSwaggerParameter): SwaggerParameter =
-      param match {
-        case p: GenSwaggerParameter => update(p)
-        case _ => param
-      }
-
-    val referenceParamMF: MappingFunction = {
-      case tpe if isReference(tpe) => referenceParam(tpe)
-    }
-
-    val optionalParamMF: MappingFunction = {
-      case tpe if higherOrderType("Option", typeName, None).isDefined =>
-        optionalParam(higherOrderType("Option", typeName, None).get)
-    }
-
-    val generalParamMF: MappingFunction = {
-      case ci"Int" | ci"Integer" => genSwaggerParameter("integer", Some("int32"))
-      case ci"Long" => genSwaggerParameter("integer", Some("int64"))
-      case ci"Double" | ci"BigDecimal" => genSwaggerParameter("number", Some("double"))
-      case ci"Float" => genSwaggerParameter("number", Some("float"))
-      case ci"DateTime" => genSwaggerParameter("integer", Some("epoch"))
-      case ci"java.time.Instant" => genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.LocalDate" => genSwaggerParameter("string", Some("date"))
-      case ci"java.time.LocalDateTime" => genSwaggerParameter("string", Some("date-time"))
-      case ci"java.time.Duration" => genSwaggerParameter("string")
-      case ci"Any" => genSwaggerParameter("any").copy(example = Some(JsString("any JSON value")))
-      case unknown => genSwaggerParameter(unknown.toLowerCase())
-    }
-
-    val itemsParamMF: MappingFunction = {
-      case tpe if collectionItemType(tpe).isDefined =>
-        // TODO: This could use a different type to represent ItemsObject(http://swagger.io/specification/#itemsObject),
-        // since the structure is not quite the same, and still has to be handled specially in a json transform (see propWrites in SwaggerSpecGenerator)
-        // However, that spec conflicts with example code elsewhere that shows other fields in the object, such as properties:
-        // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
-        updateGenParam(generalParamMF("array"))(_.copy(
-          items = Some(
-            mapParam(parameter.copy(typeName = collectionItemType(tpe).get), modelQualifier, customMappings)
-          )
-        ))
-    }
-
-    val customMappingMF: MappingFunction = customMappings.map { mapping =>
-      val re = StringContext(removeKnownPrefixes(mapping.`type`)).ci
-      val mf: MappingFunction = {
-        case re() =>
-          CustomSwaggerParameter(
-            parameter.name,
-            mapping.specAsParameter,
-            mapping.specAsProperty,
-            default = defaultValueO,
-            required = defaultValueO.isEmpty && mapping.required
-          )
-      }
-      mf
-    }.foldLeft[MappingFunction](PartialFunction.empty)(_ orElse _)
-
+    val tpe = removeKnownPrefixes(typeName)
+    implicit val implicitName: String = name
+    implicit val implicitDefault: Option[JsValue] = default
+    implicit val implicitDescription: Option[String] = description
     // sequence of this list is the sequence of matching, that is, of importance
     List(
       optionalParamMF,
@@ -168,12 +48,83 @@ object SwaggerParameterMapper {
       enumParamMF,
       referenceParamMF,
       generalParamMF
-    ).reduce(_ orElse _)(typeName)
-
+    ).reduce(_ orElse _)(tpe)
   }
 
-  implicit class CaseInsensitiveRegex(sc: StringContext) {
-    def ci: Regex = ("(?i)" + sc.parts.mkString).r
+  /* Mapper 内で直接参照されるパッケージのうち、標準で定義されているクラスのパッケージ名を削除 */
+  private def removeKnownPrefixes(name: String): String =
+    name.replaceAll("^((scala\\.)|(java\\.lang\\.)|(java\\.util\\.)|(math\\.)|(org\\.joda\\.time\\.))", "")
+
+  /**
+    * 単一型パラメータのジェネリクスが指定された場合に、型パラメータを取り出す
+    *
+    * @param higherOrder ジェネリッククラス
+    * @param typeName    ジェネリクスの型情報
+    * @param pkgPattern  ジェネリッククラスのパッケージのパターン
+    * @return 型パラメータの名前
+    */
+  private def higherOrderType(higherOrder: String, typeName: String, pkgPattern: Option[String]): Option[String] = {
+    (s"^${pkgPattern.map(p => s"(?:$p\\.)?").getOrElse("")}$higherOrder\\[(\\S+)\\]").r
+      .findFirstMatchIn(typeName)
+      .map(_.group(1))
+  }
+
+  /** typeName にコレクションが渡された際、要素の型を返却する */
+  private def collectionItemType(typeName: String): Option[String] =
+    List("Seq", "List", "Set", "Vector")
+      .map(higherOrderType(_, typeName, Some("collection(?:\\.(?:mutable|immutable))?")))
+      .reduce(_ orElse _)
+
+  private def defaultValueO(default: String, typeName: String): JsValue = {
+    if (default.equals("null")) {
+      JsNull
+    } else {
+      typeName match {
+        // Java の場合は int, Scala の場合は Int という命名になっているため、区別しない
+        case ci"Int" | ci"Long" => JsNumber(default.toLong)
+        case ci"Double" | ci"Float" | ci"BigDecimal" => JsNumber(default.toDouble)
+        case ci"Boolean" => JsBoolean(default.toBoolean)
+        case ci"String" =>
+          // router では `func(value ?= "default value")` 形式で定義されるため、 `"` を削除する
+          val unquotedString = default match {
+            case c if c.startsWith("\"\"\"") && c.endsWith("\"\"\"") => c.substring(3, c.length - 3)
+            case c if c.startsWith("\"") && c.endsWith("\"") => c.substring(1, c.length - 1)
+            case c => c
+          }
+          JsString(unquotedString)
+        case _ => JsString(default)
+      }
+    }
+  }
+
+  private def generalParamMF(
+      implicit name: String,
+      default: Option[JsValue],
+      description: Option[String]
+  ): MappingFunction = {
+    case ci"Int" | ci"Integer" => GenSwaggerParameter("integer", Some("int32"), None)
+    case ci"Long" => GenSwaggerParameter("integer", Some("int64"), None)
+    case ci"Double" | ci"BigDecimal" => GenSwaggerParameter("number", Some("double"), None)
+    case ci"Float" => GenSwaggerParameter("number", Some("float"), None)
+    case ci"DateTime" => GenSwaggerParameter("integer", Some("epoch"), None)
+    case ci"java.time.Instant" => GenSwaggerParameter("string", Some("date-time"), None)
+    case ci"java.time.LocalDate" => GenSwaggerParameter("string", Some("date"), None)
+    case ci"java.time.LocalDateTime" => GenSwaggerParameter("string", Some("date-time"), None)
+    case ci"java.time.Duration" => GenSwaggerParameter(`type` = "string", None, None)
+    case ci"Any" => GenSwaggerParameter(`type` = "any", None, None).copy(example = Some(JsString("any JSON value")))
+    case unknown => GenSwaggerParameter(`type` = unknown.toLowerCase(), None, None)
+  }
+
+  private def enumParamMF(
+      implicit name: String,
+      default: Option[JsValue],
+      description: Option[String],
+      cl: ClassLoader
+  ): MappingFunction = {
+    case JavaEnum(enumConstants) => GenSwaggerParameter(`type` = "string", format = None, enum = Option(enumConstants))
+    case ScalaEnum(enumConstants) => GenSwaggerParameter(`type` = "string", format = None, enum = Option(enumConstants))
+    case EnumeratumEnum(enumConstants) =>
+      GenSwaggerParameter(`type` = "string", format = None, enum = Option(enumConstants))
   }
 
   /**
@@ -187,6 +138,7 @@ object SwaggerParameterMapper {
 
   /**
     * Unapply the type by name and return the Scala enum constants if those exist.
+    * see: [[https://github.com/iheartradio/play-swagger/pull/125]]
     */
   private object ScalaEnum {
     def unapply(tpeName: String)(implicit cl: ClassLoader): Option[Seq[String]] = {
@@ -195,12 +147,11 @@ object SwaggerParameterMapper {
           val mirror = universe.runtimeMirror(cl)
           val module = mirror.reflectModule(mirror.staticModule(tpeName.stripSuffix(".Value")))
           for {
-            enum ← Option(module.instance).toSeq if enum.isInstanceOf[Enumeration]
-            value ← enum.asInstanceOf[Enumeration].values.asInstanceOf[Iterable[Enumeration#Value]]
+            enum <- Option(module.instance).toSeq if enum.isInstanceOf[Enumeration]
+            value <- enum.asInstanceOf[Enumeration].values.asInstanceOf[Iterable[Enumeration#Value]]
           } yield value.toString
         }.toOption.filterNot(_.isEmpty)
-      } else
-        None
+      } else None
     }
   }
 
@@ -228,4 +179,95 @@ object SwaggerParameterMapper {
       } yield entries).toOption
     }
   }
+
+  private def referenceParamMF(implicit name: String): MappingFunction = {
+    case tpe if isReference(tpe) => referenceParam(tpe)
+  }
+
+  def isReference(tpeName: String): Boolean = modelQualifier.isModel(tpeName)
+
+  private def referenceParam(referenceType: String)(implicit name: String): GenSwaggerParameter =
+    GenSwaggerParameter(name, required = true, referenceType = Some(referenceType))
+
+  private def optionalParamMF(
+      implicit name: String,
+      default: Option[JsValue],
+      description: Option[String],
+      cl: ClassLoader
+  ): MappingFunction = {
+    case tpe if higherOrderType("Option", tpe, None).isDefined =>
+      optionalParam(higherOrderType("Option", tpe, None).get)
+  }
+
+  private def optionalParam(optionalTpe: String)(
+      implicit name: String,
+      default: Option[JsValue],
+      description: Option[String],
+      cl: ClassLoader
+  ): SwaggerParameter = {
+    val asRequired = mapParam(
+      typeName = optionalTpe,
+      name = name,
+      default = default.flatMap {
+        // If `Some("None")`, then `variable: Option[T] ? = None` is specified. So `default` is treated as if it does not exist.
+        case JsString("None") => None
+        case json => Some(json)
+      },
+      description = description
+    )
+    asRequired.update(required = false, nullable = true, default = asRequired.default)
+  }
+
+  private def itemsParamMF(
+      implicit name: String,
+      default: Option[JsValue],
+      description: Option[String],
+      cl: ClassLoader
+  ): MappingFunction = {
+    case tpe if collectionItemType(tpe).isDefined =>
+      // TODO: This could use a different type to represent ItemsObject(http://swagger.io/specification/#itemsObject),
+      // since the structure is not quite the same, and still has to be handled specially in a json transform (see propWrites in SwaggerSpecGenerator)
+      // However, that spec conflicts with example code elsewhere that shows other fields in the object, such as properties:
+      // http://stackoverflow.com/questions/26206685/how-can-i-describe-complex-json-model-in-swagger
+      updateOnlyGenParam(generalParamMF.apply("array"))(_.copy(
+        items = Some(
+          mapParam(
+            typeName = collectionItemType(tpe).get,
+            name = name,
+            default = default,
+            description = description
+          )
+        )
+      ))
+  }
+
+  private def updateOnlyGenParam(param: SwaggerParameter)(update: GenSwaggerParameter => GenSwaggerParameter)
+      : SwaggerParameter =
+    param match {
+      case p: GenSwaggerParameter => update(p)
+      case _ => param
+    }
+
+  private def customMappingMF(implicit name: String, default: Option[JsValue]): MappingFunction =
+    customMappings.map { mapping =>
+      val re = StringContext(removeKnownPrefixes(mapping.`type`)).ci
+      val mf: MappingFunction = {
+        case re() =>
+          CustomSwaggerParameter(
+            name,
+            mapping.specAsParameter,
+            mapping.specAsProperty,
+            default = default,
+            required = default.isEmpty && mapping.required
+          )
+      }
+      mf
+    }
+      // mapping を全てチェックする
+      .foldLeft[MappingFunction](PartialFunction.empty)(_ orElse _)
+
+  implicit class CaseInsensitiveRegex(sc: StringContext) {
+    def ci: Regex = ("(?i)" + sc.parts.mkString).r
+  }
+
 }

@@ -12,7 +12,6 @@ import com.iheart.playSwagger._
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter, SwaggerParameterWriter}
 import com.iheart.playSwagger.generator.ResourceReader.read
-import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
@@ -77,7 +76,13 @@ final case class SwaggerSpecGenerator(
 )(implicit cl: ClassLoader) {
 
   import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
-  val parameterWriter = new SwaggerParameterWriter(swaggerV3)
+  private val parameterWriter = new SwaggerParameterWriter(swaggerV3)
+
+  private lazy val customMappings: Seq[CustomTypeMapping] = {
+    readYmlOrJson[Seq[CustomTypeMapping]](customMappingsFileName).getOrElse(Nil)
+  }
+
+  private val mapper = new SwaggerParameterMapper(customMappings, modelQualifier)
 
   // routes with their prefix
   type Routes = (String, Seq[Route])
@@ -204,8 +209,7 @@ final case class SwaggerSpecGenerator(
       } yield className
 
       DefinitionGenerator(
-        modelQualifier = modelQualifier,
-        mappings = customMappings,
+        mapper = mapper,
         swaggerPlayJava = swaggerPlayJava,
         namingStrategy = namingStrategy,
         embedScaladoc = embedScaladoc
@@ -254,10 +258,6 @@ final case class SwaggerSpecGenerator(
 
   private lazy val defaultBase: JsObject =
     readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
-
-  private lazy val customMappings: Seq[CustomTypeMapping] = {
-    readYmlOrJson[Seq[CustomTypeMapping]](customMappingsFileName).getOrElse(Nil)
-  }
 
   private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {
     readCfgFile[T](s"$fileName.json") orElse readCfgFile[T](s"$fileName.yml")
@@ -372,7 +372,7 @@ final case class SwaggerSpecGenerator(
         paramList ← route.call.parameters.toSeq
         param ← paramList
         if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
-      } yield mapParam(param, modelQualifier, customMappings)
+      } yield mapper.mapParam(param, None)
 
       JsArray(params.flatMap { p =>
         val jos: List[JsObject] = p match {
