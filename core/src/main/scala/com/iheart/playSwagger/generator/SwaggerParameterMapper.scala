@@ -4,7 +4,8 @@ import scala.reflect.runtime.universe
 import scala.util.Try
 import scala.util.matching.Regex
 
-import com.iheart.playSwagger.Domain.{CustomMappings, CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.Domain.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.{DomainModelQualifier, PrefixDomainModelQualifier}
 import play.api.libs.json._
 import play.routes.compiler.Parameter
@@ -16,7 +17,7 @@ object SwaggerParameterMapper {
   def mapParam(
       parameter: Parameter,
       modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-      customMappings: CustomMappings = Nil,
+      customMappings: Seq[CustomTypeMapping] = Nil,
       description: Option[String] = None
   )(implicit cl: ClassLoader): SwaggerParameter = {
 

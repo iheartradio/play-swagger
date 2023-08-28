@@ -9,6 +9,7 @@ import scala.util.{Failure, Success, Try}
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger._
+import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.generator.ResourceReader.read
 import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import play.api.libs.json.JsValue.jsValueToJsLookup
@@ -339,8 +340,8 @@ final case class SwaggerSpecGenerator(
   private lazy val defaultBase: JsObject =
     readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
 
-  private lazy val customMappings: CustomMappings = {
-    readYmlOrJson[CustomMappings](customMappingsFileName).getOrElse(Nil)
+  private lazy val customMappings: Seq[CustomTypeMapping] = {
+    readYmlOrJson[Seq[CustomTypeMapping]](customMappingsFileName).getOrElse(Nil)
   }
 
   private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {

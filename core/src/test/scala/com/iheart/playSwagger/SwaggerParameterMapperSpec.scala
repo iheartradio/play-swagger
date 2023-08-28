@@ -1,6 +1,7 @@
 package com.iheart.playSwagger
 
 import com.iheart.playSwagger.Domain._
+import com.iheart.playSwagger.domain.CustomTypeMapping
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsString, Json}
 import play.routes.compiler.Parameter
@@ -21,7 +22,7 @@ class SwaggerParameterMapperSpec extends Specification {
     "override mapping to map DateTime to string with format date-time" >> {
       "single DateTime" >> {
         val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
-        val mappings: CustomMappings = List(CustomTypeMapping(
+        val mappings: Seq[CustomTypeMapping] = List(CustomTypeMapping(
           "org.joda.time.DateTime",
           specAsParameter = specAsParameter
         ))
@@ -37,7 +38,7 @@ class SwaggerParameterMapperSpec extends Specification {
 
       "sequence of DateTimes" >> {
         val specAsProperty = Json.obj("type" -> "string", "format" -> "date-time")
-        val mappings: CustomMappings = List(CustomTypeMapping(
+        val mappings: Seq[CustomTypeMapping] = List(CustomTypeMapping(
           "org.joda.time.DateTime",
           specAsProperty = Some(specAsProperty)
         ))
@@ -59,7 +60,7 @@ class SwaggerParameterMapperSpec extends Specification {
 
     "add new custom type mapping" >> {
       val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
-      val mappings: CustomMappings = List(CustomTypeMapping(
+      val mappings: Seq[CustomTypeMapping] = List(CustomTypeMapping(
         "java.util.Date",
         specAsParameter = specAsParameter
       ))
@@ -127,7 +128,7 @@ class SwaggerParameterMapperSpec extends Specification {
     "map String to string without override interference" >> {
 
       val specAsParameter = List(Json.obj("type" -> "string", "format" -> "date-time"))
-      val mappings: CustomMappings = List(
+      val mappings: Seq[CustomTypeMapping] = List(
         CustomTypeMapping(
           "java.time.LocalDate",
           specAsParameter = specAsParameter

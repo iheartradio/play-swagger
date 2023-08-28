@@ -7,7 +7,8 @@ import scala.reflect.runtime.universe._
 
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
-import com.iheart.playSwagger.Domain.{CustomMappings, Definition, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.Domain.{Definition, GenSwaggerParameter, SwaggerParameter}
+import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.generator.SwaggerParameterMapper.mapParam
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
@@ -19,7 +20,7 @@ import play.routes.compiler.Parameter
 
 final case class DefinitionGenerator(
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
-    mappings: CustomMappings = Nil,
+    mappings: Seq[CustomTypeMapping] = Nil,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
     namingStrategy: NamingStrategy = NamingStrategy.None,
@@ -186,7 +187,7 @@ final case class DefinitionGenerator(
 object DefinitionGenerator {
   def apply(
       domainNameSpace: String,
-      customParameterTypeMappings: CustomMappings,
+      customParameterTypeMappings: Seq[CustomTypeMapping],
       swaggerPlayJava: Boolean,
       namingStrategy: NamingStrategy
   )(implicit cl: ClassLoader): DefinitionGenerator =
@@ -199,7 +200,7 @@ object DefinitionGenerator {
 
   def apply(
       domainNameSpace: String,
-      customParameterTypeMappings: CustomMappings,
+      customParameterTypeMappings: Seq[CustomTypeMapping],
       namingStrategy: NamingStrategy,
       embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =

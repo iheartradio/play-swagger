@@ -1,6 +1,6 @@
 package com.iheart.playSwagger
 
-import play.api.libs.json.{JsObject, JsPath, JsValue, Reads}
+import play.api.libs.json.{JsObject, JsValue}
 
 object Domain {
   type Path = String
@@ -52,22 +52,4 @@ object Domain {
       copy(required = _required, nullable = Some(_nullable), default = _default)
   }
 
-  type CustomMappings = List[CustomTypeMapping]
-
-  case class CustomTypeMapping(
-      `type`: String,
-      specAsParameter: List[JsObject] = Nil,
-      specAsProperty: Option[JsObject] = None,
-      required: Boolean = true
-  )
-
-  object CustomTypeMapping {
-    import play.api.libs.functional.syntax._
-    implicit val csmFormat: Reads[CustomTypeMapping] = (
-      (JsPath \ 'type).read[String] and
-        (JsPath \ 'specAsParameter).read[List[JsObject]] and
-        (JsPath \ 'specAsProperty).readNullable[JsObject] and
-        ((JsPath \ 'required).read[Boolean] orElse Reads.pure(true))
-    )(CustomTypeMapping.apply _)
-  }
 }
