@@ -87,4 +87,9 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
       )
     }
   }
+
+  implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps =>
+    JsObject(ps.map(p => p.name -> Json.toJson(p)(propWrites)))
+  }
+
 }

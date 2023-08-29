@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import scala.util.{Failure, Success}
 
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import com.iheart.playSwagger.generator.SwaggerSpecGenerator
+import com.iheart.playSwagger.generator.{NamingConvention, PrefixDomainModelQualifier, SwaggerSpecGenerator}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -131,7 +131,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
     "generate api with placeholders in place" >> {
       val envs = Map("LAST_TRACK_DESCRIPTION" -> "Last track", "PLAYED_TRACKS_DESCRIPTION" -> "Add tracks")
       val json = generator.SwaggerSpecGenerator(
-        NamingStrategy.None,
+        NamingConvention.None,
         PrefixDomainModelQualifier("com.iheart"),
         outputTransformers = MapVariablesTransformer(envs) :: Nil
       ).generate("env.routes").get
@@ -147,7 +147,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
   "fail to generate API if environment variable is not found" >> {
     val envs = Map("LAST_TRACK_DESCRIPTION" -> "Last track")
     val json = SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier("com.iheart"),
       outputTransformers = MapVariablesTransformer(envs) :: Nil
     ).generate("env.routes")

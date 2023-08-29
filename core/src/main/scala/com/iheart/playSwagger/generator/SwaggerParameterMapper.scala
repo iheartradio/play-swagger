@@ -4,7 +4,6 @@ import scala.reflect.runtime.universe
 import scala.util.Try
 import scala.util.matching.Regex
 
-import com.iheart.playSwagger.DomainModelQualifier
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter}
 import play.api.libs.json._

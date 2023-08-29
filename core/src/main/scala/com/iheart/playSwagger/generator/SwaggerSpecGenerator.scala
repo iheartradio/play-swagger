@@ -6,34 +6,46 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger._
-import com.iheart.playSwagger.domain.CustomTypeMapping
-import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter, SwaggerParameterWriter}
+import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameterWriter}
+import com.iheart.playSwagger.domain.{CustomTypeMapping, Definition}
+import com.iheart.playSwagger.exception.RoutesParseException.RoutesParseErrorDetail
+import com.iheart.playSwagger.exception.{MissingBaseSpecException, RoutesParseException}
 import com.iheart.playSwagger.generator.ResourceReader.read
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator._
+import com.iheart.playSwagger.generator.YAMLParser.parseYaml
+import com.iheart.playSwagger.util.ExtendJsValue.JsObjectUpdate
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
 import play.routes.compiler._
 
 object SwaggerSpecGenerator {
-  private val marker = "##"
-  val customMappingsFileName = "swagger-custom-mappings"
-  val baseSpecFileName = "swagger"
+  private val defaultRoutesFile = "routes"
+  private val routesExt = ".routes"
+  private val skipFileHeader = "### SkipFileForDocs ###"
+  private val swaggerCommentMarker = "##"
+  private val skipPathCommentRegex = (s"##\\s*NoDocs\\s*##").r
+  private val customMappingsFileName = "swagger-custom-mappings"
 
-  def apply(namingStrategy: NamingStrategy, swaggerV3: Boolean, domainNameSpaces: String*)(implicit
+  /** $ref */
+  private val refKey = "$ref"
+  private val baseSpecFileName = "swagger"
+
+  private val marker = "##"
+
+  def apply(namingConvention: NamingConvention, swaggerV3: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
-    SwaggerSpecGenerator(namingStrategy, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
+    SwaggerSpecGenerator(namingConvention, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
   }
 
   def apply(
-      namingStrategy: NamingStrategy,
+      namingConvention: NamingConvention,
       outputTransformers: Seq[OutputTransformer],
       domainNameSpaces: String*
   )(implicit cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
-      namingStrategy,
+      namingConvention,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       outputTransformers = outputTransformers
     )
@@ -42,29 +54,34 @@ object SwaggerSpecGenerator {
   def apply(swaggerV3: Boolean, operationIdFully: Boolean, embedScaladoc: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       swaggerV3 = swaggerV3,
       operationIdFully = operationIdFully,
       embedScaladoc = embedScaladoc
     )
   }
+
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       outputTransformers = outputTransformers
     )
   }
 
-  case object MissingBaseSpecException
-      extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
-
 }
 
+/**
+  * @param namingConvention      命名規則 (snake_case, camelCase など)
+  * @param modelQualifier        ドメインモデル判定器
+  * @param defaultPostBodyFormat 未記載の場合の Post レスポンスボディの MIME TYPE
+  * @param apiVersion            対象 API のバージョン
+  * @param operationIdFully      API の名前にパッケージ名を利用するか
+  */
 final case class SwaggerSpecGenerator(
-    namingStrategy: NamingStrategy = NamingStrategy.None,
+    namingConvention: NamingConvention = NamingConvention.None,
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
     defaultPostBodyFormat: String = "application/json",
     outputTransformers: Seq[OutputTransformer] = Nil,
@@ -75,88 +92,101 @@ final case class SwaggerSpecGenerator(
     embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
-  import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
   private val parameterWriter = new SwaggerParameterWriter(swaggerV3)
+
+  private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {
+    readCfgFile[T](s"$fileName.json") orElse readCfgFile[T](s"$fileName.yml")
+  }
 
   private lazy val customMappings: Seq[CustomTypeMapping] = {
     readYmlOrJson[Seq[CustomTypeMapping]](customMappingsFileName).getOrElse(Nil)
   }
 
-  private val mapper = new SwaggerParameterMapper(customMappings, modelQualifier)
+  private lazy val swaggerParameterMapper = new SwaggerParameterMapper(customMappings, modelQualifier)
+  private lazy val definitionGenerator = DefinitionGenerator(
+    mapper = swaggerParameterMapper,
+    swaggerPlayJava = swaggerPlayJava,
+    namingConvention = namingConvention,
+    embedScaladoc = embedScaladoc
+  )
 
   // routes with their prefix
-  type Routes = (String, Seq[Route])
+  type Routes = (Path, Seq[Route])
+  type Tag = String
+  type Path = String
 
   // Mapping of the tag, which is the file the routes were read from, and the optional prefix if it was
   // included from another router. ListMap is used to maintain the original definition order
   type RoutesData = Try[ListMap[Tag, Routes]]
 
-  val defaultRoutesFile = "routes"
-
   def generate(routesFile: String = defaultRoutesFile): Try[JsObject] = {
-
-    val base = apiVersion.fold(defaultBase)(v => Json.obj("info" -> Json.obj("version" -> v)) deepMerge defaultBase)
+    val base = apiVersion.fold(defaultBase) { v =>
+      // version を base json にマージする
+      Json.obj("info" -> Json.obj("version" -> v)) deepMerge defaultBase
+    }
     generateFromRoutesFile(routesFile = routesFile, base = base)
   }
 
-  val routesExt = ".routes"
+  /** .routes を除いたファイル名がタグ名となる */
+  def tagFromFile(fileName: String): Tag = fileName.replace(routesExt, "")
 
-  private[playSwagger] def generateFromRoutesFile(
-      routesFile: String = defaultRoutesFile,
-      base: JsObject = Json.obj()
-  ): Try[JsObject] = {
+  def loop(path: Path, routesFile: String): RoutesData = {
+    // TODO: better error handling
+    ResourceReader.read(routesFile).flatMap { lines =>
+      lines.headOption match {
+        // ドキュメントの第一行に設定が記載されている場合はスキップする
+        case Some(SwaggerSpecGenerator.skipFileHeader) => Success(ListMap.empty)
+        case _ =>
+          val content = lines.mkString("\n")
 
-    def tagFromFile(file: String) = file.replace(routesExt, "")
+          // artificial file to conform to api, used by play for error reporting
+          val file = new File(routesFile)
 
-    def loop(path: String, routesFile: String): RoutesData = {
-
-      // TODO: better error handling
-      ResourceReader.read(routesFile).flatMap { lines =>
-        lines.headOption match {
-          case Some("### SkipFileForDocs ###") => Success { ListMap.empty }
-          case _ =>
-            val content = lines.mkString("\n")
-
-            // artificial file to conform to api, used by play for error reporting
-            val file = new File(routesFile)
-
-            def errorMessage(error: RoutesCompilationError) = {
-              val lineNumber = error.line.fold("")(":" + _ + error.column.fold("")(":" + _))
-              val errorLine = error.line.flatMap { line =>
-                val caret = error.column.map(c => (" " * (c - 1)) + "^").getOrElse("")
-                lines.lift(line - 1).map(_ + "\n" + caret)
-              }.getOrElse("")
-              s"""|Error parsing routes file: ${error.source.getName}$lineNumber ${error.message}
-                  |$errorLine
-                  |""".stripMargin
-            }
-
-            RoutesFileParser.parseContent(content, file).fold(
-              { errors =>
-                val message = errors.map(errorMessage).mkString("\n")
-                Failure(new Exception(message))
-              },
-              { rules =>
-                val routerName = tagFromFile(routesFile)
-                val init: RoutesData = Success(ListMap(routerName -> (path, Seq.empty)))
-                rules.foldLeft(init) {
-                  case (Success(acc), route: Route) =>
-                    val (prefix, routes) = acc(routerName)
-                    Success(acc + (routerName -> (prefix, routes :+ route)))
-                  case (Success(acc), Include(prefix, router)) =>
-                    val reference = router.replace(".Routes", ".routes")
-                    val isIncludedRoutesFile = cl.getResource(reference) != null
-                    if (isIncludedRoutesFile) {
-                      val updated = if (path.nonEmpty) path + "/" + prefix else prefix
-                      loop(updated, reference).map(acc ++ _)
-                    } else Success(acc)
-                  case (l @ Failure(_), _) => l
-                }
+          RoutesFileParser.parseContent(content, file).fold(
+            // パースに失敗した場合
+            { errors =>
+              val detail = errors.map { error =>
+                val lineNumber = error.line
+                val column = error.column
+                val errorLine = lineNumber.flatMap(line => lines.lift(line - 1))
+                RoutesParseErrorDetail(error.source.getName, error.message, errorLine, lineNumber, column)
               }
-            )
-        }
+              Failure(new RoutesParseException(detail))
+            },
+            { rules: Seq[Rule] =>
+              val tag = tagFromFile(routesFile)
+              val init: RoutesData = Success(ListMap(tag -> (path, Seq.empty)))
+              rules.foldLeft(init) {
+                // Route 内に直接 API 定義がある場合
+                case (Success(routesData), route: Route) =>
+                  // 定義済みの routes 情報とマージする
+                  // 例えば、1回目の実行では `routes` ファイルの内容が展開されるため、 prefix には " " が代入される
+                  val (prefix, routes) = routesData(tag)
+                  Success(routesData + (tag -> (prefix, routes :+ route)))
+                // 他の Routes ファイルへの参照がある場合
+                case (Success(routesData), Include(prefix, router)) =>
+                  val referenceFile = router.replace(".Routes", ".routes")
+                  val isIncludedRoutesFile = cl.getResource(referenceFile) != null
+                  if (!isIncludedRoutesFile) {
+                    Success(routesData)
+                  } else {
+                    // routes ファイルが入れ子になった場合、親の path とそのファイルの path をマージする
+                    val updatedPath = if (path.nonEmpty) path + "/" + prefix else prefix
+                    loop(updatedPath, referenceFile).map(routesData ++ _)
+                  }
+                // 失敗した場合はそこで中断
+                case (l: Failure[_], _) => l
+              }
+            }
+          )
       }
     }
+  }
+
+  private[generator] def generateFromRoutesFile(
+      routesFile: String,
+      base: JsObject
+  ): Try[JsObject] = {
 
     // starts with empty prefix, assuming that the routesFile is the outermost (usually 'routes')
     loop("", routesFile).flatMap { data =>
@@ -171,54 +201,52 @@ final case class SwaggerSpecGenerator(
     * Generate directly from routes
     *
     * @param routes [[Route]]s compiled by Play routes compiler
-    * @param base
-    * @return
+    * @param base   swagger.yaml に記載された基本設定
     */
-  def generateFromRoutes(routes: ListMap[Tag, (String, Seq[Route])], base: JsObject = defaultBase): JsObject = {
+  def generateFromRoutes(routes: ListMap[Tag, (String, Seq[Route])], base: JsObject): JsObject = {
     val docs = routes.map {
-      case (tag, (prefix, routes)) =>
-        // val subTag = if (tag == tagFromFile(routesFile)) None else Some(tag)
-        tag -> paths(routes, prefix, Some(tag))
+      case (tag, (path, routes)) =>
+        tag -> paths(routes, path, Some(tag))
     }.filter(_._2.keys.nonEmpty)
     generateWithBase(docs, base)
   }
 
+  /** 基本の swagger.yaml とマージして、 #/definitions で参照される case class から定義を生成する */
   private[playSwagger] def generateWithBase(
-      paths: ListMap[String, JsObject],
+      paths: ListMap[Tag, JsObject],
       baseJson: JsObject = Json.obj()
   ): JsObject = {
 
-    val refKey = "$ref"
-
+    // 1つの Json にまとめる
     val pathsJson = paths.values.reduce((acc, p) => JsObject(acc.fields ++ p.fields))
 
+    // $ref: として定義されている名前を一覧で取得する
     val mainRefs = (pathsJson ++ baseJson) \\ refKey
+
+    // swagger-custom-mappings.yaml で指定される $ref: の一覧を取得する
     val customMappingRefs = for {
-      customMapping ← customMappings
+      customMapping <- customMappings
       mappingsJson = customMapping.specAsProperty.toSeq ++ customMapping.specAsParameter
-      ref ← mappingsJson.flatMap(_ \\ refKey)
+      ref <- mappingsJson.flatMap(_ \\ refKey)
     } yield ref
     val allRefs = mainRefs ++ customMappingRefs
 
+    // $ref: で参照される名前から定義リストを作成する。
     val definitions: List[Definition] = {
       val referredClasses: Seq[String] = for {
-        refJson ← allRefs.toList
-        ref ← refJson.asOpt[String].toList
+        refJson <- allRefs.toList
+        ref <- refJson.asOpt[String].toList
+        // #/definitions を省いたものがクラス名
         className = ref.stripPrefix(parameterWriter.referencePrefix)
         if modelQualifier.isModel(className)
       } yield className
 
-      DefinitionGenerator(
-        mapper = mapper,
-        swaggerPlayJava = swaggerPlayJava,
-        namingStrategy = namingStrategy,
-        embedScaladoc = embedScaladoc
-      ).allDefinitions(referredClasses)
+      definitionGenerator.allDefinitions(referredClasses)
     }
 
-    val definitionsJson = JsObject(definitions.map(d => d.name -> Json.toJson(d)))
+    val definitionsJson =
+      JsObject(definitions.map(d => d.name -> Json.toJson(d)(Definition.writer(parameterWriter.propertiesWriter))))
 
-    val tagsJson = (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray())
     val pathsAndDefinitionsJson = Json.obj(
       "paths" -> pathsJson,
       if (swaggerV3) {
@@ -227,41 +255,16 @@ final case class SwaggerSpecGenerator(
         )
       } else {
         "definitions" -> definitionsJson
-      }
+      },
+      // base json に tags が存在しない場合
+      "tags" -> JsArray()
     )
 
-    pathsAndDefinitionsJson.deepMerge(baseJson) + ("tags" -> tagsJson)
-  }
-
-  implicit class PathAdditions(path: JsPath) {
-    def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
-      OWrites[A] { (a: A) =>
-        if (a.isEmpty) Json.obj()
-        else JsPath.createObj(path -> writes.writes(a))
-      }
-  }
-
-  private implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps =>
-    JsObject(ps.map(p => p.name -> Json.toJson(p)(parameterWriter.propWrites)))
-  }
-
-  private implicit val defFormat: Writes[Definition] = (
-    (__ \ 'description).writeNullable[String] ~
-      (__ \ 'properties).write[Seq[SwaggerParameter]] ~
-      (__ \ 'required).writeNullable[Seq[String]]
-  )((d: Definition) => (d.description, d.properties, requiredProperties(d.properties)))
-
-  private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
-    val required = properties.filter(_.required).map(_.name)
-    if (required.isEmpty) None else Some(required)
+    pathsAndDefinitionsJson.deepMerge(baseJson)
   }
 
   private lazy val defaultBase: JsObject =
-    readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
-
-  private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {
-    readCfgFile[T](s"$fileName.json") orElse readCfgFile[T](s"$fileName.yml")
-  }
+    readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw new MissingBaseSpecException(baseSpecFileName))
 
   private def mergeByName(base: JsArray, toMerge: JsArray): JsArray = {
     JsArray(base.value.map { bs =>
@@ -269,7 +272,7 @@ final case class SwaggerSpecGenerator(
       findByName(toMerge, name).fold(bs) { f => bs.as[JsObject] deepMerge f }
     } ++ toMerge.value.filter { tm =>
       (tm \ "name").validate[String].fold(
-        { errors => true },
+        { _ => true },
         { name =>
           findByName(base, name).isEmpty
         }
@@ -290,7 +293,7 @@ final case class SwaggerSpecGenerator(
           case "json" => Json.parse(st).as[T]
           // TODO: improve error handling
           case "yml" => YAMLParser.parseYaml(read(st).get.mkString("\n"))
-          case unknown =>
+          case _ =>
             throw new IllegalArgumentException(s"$name has an unsupported extension. Use either json or yml. ")
         }
       } finally {
@@ -299,9 +302,9 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private def paths(routes: Seq[Route], prefix: String, tag: Option[Tag]): JsObject = {
+  private def paths(routes: Seq[Route], path: String, tag: Option[Tag]): JsObject = {
     JsObject {
-      val endPointEntries = routes.flatMap(route => endPointEntry(route, prefix, tag))
+      val endPointEntries = routes.flatMap(route => endPointEntry(route, path, tag))
 
       // maintain the routes order as per the original routing file
       val zgbp = endPointEntries.zipWithIndex.groupBy(_._1._1)
@@ -312,67 +315,50 @@ final case class SwaggerSpecGenerator(
     }
   }
 
-  private def endPointEntry(route: Route, prefix: String, tag: Option[String]): Option[(String, JsObject)] = {
-    import SwaggerSpecGenerator.marker
+  private def endPointEntry(route: Route, path: String, tag: Option[String]): Option[(String, JsObject)] = {
 
     val comments = route.comments.map(_.comment).mkString("\n")
-    if (s"$marker\\s*NoDocs\\s*$marker".r.findFirstIn(comments).isDefined) {
+    // NoDocs がついている path は無視する
+    if (skipPathCommentRegex.findFirstIn(comments).isDefined) {
       None
     } else {
       val inRoutePath = route.path.parts.map {
+        // パスパラメータの場合は {} で囲む
         case DynamicPart(name, _, _) => s"{$name}"
+        // StaticPart には前後の "/" が含まれる
         case StaticPart(value) => value
       }.mkString
       val method = route.verb.value.toLowerCase
-      Some(fullPath(prefix, inRoutePath) -> Json.obj(method -> endPointSpec(route, tag)))
+      Some(fullPath(path, inRoutePath) -> Json.obj(method -> endPointSpec(route, tag)))
     }
   }
 
-  private[playSwagger] def fullPath(prefix: String, inRoutePath: String): String = {
-    if (prefix.endsWith("/") && (inRoutePath == "/" || inRoutePath.isEmpty)) // special case for ("/p/" , "/") or ("/p/" , "")
-      "/" + prefix.stripPrefix("/")
-    else
+  /** routes ファイルとコントローラーの path をマージする */
+  private[playSwagger] def fullPath(path: String, inRoutePath: String): String = {
+    // special case for ("/p/" , "/") or ("/p/" , "")
+    if (path.endsWith("/") && (inRoutePath == "/" || inRoutePath.isEmpty)) { // special case for ("/p/" , "/") or ("/p/" , "")
+      "/" + path.stripPrefix("/")
+    } else {
       "/" + List(
-        prefix.stripPrefix("/").stripSuffix("/"),
+        path.stripPrefix("/").stripSuffix("/"),
         inRoutePath.stripPrefix("/")
       ).filterNot(_.isEmpty).mkString("/")
+    }
   }
 
   // Multiple routes may have the same path, merge the objects instead of overwriting
-
   private def endPointSpec(route: Route, tag: Option[String]) = {
-
-    def tryParseYaml(comment: String): Option[JsObject] = {
-      // The purpose here is more to ensure that it is not in other formats such as JSON
-      // If invalid YAML is passed, org.yaml.snakeyaml.parser.ParserException
-      val pattern = "^\\w+|\\$ref:".r
-      pattern.findFirstIn(comment).map(_ => YAMLParser.parseYaml[JsObject](comment))
-    }
-
-    def tryParseJson(comment: String): Option[JsObject] = {
-      if (comment.startsWith("{"))
-        Some(Json.parse(comment).as[JsObject])
-      else None
-    }
-
-    def amendBodyParam(params: JsArray): JsArray = {
-      val bodyParam = findByName(params, "body")
-      bodyParam.fold(params) { param =>
-        val enhancedBodyParam = Json.obj("in" -> JsString("body")) ++ param
-        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
-      }
-    }
-
+    // controller から parameter object の作成
     val paramsFromController = {
       val pathParams = route.path.parts.collect {
         case d: DynamicPart => d.name
       }.toSet
 
       val params = for {
-        paramList ← route.call.parameters.toSeq
-        param ← paramList
+        paramList <- route.call.parameters.toSeq
+        param <- paramList
         if param.fixed.isEmpty && !param.isJavaRequest // Removes parameters the client cannot set
-      } yield mapper.mapParam(param, None)
+      } yield swaggerParameterMapper.mapParam(param, None)
 
       JsArray(params.flatMap { p =>
         val jos: List[JsObject] = p match {
@@ -386,50 +372,26 @@ final case class SwaggerSpecGenerator(
       })
     }
 
+    // コメントから parameter object の作成
     val jsonFromComment = {
-      import SwaggerSpecGenerator.marker
-
       val comments = route.comments.map(_.comment)
       val commentDocLines = comments match {
-        case `marker` +: docs :+ `marker` => docs
+        case SwaggerSpecGenerator.swaggerCommentMarker +: docs :+ SwaggerSpecGenerator.swaggerCommentMarker => docs
         case _ => Nil
       }
 
       val commentsJsonOpt = for {
-        leadingSpace ← commentDocLines.headOption.flatMap("""^(\s*)""".r.findFirstIn)
+        leadingSpace <- commentDocLines.headOption.flatMap("""^(\s*)""".r.findFirstIn)
         comment = commentDocLines.map(_.drop(leadingSpace.length)).mkString("\n")
-        result ← tryParseJson(comment) orElse tryParseYaml(comment)
+        result <- tryParseJson(comment) orElse tryParseYaml(comment)
       } yield result
 
       commentsJsonOpt.map { commentsJson =>
-        implicit class JsValueUpdate(jsValue: JsValue) {
-          def update(target: String)(f: JsValue => JsObject): JsValue = jsValue.result match {
-            case JsDefined(obj: JsObject) =>
-              JsObject(obj.update(target)(f))
-
-            case JsDefined(arr: JsArray) =>
-              JsArray(arr.value.map(_.update(target)(f)))
-
-            case JsDefined(js) => js
-
-            case _ => JsNull
-          }
-        }
-
-        implicit class JsObjectUpdate(jsObject: JsObject) {
-          def update(target: String)(f: JsValue => JsObject): collection.Seq[(String, JsValue)] =
-            jsObject.fields.flatMap {
-              case (k, v) if k == target => f(v).fields
-              case (k, v) => Seq(k -> v.update(target)(f))
-            }
-        }
-
-        val refKey = "$ref"
-
         JsObject(commentsJson.update(refKey) {
           case JsString(v) =>
             val pattern = "^([^#]+)(?:#(?:/[a-zA-Z])+)?$".r
             v match {
+              // #/definitions/ のようなものが指定されて**いない**場合はファイルへのリンクとして取得を試みる
               case pattern(path) if PathValidator.isValid(path) =>
                 readCfgFile[JsObject](path).getOrElse(JsObject(Seq(refKey -> JsString(v))))
               case _ => JsObject(Seq(refKey -> JsString(v)))
@@ -439,24 +401,46 @@ final case class SwaggerSpecGenerator(
       }
     }
 
-    val paramsFromComment = jsonFromComment.flatMap(jc => (jc \ "parameters").asOpt[JsArray]).map(amendBodyParam)
+    val paramsFromComment = jsonFromComment.flatMap(jc => (jc \ "parameters").asOpt[JsArray]).map { params =>
+      // play-swagger 仕様としてボディパラメータでの ref の使用は `name: body` が利用される
+      val bodyParam = findByName(params, "body")
+      bodyParam.fold(params) { param =>
+        // 本来は `in: body` の後に型の定義が続く形式
+        val enhancedBodyParam = Json.obj("in" -> JsString("body")) ++ param
+        JsArray(enhancedBodyParam +: params.value.filterNot(_ == bodyParam.get))
+      }
+    }
 
     val mergedParams = mergeByName(paramsFromController, paramsFromComment.getOrElse(JsArray()))
 
     val parameterJson = if (mergedParams.value.nonEmpty) Json.obj("parameters" -> mergedParams) else Json.obj()
 
+    // コントローラー名とメソッド名、もしくはメソッド名のみから operationId を取得する
     val operationId = Json.obj(
       "operationId" -> (if (operationIdFully) s"${route.call.controller}.${route.call.method}" else route.call.method)
     )
 
+    // operationId, tag, parameter object, コメントから生成されたその他の情報をマージする
     val rawPathJson = operationId ++ tag.fold(Json.obj()) { t =>
       Json.obj("tags" -> List(t))
     } ++ jsonFromComment.getOrElse(Json.obj()) ++ parameterJson
 
     val hasConsumes = (rawPathJson \ "consumes").toOption.isDefined
 
+    // MIME Type の指定がない場合はデフォルトを設定する
     if (findByName(mergedParams, "body").isDefined && !hasConsumes)
       rawPathJson + ("consumes" -> Json.arr(defaultPostBodyFormat))
     else rawPathJson
   }
+
+  private def tryParseYaml(comment: String): Option[JsObject] = {
+    // The purpose here is more to ensure that it is not in other formats such as JSON
+    // If invalid YAML is passed, org.yaml.snakeyaml.parser.ParserException
+    val pattern = "^\\w+|\\$ref:".r
+    pattern.findFirstIn(comment).map(_ => parseYaml[JsObject](comment))
+  }
+
+  private def tryParseJson(comment: String): Option[JsObject] =
+    if (comment.startsWith("{")) Some(Json.parse(comment).as[JsObject]) else None
+
 }
