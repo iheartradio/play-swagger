@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter}
-import com.iheart.playSwagger.generator.SwaggerParameterMapper
+import com.iheart.playSwagger.generator.{DomainModelQualifier, PrefixDomainModelQualifier, SwaggerParameterMapper}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 

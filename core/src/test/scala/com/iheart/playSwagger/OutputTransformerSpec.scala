@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import scala.util.{Failure, Success}
 
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
-import com.iheart.playSwagger.generator.SwaggerSpecGenerator
+import com.iheart.playSwagger.generator.{PrefixDomainModelQualifier, SwaggerSpecGenerator}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
