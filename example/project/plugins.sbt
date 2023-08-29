@@ -6,4 +6,4 @@ addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.0")
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.0")
 
 // play swagger plugin
-addSbtPlugin("com.iheart" % "sbt-play-swagger" % "0.0.1-EXAMPLE")
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "0.0.1-EXAMPLE")
