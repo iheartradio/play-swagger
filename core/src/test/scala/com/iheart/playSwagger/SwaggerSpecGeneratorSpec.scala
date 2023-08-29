@@ -2,8 +2,9 @@ package com.iheart.playSwagger
 
 import java.time.LocalDate
 
-import com.iheart.playSwagger.Domain.CustomMappings
 import com.iheart.playSwagger.RefinedTypes.{Age, Albums, SpotifyAccount}
+import com.iheart.playSwagger.domain.CustomTypeMapping
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -87,8 +88,8 @@ class SwaggerSpecGeneratorSpec extends Specification {
 
   "getCfgFile" >> {
     "valid swagger-custom-mappings yml" >> {
-      val result = gen.readCfgFile[CustomMappings]("swagger-custom-mappings.yml")
-      result must beSome[CustomMappings]
+      val result = gen.readCfgFile[Seq[CustomTypeMapping]]("swagger-custom-mappings.yml")
+      result must beSome[Seq[CustomTypeMapping]]
       val mappings = result.get
       mappings.size must be_>(2)
       mappings.head.`type` mustEqual "java\\.time\\.LocalDate"
@@ -98,7 +99,7 @@ class SwaggerSpecGeneratorSpec extends Specification {
     }
 
     "invalid swagger-settings yml" >> {
-      gen.readCfgFile[CustomMappings]("swagger-custom-mappings_invalid.yml") must throwA[JsResultException]
+      gen.readCfgFile[Seq[CustomTypeMapping]]("swagger-custom-mappings_invalid.yml") must throwA[JsResultException]
     }
   }
 

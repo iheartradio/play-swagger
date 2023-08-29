@@ -1,4 +1,4 @@
-package com.iheart.playSwagger
+package com.iheart.playSwagger.generator
 
 import java.io.{IOException, InputStream}
 
