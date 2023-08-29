@@ -12,7 +12,6 @@ import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwagg
 import com.iheart.playSwagger.domain.{CustomTypeMapping, Definition}
 import com.iheart.playSwagger.exception.MissingBaseSpecException
 import com.iheart.playSwagger.generator.ResourceReader.read
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json._
 import play.routes.compiler._
@@ -213,7 +212,12 @@ final case class SwaggerSpecGenerator(
       ).allDefinitions(referredClasses)
     }
 
-    val definitionsJson = JsObject(definitions.map(d => d.name -> Json.toJson(d)))
+    val definitionsJson = JsObject(definitions.map(d =>
+      d.name -> {
+        implicit val propatiesWriter: Writes[Seq[SwaggerParameter]] = parameterWriter.propertiesWriter
+        Json.toJson(d)
+      }
+    ))
 
     val tagsJson = (baseJson \ "tags").asOpt[JsArray].getOrElse(JsArray())
     val pathsAndDefinitionsJson = Json.obj(
@@ -228,29 +232,6 @@ final case class SwaggerSpecGenerator(
     )
 
     pathsAndDefinitionsJson.deepMerge(baseJson) + ("tags" -> tagsJson)
-  }
-
-  implicit class PathAdditions(path: JsPath) {
-    def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): OWrites[A] =
-      OWrites[A] { (a: A) =>
-        if (a.isEmpty) Json.obj()
-        else JsPath.createObj(path -> writes.writes(a))
-      }
-  }
-
-  private implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps =>
-    JsObject(ps.map(p => p.name -> Json.toJson(p)(parameterWriter.propWrites)))
-  }
-
-  private implicit val defFormat: Writes[Definition] = (
-    (__ \ 'description).writeNullable[String] ~
-      (__ \ 'properties).write[Seq[SwaggerParameter]] ~
-      (__ \ 'required).writeNullable[Seq[String]]
-  )((d: Definition) => (d.description, d.properties, requiredProperties(d.properties)))
-
-  private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
-    val required = properties.filter(_.required).map(_.name)
-    if (required.isEmpty) None else Some(required)
   }
 
   private lazy val defaultBase: JsObject =

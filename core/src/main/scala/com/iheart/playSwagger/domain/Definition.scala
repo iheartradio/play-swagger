@@ -11,7 +11,7 @@ final case class Definition(
 )
 
 object Definition {
-  implicit def writer(implicit paramWriter: Writes[SwaggerParameter]): Writes[Definition] = (
+  implicit def writer(implicit paramWriter: Writes[Seq[SwaggerParameter]]): Writes[Definition] = (
     (__ \ 'description).writeNullable[String] ~
       (__ \ 'properties).write[Seq[SwaggerParameter]] ~
       (__ \ 'required).writeNullable[Seq[String]]
