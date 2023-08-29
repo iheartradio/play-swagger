@@ -16,7 +16,7 @@ Example (compile time DI):
 package controllers.swagger
 
 import play.api.Configuration
-import com.iheart.playSwagger.SwaggerSpecGenerator
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import play.api.libs.json.JsString
 import play.api.mvc._
 
