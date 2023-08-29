@@ -211,7 +211,7 @@ final case class SwaggerSpecGenerator(
       DefinitionGenerator(
         mapper = mapper,
         swaggerPlayJava = swaggerPlayJava,
-        namingStrategy = namingStrategy,
+        namingConvention = namingStrategy,
         embedScaladoc = embedScaladoc
       ).allDefinitions(referredClasses)
     }

@@ -1,4 +1,4 @@
-package com.iheart.playSwagger
+package com.iheart.playSwagger.generator
 
 import scala.collection.JavaConverters
 import scala.meta.internal.parsers.ScaladocParser
@@ -8,8 +8,8 @@ import scala.reflect.runtime.universe._
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
 import com.iheart.playSwagger.Domain.Definition
+import com.iheart.playSwagger.ParametricType
 import com.iheart.playSwagger.domain.parameter.{GenSwaggerParameter, SwaggerParameter}
-import com.iheart.playSwagger.generator.{NamingConvention, SwaggerParameterMapper}
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
 import net.steppschuh.markdowngenerator.table.Table
@@ -22,7 +22,7 @@ final case class DefinitionGenerator(
     mapper: SwaggerParameterMapper,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
-    namingStrategy: NamingConvention = NamingConvention.None,
+    namingConvention: NamingConvention = NamingConvention.None,
     embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
@@ -100,7 +100,7 @@ final case class DefinitionGenerator(
 
         fields.map { field: Symbol =>
           // TODO: find a better way to get the string representation of typeSignature
-          val name = namingStrategy(field.name.decodedName.toString)
+          val name = namingConvention(field.name.decodedName.toString)
 
           val rawTypeName = dealiasParams(field.typeSignature).toString match {
             case refinedTypePattern(_) => field.info.dealias.typeArgs.head.toString
@@ -187,22 +187,22 @@ object DefinitionGenerator {
   def apply(
       mapper: SwaggerParameterMapper,
       swaggerPlayJava: Boolean,
-      namingStrategy: NamingConvention
+      namingConvention: NamingConvention
   )(implicit cl: ClassLoader): DefinitionGenerator =
     new DefinitionGenerator(
       mapper,
       swaggerPlayJava,
-      namingStrategy = namingStrategy
+      namingConvention = namingConvention
     )
 
   def apply(
       mapper: SwaggerParameterMapper,
-      namingStrategy: NamingConvention,
+      namingConvention: NamingConvention,
       embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =
     new DefinitionGenerator(
-      mapper,
-      namingStrategy = namingStrategy,
+      mapper = mapper,
+      namingConvention = namingConvention,
       embedScaladoc = embedScaladoc
     )
 }
