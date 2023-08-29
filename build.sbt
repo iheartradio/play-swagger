@@ -1,4 +1,6 @@
-organization in ThisBuild := "com.iheart"
+organization in ThisBuild := "io.github.play-swagger"
+
+sonatypeCredentialHost := "s01.oss.sonatype.org"
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
