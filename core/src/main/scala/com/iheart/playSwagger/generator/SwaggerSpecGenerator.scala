@@ -6,11 +6,11 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
 import com.iheart.playSwagger._
-import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter, SwaggerParameter, SwaggerParameterWriter}
+import com.iheart.playSwagger.domain.{CustomTypeMapping, Definition}
+import com.iheart.playSwagger.exception.MissingBaseSpecException
 import com.iheart.playSwagger.generator.ResourceReader.read
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.JsValue.jsValueToJsLookup
@@ -58,9 +58,6 @@ object SwaggerSpecGenerator {
     )
   }
 
-  case object MissingBaseSpecException
-      extends Exception(s"Missing a $baseSpecFileName.yml or $baseSpecFileName.json to provide base swagger spec")
-
 }
 
 final case class SwaggerSpecGenerator(
@@ -75,7 +72,7 @@ final case class SwaggerSpecGenerator(
     embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
-  import SwaggerSpecGenerator.{MissingBaseSpecException, baseSpecFileName, customMappingsFileName}
+  import SwaggerSpecGenerator.{baseSpecFileName, customMappingsFileName}
   private val parameterWriter = new SwaggerParameterWriter(swaggerV3)
 
   private lazy val customMappings: Seq[CustomTypeMapping] = {
@@ -257,7 +254,7 @@ final case class SwaggerSpecGenerator(
   }
 
   private lazy val defaultBase: JsObject =
-    readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw MissingBaseSpecException)
+    readYmlOrJson[JsObject](baseSpecFileName).getOrElse(throw new MissingBaseSpecException(baseSpecFileName))
 
   private def readYmlOrJson[T: Reads](fileName: String): Option[T] = {
     readCfgFile[T](s"$fileName.json") orElse readCfgFile[T](s"$fileName.yml")

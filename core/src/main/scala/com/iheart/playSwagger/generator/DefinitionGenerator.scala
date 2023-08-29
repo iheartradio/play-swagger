@@ -7,8 +7,8 @@ import scala.reflect.runtime.universe._
 
 import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
-import com.iheart.playSwagger.Domain.Definition
 import com.iheart.playSwagger.ParametricType
+import com.iheart.playSwagger.domain.Definition
 import com.iheart.playSwagger.domain.parameter.{GenSwaggerParameter, SwaggerParameter}
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
