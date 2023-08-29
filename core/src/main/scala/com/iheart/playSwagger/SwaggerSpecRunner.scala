@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 
 import scala.util.{Failure, Success, Try}
 
-import com.iheart.playSwagger.generator.{PrefixDomainModelQualifier, SwaggerSpecGenerator}
+import com.iheart.playSwagger.generator.{NamingConvention, PrefixDomainModelQualifier, SwaggerSpecGenerator}
 import play.api.libs.json.{JsValue, Json}
 
 object SwaggerSpecRunner extends App {
@@ -32,7 +32,7 @@ object SwaggerSpecRunner extends App {
       }
     }
     val swaggerSpec: JsValue = SwaggerSpecGenerator(
-      NamingStrategy.from(namingStrategy),
+      NamingConvention.fromString(namingStrategy),
       domainModelQualifier,
       outputTransformers = transformers,
       swaggerV3 = swaggerV3,

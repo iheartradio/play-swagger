@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.{BeanDescription, ObjectMapper}
 import com.github.takezoe.scaladoc.Scaladoc
 import com.iheart.playSwagger.Domain.Definition
 import com.iheart.playSwagger.domain.parameter.{GenSwaggerParameter, SwaggerParameter}
-import com.iheart.playSwagger.generator.SwaggerParameterMapper
+import com.iheart.playSwagger.generator.{NamingConvention, SwaggerParameterMapper}
 import net.steppschuh.markdowngenerator.MarkdownElement
 import net.steppschuh.markdowngenerator.link.Link
 import net.steppschuh.markdowngenerator.table.Table
@@ -22,7 +22,7 @@ final case class DefinitionGenerator(
     mapper: SwaggerParameterMapper,
     swaggerPlayJava: Boolean = false,
     _mapper: ObjectMapper = new ObjectMapper(),
-    namingStrategy: NamingStrategy = NamingStrategy.None,
+    namingStrategy: NamingConvention = NamingConvention.None,
     embedScaladoc: Boolean = false
 )(implicit cl: ClassLoader) {
 
@@ -187,7 +187,7 @@ object DefinitionGenerator {
   def apply(
       mapper: SwaggerParameterMapper,
       swaggerPlayJava: Boolean,
-      namingStrategy: NamingStrategy
+      namingStrategy: NamingConvention
   )(implicit cl: ClassLoader): DefinitionGenerator =
     new DefinitionGenerator(
       mapper,
@@ -197,7 +197,7 @@ object DefinitionGenerator {
 
   def apply(
       mapper: SwaggerParameterMapper,
-      namingStrategy: NamingStrategy,
+      namingStrategy: NamingConvention,
       embedScaladoc: Boolean
   )(implicit cl: ClassLoader): DefinitionGenerator =
     new DefinitionGenerator(

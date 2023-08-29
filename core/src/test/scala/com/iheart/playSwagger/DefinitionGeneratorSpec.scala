@@ -3,7 +3,7 @@ package com.iheart.playSwagger
 import com.iheart.playSwagger.Domain._
 import com.iheart.playSwagger.domain.CustomTypeMapping
 import com.iheart.playSwagger.domain.parameter.{CustomSwaggerParameter, GenSwaggerParameter}
-import com.iheart.playSwagger.generator.{DomainModelQualifier, PrefixDomainModelQualifier, SwaggerParameterMapper}
+import com.iheart.playSwagger.generator.{DomainModelQualifier, NamingConvention, PrefixDomainModelQualifier, SwaggerParameterMapper}
 import org.specs2.mutable.Specification
 import play.api.libs.json.Json
 
@@ -75,7 +75,7 @@ class DefinitionGeneratorSpec extends Specification {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart.playSwagger"))
       val result = DefinitionGenerator(
         mapper,
-        NamingStrategy.None,
+        NamingConvention.None,
         embedScaladoc = false
       ).definition[Foo].properties
 
@@ -149,7 +149,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart.playSwagger"))
       val result =
-        DefinitionGenerator(mapper, NamingStrategy.SnakeCase, embedScaladoc = false).definition[
+        DefinitionGenerator(mapper, NamingConvention.SnakeCase, embedScaladoc = false).definition[
           Foo
         ].properties
 
@@ -223,7 +223,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart.playSwagger"))
       val result =
-        DefinitionGenerator(mapper, NamingStrategy.KebabCase, embedScaladoc = false).definition[
+        DefinitionGenerator(mapper, NamingConvention.KebabCase, embedScaladoc = false).definition[
           Foo
         ].properties
 
@@ -295,7 +295,7 @@ class DefinitionGeneratorSpec extends Specification {
 
     "read class in Object" >> {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
-      val result = DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+      val result = DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.MyObject.MyInnerClass"
       )
       result.properties.head.name === "bar"
@@ -303,7 +303,7 @@ class DefinitionGeneratorSpec extends Specification {
 
     "read alias type in Object" >> {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
-      val result = DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+      val result = DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.MyObject.MyInnerClass"
       )
 
@@ -316,7 +316,7 @@ class DefinitionGeneratorSpec extends Specification {
     "read sequence items" >> {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
       val result =
-        DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+        DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
           "com.iheart.playSwagger.FooWithSeq"
         )
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[
@@ -326,7 +326,7 @@ class DefinitionGeneratorSpec extends Specification {
 
     "read primitive sequence items" >> {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
-      val result = DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+      val result = DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
         "com.iheart.playSwagger.WithListOfPrimitive"
       )
       result.properties.head.asInstanceOf[GenSwaggerParameter].items.get.asInstanceOf[
@@ -338,7 +338,7 @@ class DefinitionGeneratorSpec extends Specification {
     "read Optional items " >> {
       val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
       val result =
-        DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+        DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
           "com.iheart.playSwagger.FooWithOption"
         )
       result.properties.head.asInstanceOf[GenSwaggerParameter].referenceType must beSome(
@@ -350,7 +350,7 @@ class DefinitionGeneratorSpec extends Specification {
       "no override" >> {
         val mapper = new SwaggerParameterMapper(Nil, PrefixDomainModelQualifier("com.iheart"))
         val result =
-          DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+          DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
             "com.iheart.playSwagger.WithDate"
           )
         val prop = result.properties.head.asInstanceOf[GenSwaggerParameter]
@@ -368,7 +368,7 @@ class DefinitionGeneratorSpec extends Specification {
         )
         val mapper = new SwaggerParameterMapper(mappings, PrefixDomainModelQualifier("com.iheart"))
         val result =
-          DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+          DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
             "com.iheart.playSwagger.WithDate"
           )
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
@@ -385,7 +385,7 @@ class DefinitionGeneratorSpec extends Specification {
           )
         )
         val mapper = new SwaggerParameterMapper(mappings, PrefixDomainModelQualifier("com.iheart"))
-        val result = DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false).definition(
+        val result = DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false).definition(
           "com.iheart.playSwagger.WithOptionalDate"
         )
         val prop = result.properties.head.asInstanceOf[CustomSwaggerParameter]
@@ -401,7 +401,7 @@ class DefinitionGeneratorSpec extends Specification {
         specAsParameter = customJson
       )
       val mapper = new SwaggerParameterMapper(List(customMapping), PrefixDomainModelQualifier("com.iheart"))
-      val generator = DefinitionGenerator(mapper, NamingStrategy.None, embedScaladoc = false)
+      val generator = DefinitionGenerator(mapper, NamingConvention.None, embedScaladoc = false)
       val definition = generator.definition[FooWithWrappedStringProperties]
 
       "support simple property types" >> {
@@ -455,7 +455,7 @@ class DefinitionGeneratorSpec extends Specification {
       val result = DefinitionGenerator(
         mapper,
         swaggerPlayJava = true,
-        NamingStrategy.None
+        NamingConvention.None
       ).definition[Person].properties
       result.length === 16
 

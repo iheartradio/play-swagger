@@ -22,13 +22,13 @@ object SwaggerSpecGenerator {
   val customMappingsFileName = "swagger-custom-mappings"
   val baseSpecFileName = "swagger"
 
-  def apply(namingStrategy: NamingStrategy, swaggerV3: Boolean, domainNameSpaces: String*)(implicit
+  def apply(namingStrategy: NamingConvention, swaggerV3: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(namingStrategy, PrefixDomainModelQualifier(domainNameSpaces: _*), swaggerV3 = swaggerV3)
   }
 
   def apply(
-      namingStrategy: NamingStrategy,
+      namingStrategy: NamingConvention,
       outputTransformers: Seq[OutputTransformer],
       domainNameSpaces: String*
   )(implicit cl: ClassLoader): SwaggerSpecGenerator = {
@@ -42,7 +42,7 @@ object SwaggerSpecGenerator {
   def apply(swaggerV3: Boolean, operationIdFully: Boolean, embedScaladoc: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       swaggerV3 = swaggerV3,
       operationIdFully = operationIdFully,
@@ -52,7 +52,7 @@ object SwaggerSpecGenerator {
   def apply(outputTransformers: Seq[OutputTransformer], domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier(domainNameSpaces: _*),
       outputTransformers = outputTransformers
     )
@@ -64,7 +64,7 @@ object SwaggerSpecGenerator {
 }
 
 final case class SwaggerSpecGenerator(
-    namingStrategy: NamingStrategy = NamingStrategy.None,
+    namingStrategy: NamingConvention = NamingConvention.None,
     modelQualifier: DomainModelQualifier = PrefixDomainModelQualifier(),
     defaultPostBodyFormat: String = "application/json",
     outputTransformers: Seq[OutputTransformer] = Nil,
