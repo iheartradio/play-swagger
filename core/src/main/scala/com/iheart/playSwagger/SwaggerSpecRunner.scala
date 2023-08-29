@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 
 import scala.util.{Failure, Success, Try}
 
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import play.api.libs.json.{JsValue, Json}
 
 object SwaggerSpecRunner extends App {
