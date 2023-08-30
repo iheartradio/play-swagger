@@ -22,7 +22,7 @@ object Dependencies {
   )
 
   val yaml = Seq(
-    "org.yaml" % "snakeyaml" % "2.0"
+    "org.yaml" % "snakeyaml" % "2.2"
   )
 
   val enumeratum = Seq(
