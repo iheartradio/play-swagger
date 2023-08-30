@@ -1,5 +1,6 @@
 package com.iheart.playSwagger
 
+import com.iheart.playSwagger.generator.PrefixDomainModelQualifier
 import org.specs2.mutable.Specification
 
 class PrefixDomainModelQualifierSpec extends Specification {
