@@ -1,6 +1,7 @@
-organization in ThisBuild := "io.github.play-swagger"
+ThisBuild / organization := "io.github.play-swagger"
 
 sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
@@ -74,7 +75,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
     scalaVersion := scalaV,
-    scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated,
+    scripted := scripted.dependsOn(playSwagger / publishLocal).evaluated,
     scriptedLaunchOpts := {
       scriptedLaunchOpts.value ++
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
