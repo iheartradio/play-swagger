@@ -53,7 +53,7 @@ lazy val playSwagger = project.in(file("core"))
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.11"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.12"),
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Seq("-Wunused")
       case _ => Seq("-Xlint:unused")
