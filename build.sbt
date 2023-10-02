@@ -1,4 +1,7 @@
-organization in ThisBuild := "com.iheart"
+ThisBuild / organization := "io.github.play-swagger"
+
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
@@ -42,7 +45,7 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.test ++
       Dependencies.yaml ++ Seq(
         "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
-        "org.scalameta" %% "scalameta" % "4.8.5",
+        "org.scalameta" %% "scalameta" % "4.8.9",
         "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
         "joda-time" % "joda-time" % "2.12.5" % Test,
         "com.google.errorprone" % "error_prone_annotations" % "2.22.0" % Test
@@ -50,7 +53,7 @@ lazy val playSwagger = project.in(file("core"))
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
-    crossScalaVersions := Seq(scalaVersion.value, "2.13.11"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.13.12"),
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Seq("-Wunused")
       case _ => Seq("-Xlint:unused")
@@ -61,7 +64,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(
     Publish.coreSettings,
     Format.settings,
-    addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.17" % Provided),
+    addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.25" % Provided),
     addSbtPlugin("com.typesafe.sbt" %% "sbt-web" % "1.4.4" % Provided)
   )
   .enablePlugins(BuildInfoPlugin, SbtPlugin)
@@ -72,7 +75,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
     scalaVersion := scalaV,
-    scripted := scripted.dependsOn(publishLocal in playSwagger).evaluated,
+    scripted := scripted.dependsOn(playSwagger / publishLocal).evaluated,
     scriptedLaunchOpts := {
       scriptedLaunchOpts.value ++
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
