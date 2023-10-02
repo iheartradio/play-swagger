@@ -25,7 +25,7 @@ object SwaggerPlugin extends AutoPlugin {
     ivyConfigurations += SwaggerConfig,
     resolvers += Resolver.jcenterRepo,
     // todo: remove hardcoded org name using BuildInfo
-    libraryDependencies += "com.iheart" %% "play-swagger" % playSwaggerVersion % SwaggerConfig,
+    libraryDependencies += "io.github.play-swagger" %% "play-swagger" % playSwaggerVersion % SwaggerConfig,
     swaggerDomainNameSpaces := Seq(),
     swaggerV3 := false,
     swaggerTarget := target.value / "swagger",
