@@ -17,6 +17,7 @@ lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(
     ThisBuild / sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / target.value.getName / "sonatype-staging" / version.value,
+    ThisBuild / sonatypeSessionName := s"[sbt-sonatype] ${name.value}-${version.value}",
     sonatypeProfileName := "io.github.play-swagger",
     publish / skip := true,
     sourcesInBase := false,
