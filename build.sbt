@@ -25,6 +25,7 @@ lazy val root = project.in(file("."))
 
 lazy val playSwagger = project.in(file("core"))
   .settings(
+    publish / skip := false,
     Publish.coreSettings,
     Format.settings,
     Testing.settings,
@@ -54,6 +55,7 @@ lazy val playSwagger = project.in(file("core"))
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(
+    publish / skip := false,
     Publish.coreSettings,
     Format.settings,
     addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.25" % Provided),
