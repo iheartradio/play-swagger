@@ -15,7 +15,7 @@ jobs:
           distribution: temurin
           java-version: 11
           cache: sbt
-      - run: sbt clean "playSwagger/ci-release" "sbtPlaySwagger/ci-release"
+      - run: sbt clean "project playSwagger" ci-release "project sbtPlaySwagger" ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
