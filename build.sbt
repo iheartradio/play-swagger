@@ -1,7 +1,7 @@
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 publish / skip := true
-resolvers += "Sonatype OSS Releases" at "https://s01.oss.sonatype.org/content/repositories/releases"
+sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / target.value.getName / "sonatype-staging" / (ThisBuild / version).value
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
