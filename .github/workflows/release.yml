@@ -16,7 +16,7 @@ jobs:
           java-version: 11
           cache: sbt
       - name: "Drop .sbtopts"
-        run: rm .sbtopts
+        run: git diff
       - run: sbt clean ci-release
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
