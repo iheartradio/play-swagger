@@ -14,7 +14,7 @@ class OutputTransformerSpec extends Specification {
       val result = OutputTransformer.traverseTransformer(Json.obj(
         "a" -> 1,
         "b" -> "c"
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" -> 10, "b" -> 10))
     }
 
@@ -24,7 +24,7 @@ class OutputTransformerSpec extends Specification {
         "b" -> Json.obj(
           "c" -> 1
         )
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" -> 10, "b" -> Json.obj("c" -> 10)))
     }
 
@@ -36,7 +36,7 @@ class OutputTransformerSpec extends Specification {
           Json.obj("d" -> 1),
           Json.obj("e" -> 1)
         )
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj(
         "a" -> 10,
         "b" -> Json.arr(
@@ -54,19 +54,19 @@ class OutputTransformerSpec extends Specification {
         "b" -> Json.obj(
           "c" -> 1
         )
-      )) { _ => Failure(err) }
+      )) { _ ⇒ Failure(err) }
       result === Failure(err)
     }
   }
   "OutputTransformer.>=>" >> {
     "return composed function" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString(content + "a"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString(content + "a"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString(content + "b"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString(content + "b"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
@@ -81,12 +81,12 @@ class OutputTransformerSpec extends Specification {
 
     "fail if one composed function fails" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString("a" + content))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString("a" + content))
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Failure(new IllegalStateException("not strings"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Failure(new IllegalStateException("not strings"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
