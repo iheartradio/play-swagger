@@ -60,7 +60,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .enablePlugins(BuildInfoPlugin, SbtPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version),
-    buildInfoPackage := "io.github.play-swagger",
+    buildInfoPackage := "com.iheart.playSwagger",
     name := "sbt-play-swagger",
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
