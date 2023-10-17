@@ -17,6 +17,7 @@ lazy val scalaV = "2.12.18"
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(
+    sonatypeProfileName := "io.github.play-swagger",
     publish / skip := true,
     sourcesInBase := false,
     scalaVersion := scalaV
