@@ -1,6 +1,5 @@
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
-ThisBuild / publish / skip := true
 
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
@@ -12,21 +11,13 @@ addCommandAlias(
   ";set ThisBuild / version := \"0.0.1-EXAMPLE\"; +publishLocal"
 )
 
-lazy val noPublishSettings = Seq(
-  publish / skip := true,
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
-)
-
 lazy val scalaV = "2.12.18"
 
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(
-    Publish.coreSettings,
+    publish / skip := true,
     sourcesInBase := false,
-    noPublishSettings,
     scalaVersion := scalaV
   )
 
@@ -69,7 +60,7 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .enablePlugins(BuildInfoPlugin, SbtPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](name, version),
-    buildInfoPackage := "com.iheart.playSwagger",
+    buildInfoPackage := "io.github.play-swagger",
     name := "sbt-play-swagger",
     description := "sbt plugin for play swagger spec generation",
     sbtPlugin := true,
