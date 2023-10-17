@@ -19,8 +19,6 @@ lazy val root = project.in(file("."))
   .settings(
     Publish.coreSettings,
     publish / skip := true,
-    publish := (),
-    publishLocal := (),
     publishArtifact := false,
     sourcesInBase := false,
     scalaVersion := scalaV
