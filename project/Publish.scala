@@ -8,7 +8,6 @@ object Publish {
     _ >: Option[URL] with Option[ScmInfo] with String with Seq[(String, URL)] with Boolean with List[Developer]
   ]] = Seq(
     organization := "io.github.play-swagger",
-    sonatypeProfileName := organization.value,
     licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
     homepage := Some(url("https://github.com/play-swagger/play-swagger")),
     scmInfo := Some(ScmInfo(
