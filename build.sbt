@@ -18,6 +18,9 @@ lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(
     publish / skip := true,
+    publish := (),
+    publishLocal := (),
+    publishArtifact := false,
     sourcesInBase := false,
     scalaVersion := scalaV
   )
