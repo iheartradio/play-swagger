@@ -1,8 +1,6 @@
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 publish / skip := true
-sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / target.value.getName / "sonatype-staging" / (ThisBuild / version).value
-
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
   "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.3"
@@ -18,6 +16,7 @@ lazy val scalaV = "2.12.18"
 lazy val root = project.in(file("."))
   .aggregate(playSwagger, sbtPlaySwagger)
   .settings(
+    ThisBuild / sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / target.value.getName / "sonatype-staging" / version.value,
     sonatypeProfileName := "io.github.play-swagger",
     publish / skip := true,
     sourcesInBase := false,
