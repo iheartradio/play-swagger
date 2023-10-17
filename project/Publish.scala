@@ -21,8 +21,7 @@ object Publish {
         "javakky@pixiv.co.jp",
         url("https://twitter.com/javakky_P/")
       )
-    ),
-    Test / publishArtifact := false
+    )
   )
 
 }
