@@ -80,7 +80,7 @@ You can find the setup in the example project as well.
 
 For play 2.8, Scala 2.13.x and Scala 2.12.x please use
 ```scala
-addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.2.2")
+addSbtPlugin("io.github.play-swagger" % "sbt-play-swagger" % "1.4.4")
 ```
 
 Then enable it for your Play app - in build.sbt add `SwaggerPlugin` to the root project like
