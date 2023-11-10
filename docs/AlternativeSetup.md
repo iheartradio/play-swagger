@@ -6,7 +6,10 @@ Follow the [Step 1](../README.md#step-1) from the main README.
 
 Note:
   It is sufficient to only add Play swagger as a library dependency in your `build.sbt` rather than a plugin in this setup.
-  You'll need to add `Resolver.jcenterRepo` to your `resolvers`.
+  You'll need to add following dependency:
+```scala
+  "io.github.play-swagger" %% "play-swagger" % "1.4.4"
+```  
 
 #### Step 2
 Add a controller that uses  Play swagger as a library to generates a swagger spec json and serves it as an endpoint.
@@ -16,7 +19,7 @@ Example (compile time DI):
 package controllers.swagger
 
 import play.api.Configuration
-import com.iheart.playSwagger.SwaggerSpecGenerator
+import com.iheart.playSwagger.generator.SwaggerSpecGenerator
 import play.api.libs.json.JsString
 import play.api.mvc._
 
