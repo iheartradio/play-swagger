@@ -1,11 +1,11 @@
 package com.iheart.sbtPlaySwagger
 
 import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
-import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
-import com.typesafe.sbt.web.Import._
-import sbt.Attributed._
-import sbt.Keys._
-import sbt.{AutoPlugin, _}
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.*
+import com.typesafe.sbt.web.Import.*
+import sbt.Attributed.*
+import sbt.Keys.*
+import sbt.{AutoPlugin, *}
 
 object SwaggerPlugin extends AutoPlugin {
   lazy val SwaggerConfig: Configuration = config("play-swagger").hide
@@ -17,7 +17,7 @@ object SwaggerPlugin extends AutoPlugin {
 
   override def trigger = noTrigger
 
-  import autoImport._
+  import autoImport.*
 
   override def projectConfigurations: Seq[Configuration] = Seq(SwaggerConfig)
 

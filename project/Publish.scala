@@ -1,7 +1,5 @@
+import sbt.Keys._
 import sbt.{Def, _}
-import Keys._
-import com.jsuereth.sbtpgp.PgpKeys.publishSigned
-import xerial.sbt.Sonatype.autoImport.{sonatypeProfileName, sonatypeSessionName}
 
 object Publish {
 

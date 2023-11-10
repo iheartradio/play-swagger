@@ -1,6 +1,6 @@
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
-publish / skip := true
+ThisBuild / publish / skip := true
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
   "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.3"
@@ -37,12 +37,12 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.refined ++
       Dependencies.test ++
       Dependencies.yaml ++ Seq(
-        "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
-        "org.scalameta" %% "scalameta" % "4.8.11",
-        "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
-        "joda-time" % "joda-time" % "2.12.5" % Test,
-        "com.google.errorprone" % "error_prone_annotations" % "2.22.0" % Test
-      ),
+      "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
+      "org.scalameta" %% "scalameta" % "4.8.11",
+      "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
+      "joda-time" % "joda-time" % "2.12.5" % Test,
+      "com.google.errorprone" % "error_prone_annotations" % "2.22.0" % Test
+    ),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
