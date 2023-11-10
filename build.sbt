@@ -27,7 +27,6 @@ lazy val playSwagger = project.in(file("core"))
   .settings(
     publish / skip := false,
     Publish.coreSettings,
-    Format.settings,
     Testing.settings,
     name := "play-swagger",
     libraryDependencies ++= Dependencies.playTest ++
@@ -37,12 +36,12 @@ lazy val playSwagger = project.in(file("core"))
       Dependencies.refined ++
       Dependencies.test ++
       Dependencies.yaml ++ Seq(
-      "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
-      "org.scalameta" %% "scalameta" % "4.8.11",
-      "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
-      "joda-time" % "joda-time" % "2.12.5" % Test,
-      "com.google.errorprone" % "error_prone_annotations" % "2.22.0" % Test
-    ),
+        "com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3",
+        "org.scalameta" %% "scalameta" % "4.8.11",
+        "net.steppschuh.markdowngenerator" % "markdowngenerator" % "1.3.1.1",
+        "joda-time" % "joda-time" % "2.12.5" % Test,
+        "com.google.errorprone" % "error_prone_annotations" % "2.22.0" % Test
+      ),
     libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
@@ -58,7 +57,6 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
   .settings(
     publish / skip := false,
     Publish.coreSettings,
-    Format.settings,
     addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.3.25" % Provided),
     addSbtPlugin("com.github.sbt" %% "sbt-web" % "1.5.1" % Provided)
   )
