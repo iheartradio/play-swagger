@@ -85,7 +85,7 @@ class OutputTransformerSpec extends Specification {
         case _ => Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Failure(new IllegalStateException("not strings"))
+        case JsString(_) => Failure(new IllegalStateException("not strings"))
         case _ => Failure(new IllegalStateException())
       })
 

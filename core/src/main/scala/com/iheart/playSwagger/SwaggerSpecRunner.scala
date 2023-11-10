@@ -21,7 +21,7 @@ object SwaggerSpecRunner extends App {
     val domainModelQualifier = PrefixDomainModelQualifier(domainNameSpaceArgs.split(","): _*)
     val transformersStrs: Seq[String] = if (outputTransformersArgs.isEmpty) Seq() else outputTransformersArgs.split(",")
     val transformers = transformersStrs.map { clazz =>
-      Try(cl.loadClass(clazz).asSubclass(classOf[OutputTransformer]).newInstance()) match {
+      Try(cl.loadClass(clazz).asSubclass(classOf[OutputTransformer]).getDeclaredConstructor().newInstance()) match {
         case Failure(ex: ClassCastException) =>
           throw new IllegalArgumentException(
             "Transformer should be a subclass of com.iheart.playSwagger.OutputTransformer:" + clazz,

@@ -28,7 +28,7 @@ final case class DefinitionGenerator(
 
   private val refinedTypePattern = raw"(eu\.timepit\.refined\.api\.Refined(?:\[.+])?)".r
 
-  def dealiasParams(t: Type): Type = {
+  private def dealiasParams(t: Type): Type = {
     t.toString match {
       case refinedTypePattern(_) => t.typeArgs.headOption.getOrElse(t)
       case _ =>

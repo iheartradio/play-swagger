@@ -7,8 +7,8 @@ sealed abstract class NamingConvention(f: String => String) extends (String => S
 }
 
 object NamingConvention {
-  val regex: Regex = "[A-Z\\d]".r
-  val skipNumberRegex: Regex = "[A-Z]".r
+  private val regex: Regex = "[A-Z\\d]".r
+  private val skipNumberRegex: Regex = "[A-Z]".r
 
   object None extends NamingConvention(identity)
   object SnakeCase extends NamingConvention(x => regex.replaceAllIn(x, { m => "_" + m.group(0).toLowerCase() }))

@@ -9,31 +9,31 @@ object Dependencies {
     val refined = "0.11.0"
   }
 
-  val playTest = Seq(
+  val playTest: Seq[ModuleID] = Seq(
     "com.typesafe.play" %% "play-test" % Versions.play % Test
   )
 
-  val playRoutesCompiler = Seq(
+  val playRoutesCompiler: Seq[ModuleID] = Seq(
     "com.typesafe.play" %% "routes-compiler" % Versions.play
   )
 
-  val playJson = Seq(
+  val playJson: Seq[ModuleID] = Seq(
     "com.typesafe.play" %% "play-json" % Versions.playJson % "provided"
   )
 
-  val yaml = Seq(
+  val yaml: Seq[ModuleID] = Seq(
     "org.yaml" % "snakeyaml" % "2.2"
   )
 
-  val enumeratum = Seq(
+  val enumeratum: Seq[ModuleID] = Seq(
     "com.beachape" %% "enumeratum" % Versions.enumeratum % Test
   )
 
-  val refined = Seq(
+  val refined: Seq[ModuleID] = Seq(
     "eu.timepit" %% "refined" % Versions.refined % Test
   )
 
-  val test = Seq(
+  val test: Seq[ModuleID] = Seq(
     "org.specs2" %% "specs2-core" % Versions.specs2 % "test",
     "org.specs2" %% "specs2-mock" % Versions.specs2 % "test"
   )

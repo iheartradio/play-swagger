@@ -202,13 +202,13 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "read seq of referenced type" >> {
-      val relatedProp = (trackJson \ "properties" \ "related")
+      val relatedProp = trackJson \ "properties" \ "related"
       (relatedProp \ "type").asOpt[String] === Some("array")
       (relatedProp \ "items" \ "$ref").asOpt[String] === Some("#/definitions/com.iheart.playSwagger.Artist")
     }
 
     "read seq of primitive type" >> {
-      val numberProps = (trackJson \ "properties" \ "numbers")
+      val numberProps = trackJson \ "properties" \ "numbers"
       (numberProps \ "type").asOpt[String] === Some("array")
       (numberProps \ "items" \ "type").asOpt[String] === Some("integer")
     }

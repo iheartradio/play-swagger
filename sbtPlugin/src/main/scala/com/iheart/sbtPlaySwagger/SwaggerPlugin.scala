@@ -8,10 +8,10 @@ import sbt.Keys.*
 import sbt.{AutoPlugin, *}
 
 object SwaggerPlugin extends AutoPlugin {
-  lazy val SwaggerConfig: Configuration = config("play-swagger").hide
-  lazy val playSwaggerVersion: String = com.iheart.playSwagger.BuildInfo.version
+  private lazy val SwaggerConfig: Configuration = config("play-swagger").hide
+  private lazy val playSwaggerVersion: String = com.iheart.playSwagger.BuildInfo.version
 
-  object autoImport extends SwaggerKeys
+  private object autoImport extends SwaggerKeys
 
   override def requires: Plugins = JavaAppPackaging
 
@@ -21,7 +21,7 @@ object SwaggerPlugin extends AutoPlugin {
 
   override def projectConfigurations: Seq[Configuration] = Seq(SwaggerConfig)
 
-  override def projectSettings: Seq[Setting[_]] = Seq(
+  override def projectSettings: Seq[Setting[?]] = Seq(
     ivyConfigurations += SwaggerConfig,
     resolvers += Resolver.jcenterRepo,
     // todo: remove hardcoded org name using BuildInfo
@@ -39,7 +39,7 @@ object SwaggerPlugin extends AutoPlugin {
     swaggerOperationIdNamingFully := false,
     embedScaladoc := false,
     swagger := Def.task[File] {
-      (swaggerTarget.value).mkdirs()
+      swaggerTarget.value.mkdirs()
       val file = swaggerTarget.value / swaggerFileName.value
       IO.delete(file)
       val args: Seq[String] = file.absolutePath :: swaggerRoutesFile.value ::
@@ -54,7 +54,7 @@ object SwaggerPlugin extends AutoPlugin {
         embedScaladoc.value.toString ::
         Nil
       val swaggerClasspath =
-        data((fullClasspath in Runtime).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
+        data((Runtime / fullClasspath).value) ++ update.value.select(configurationFilter(SwaggerConfig.name))
       runner.value.run(
         "com.iheart.playSwagger.SwaggerSpecRunner",
         swaggerClasspath,
@@ -63,10 +63,10 @@ object SwaggerPlugin extends AutoPlugin {
       ).failed foreach (sys error _.getMessage)
       file
     }.value,
-    unmanagedResourceDirectories in Assets += swaggerTarget.value,
-    mappings in (Compile, packageBin) += (swagger.value) -> s"public/${swaggerFileName.value}", // include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
-    packageBin in Universal := (packageBin in Universal).dependsOn(swagger).value,
-    run := (run in Compile).dependsOn(swagger).evaluated,
+    Assets / unmanagedResourceDirectories += swaggerTarget.value,
+    Compile / packageBin / mappings += swagger.value -> s"public/${swaggerFileName.value}", // include it in the unmanagedResourceDirectories in Assets doesn't automatically include it package
+    Universal / packageBin := (Universal / packageBin).dependsOn(swagger).value,
+    run := (Compile / run).dependsOn(swagger).evaluated,
     stage := stage.dependsOn(swagger).value
   )
 }

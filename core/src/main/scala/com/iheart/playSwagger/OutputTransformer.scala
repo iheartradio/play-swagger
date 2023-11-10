@@ -16,7 +16,7 @@ trait OutputTransformer extends (JsObject => Try[JsObject]) {
 }
 
 object OutputTransformer {
-  final case class SimpleOutputTransformer(run: (JsObject => Try[JsObject])) extends OutputTransformer {
+  final case class SimpleOutputTransformer(run: JsObject => Try[JsObject]) extends OutputTransformer {
     override def apply(value: JsObject): Try[JsObject] = run(value)
   }
 
@@ -55,7 +55,7 @@ object OutputTransformer {
   }
 }
 
-class PlaceholderVariablesTransformer(map: String => Option[String], pattern: Regex = "^\\$\\{(.*)\\}$".r)
+class PlaceholderVariablesTransformer(map: String => Option[String], pattern: Regex = ("^\\$\\{(.*)\\}$").r)
     extends OutputTransformer {
   def apply(value: JsObject): Try[JsObject] = OutputTransformer.traverseTransformer(value) {
     case JsString(pattern(key)) => map(key) match {

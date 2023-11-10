@@ -10,7 +10,7 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
 
   val referencePrefix: String = if (swaggerV3) "#/components/schemas/" else "#/definitions/"
 
-  lazy val propWrites: Writes[SwaggerParameter] = Writes {
+  private lazy val propWrites: Writes[SwaggerParameter] = Writes {
     case g: GenSwaggerParameter => genPropWrites.writes(g)
     case c: CustomSwaggerParameter => customPropWrites.writes(c)
   }

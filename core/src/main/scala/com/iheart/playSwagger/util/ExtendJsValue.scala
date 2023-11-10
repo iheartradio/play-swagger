@@ -24,13 +24,4 @@ object ExtendJsValue {
       case _ => JsNull
     }
   }
-
-  implicit class PathAdditions(path: JsPath) {
-    def writeNullableIterable[A <: Iterable[_]](implicit writes: Writes[A]): Writes[A] =
-      Writes[A] { (a: A) =>
-        if (a.isEmpty) Json.obj()
-        else JsPath.createObj(path -> writes.writes(a))
-      }
-  }
-
 }

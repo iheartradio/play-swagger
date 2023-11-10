@@ -15,7 +15,6 @@ class RoutesParseException(errors: Seq[RoutesParseErrorDetail]) extends RuntimeE
     )
 
 object RoutesParseException {
-  case class RoutesParseErrorTargetLine()
   case class RoutesParseErrorDetail(
       sourceFileName: String,
       message: String,

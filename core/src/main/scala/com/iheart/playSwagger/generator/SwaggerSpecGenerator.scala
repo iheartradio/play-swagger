@@ -32,8 +32,6 @@ object SwaggerSpecGenerator {
   private val refKey = "$ref"
   private val baseSpecFileName = "swagger"
 
-  private val marker = "##"
-
   def apply(namingConvention: NamingConvention, swaggerV3: Boolean, domainNameSpaces: String*)(implicit
   cl: ClassLoader): SwaggerSpecGenerator = {
     SwaggerSpecGenerator(
@@ -132,9 +130,9 @@ final case class SwaggerSpecGenerator(
   }
 
   /** .routes を除いたファイル名がタグ名となる */
-  def tagFromFile(fileName: String): Tag = fileName.replace(routesExt, "")
+  private def tagFromFile(fileName: String): Tag = fileName.replace(routesExt, "")
 
-  def loop(path: Path, routesFile: String): RoutesData = {
+  private def loop(path: Path, routesFile: String): RoutesData = {
     // TODO: better error handling
     ResourceReader.read(routesFile).flatMap { lines =>
       lines.headOption match {
@@ -207,7 +205,7 @@ final case class SwaggerSpecGenerator(
     * @param routes [[Route]]s compiled by Play routes compiler
     * @param base   swagger.yaml に記載された基本設定
     */
-  def generateFromRoutes(routes: ListMap[Tag, (String, Seq[Route])], base: JsObject): JsObject = {
+  private def generateFromRoutes(routes: ListMap[Tag, (String, Seq[Route])], base: JsObject): JsObject = {
     val docs = routes.map {
       case (tag, (path, routes)) =>
         tag -> paths(routes, path, Some(tag))
