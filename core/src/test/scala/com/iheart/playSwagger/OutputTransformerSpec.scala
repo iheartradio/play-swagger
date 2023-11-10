@@ -3,6 +3,7 @@ package com.iheart.playSwagger
 import scala.util.{Failure, Success}
 
 import com.iheart.playSwagger.OutputTransformer.SimpleOutputTransformer
+import com.iheart.playSwagger.generator.{NamingConvention, PrefixDomainModelQualifier, SwaggerSpecGenerator}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 
@@ -13,7 +14,7 @@ class OutputTransformerSpec extends Specification {
       val result = OutputTransformer.traverseTransformer(Json.obj(
         "a" -> 1,
         "b" -> "c"
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" -> 10, "b" -> 10))
     }
 
@@ -23,7 +24,7 @@ class OutputTransformerSpec extends Specification {
         "b" -> Json.obj(
           "c" -> 1
         )
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj("a" -> 10, "b" -> Json.obj("c" -> 10)))
     }
 
@@ -35,7 +36,7 @@ class OutputTransformerSpec extends Specification {
           Json.obj("d" -> 1),
           Json.obj("e" -> 1)
         )
-      )) { _ => Success(JsNumber(10)) }
+      )) { _ ⇒ Success(JsNumber(10)) }
       result === Success(Json.obj(
         "a" -> 10,
         "b" -> Json.arr(
@@ -53,19 +54,19 @@ class OutputTransformerSpec extends Specification {
         "b" -> Json.obj(
           "c" -> 1
         )
-      )) { _ => Failure(err) }
+      )) { _ ⇒ Failure(err) }
       result === Failure(err)
     }
   }
   "OutputTransformer.>=>" >> {
     "return composed function" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString(content + "a"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString(content + "a"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString(content + "b"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString(content + "b"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
@@ -80,12 +81,12 @@ class OutputTransformerSpec extends Specification {
 
     "fail if one composed function fails" >> {
       val a = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Success(JsString("a" + content))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Success(JsString("a" + content))
+        case _ ⇒ Failure(new IllegalStateException())
       })
       val b = SimpleOutputTransformer(OutputTransformer.traverseTransformer(_) {
-        case JsString(content) => Failure(new IllegalStateException("not strings"))
-        case _ => Failure(new IllegalStateException())
+        case JsString(content) ⇒ Failure(new IllegalStateException("not strings"))
+        case _ ⇒ Failure(new IllegalStateException())
       })
 
       val g = a >=> b
@@ -129,8 +130,8 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
   "integration" >> {
     "generate api with placeholders in place" >> {
       val envs = Map("LAST_TRACK_DESCRIPTION" -> "Last track", "PLAYED_TRACKS_DESCRIPTION" -> "Add tracks")
-      val json = SwaggerSpecGenerator(
-        NamingStrategy.None,
+      val json = generator.SwaggerSpecGenerator(
+        NamingConvention.None,
         PrefixDomainModelQualifier("com.iheart"),
         outputTransformers = MapVariablesTransformer(envs) :: Nil
       ).generate("env.routes").get
@@ -146,7 +147,7 @@ class EnvironmentVariablesIntegrationSpec extends Specification {
   "fail to generate API if environment variable is not found" >> {
     val envs = Map("LAST_TRACK_DESCRIPTION" -> "Last track")
     val json = SwaggerSpecGenerator(
-      NamingStrategy.None,
+      NamingConvention.None,
       PrefixDomainModelQualifier("com.iheart"),
       outputTransformers = MapVariablesTransformer(envs) :: Nil
     ).generate("env.routes")
