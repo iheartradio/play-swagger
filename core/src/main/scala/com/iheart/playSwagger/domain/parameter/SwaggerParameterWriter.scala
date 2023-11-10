@@ -11,11 +11,11 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
   val referencePrefix: String = if (swaggerV3) "#/components/schemas/" else "#/definitions/"
 
   lazy val propWrites: Writes[SwaggerParameter] = Writes {
-    case g: GenSwaggerParameter ⇒ genPropWrites.writes(g)
-    case c: CustomSwaggerParameter ⇒ customPropWrites.writes(c)
+    case g: GenSwaggerParameter => genPropWrites.writes(g)
+    case c: CustomSwaggerParameter => customPropWrites.writes(c)
   }
 
-  private val customPropWrites: Writes[CustomSwaggerParameter] = Writes { cwp ⇒
+  private val customPropWrites: Writes[CustomSwaggerParameter] = Writes { cwp =>
     (__ \ "default").writeNullable[JsValue].writes(cwp.default) ++
       (__ \ nullableName).writeNullable[Boolean].writes(cwp.nullable) ++
       (cwp.specAsProperty orElse cwp.specAsParameter.headOption).getOrElse(Json.obj())
@@ -23,16 +23,16 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
 
   def customParamWrites(csp: CustomSwaggerParameter): List[JsObject] = {
     csp.specAsParameter match {
-      case head :: tail ⇒
+      case head :: tail =>
         val w = (
           (__ \ 'name).write[String] ~
             (__ \ 'required).write[Boolean] ~
             (under \ nullableName).writeNullable[Boolean] ~
             (under \ 'default).writeNullable[JsValue]
-        )((c: CustomSwaggerParameter) ⇒ (c.name, c.required, c.nullable, c.default))
+        )((c: CustomSwaggerParameter) => (c.name, c.required, c.nullable, c.default))
         (w.writes(csp) ++ withPrefix(head)) :: tail
       // 要素が1つの場合は `elem :: Nil` になるので残りは `Nil` のみ
-      case Nil ⇒ Nil
+      case Nil => Nil
     }
   }
 
@@ -40,7 +40,7 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
     if (swaggerV3) Json.obj("schema" -> input) else input
   }
 
-  private val refWrite: Writes[String] = Writes { (refType: String) ⇒
+  private val refWrite: Writes[String] = Writes { (refType: String) =>
     Json.obj("$ref" -> JsString(referencePrefix + refType))
   }
 
@@ -73,23 +73,23 @@ class SwaggerParameterWriter(swaggerV3: Boolean) {
       (__ \ "enum").writeNullable[Seq[String]] ~
       (__ \ "description").writeNullable[String]
 
-    writesBuilder { p ⇒
+    writesBuilder { p =>
       Tuple9(
-        p.`type`,
-        p.format,
-        p.nullable,
-        p.default,
-        p.example,
-        p.referenceType.map(referencePrefix + _),
-        p.items,
-        p.enum,
-        p.description
+        _1 = p.`type`,
+        _2 = p.format,
+        _3 = p.nullable,
+        _4 = p.default,
+        _5 = p.example,
+        _6 = p.referenceType.map(referencePrefix + _),
+        _7 = p.items,
+        _8 = p.enum,
+        _9 = p.description
       )
     }
   }
 
-  implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps ⇒
-    JsObject(ps.map(p ⇒ p.name -> Json.toJson(p)(propWrites)))
+  implicit val propertiesWriter: Writes[Seq[SwaggerParameter]] = Writes[Seq[SwaggerParameter]] { ps =>
+    JsObject(ps.map(p => p.name -> Json.toJson(p)(propWrites)))
   }
 
 }

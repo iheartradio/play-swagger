@@ -15,7 +15,7 @@ object Definition {
     (__ \ 'description).writeNullable[String] ~
       (__ \ 'properties).write[Seq[SwaggerParameter]] ~
       (__ \ 'required).writeNullable[Seq[String]]
-  )((d: Definition) ⇒ (d.description, d.properties, requiredProperties(d.properties)))
+  )((d: Definition) => (d.description, d.properties, requiredProperties(d.properties)))
 
   private def requiredProperties(properties: Seq[SwaggerParameter]): Option[Seq[String]] = {
     val required = properties.filter(_.required).map(_.name)

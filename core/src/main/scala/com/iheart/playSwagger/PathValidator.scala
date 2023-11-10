@@ -8,7 +8,7 @@ object PathValidator {
       Paths.get(path)
       true
     } catch {
-      case _: InvalidPathException | _: NullPointerException ⇒ false
+      case _: InvalidPathException | _: NullPointerException => false
     }
   }
 }

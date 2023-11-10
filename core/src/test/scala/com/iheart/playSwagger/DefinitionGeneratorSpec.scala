@@ -454,14 +454,14 @@ class DefinitionGeneratorSpec extends Specification {
       result.length === 16
 
       "with correct long property" >> {
-        result.filter(r ⇒ r.name == "id").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "id").seq.head === GenSwaggerParameter(
           name = "id",
           `type` = Some("integer"),
           format = Some("int64"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "aLong").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "aLong").seq.head === GenSwaggerParameter(
           name = "aLong",
           `type` = Some("integer"),
           format = Some("int64"),
@@ -470,14 +470,14 @@ class DefinitionGeneratorSpec extends Specification {
         )
       }
       "with correct int32 property" >> {
-        result.filter(r ⇒ r.name == "integer").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "integer").seq.head === GenSwaggerParameter(
           name = "integer",
           `type` = Some("integer"),
           format = Some("int32"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "anInt").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "anInt").seq.head === GenSwaggerParameter(
           name = "anInt",
           `type` = Some("integer"),
           format = Some("int32"),
@@ -487,14 +487,14 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with correct double property" >> {
-        result.filter(r ⇒ r.name == "aDouble").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "aDouble").seq.head === GenSwaggerParameter(
           name = "aDouble",
           `type` = Some("number"),
           format = Some("double"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "double").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "double").seq.head === GenSwaggerParameter(
           name = "double",
           `type` = Some("number"),
           format = Some("double"),
@@ -504,14 +504,14 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with correct float property" >> {
-        result.filter(r ⇒ r.name == "float").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "float").seq.head === GenSwaggerParameter(
           name = "float",
           `type` = Some("number"),
           format = Some("float"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "aFloat").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "aFloat").seq.head === GenSwaggerParameter(
           name = "aFloat",
           `type` = Some("number"),
           format = Some("float"),
@@ -521,21 +521,21 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with correct java time property" >> {
-        result.filter(r ⇒ r.name == "instant").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "instant").seq.head === GenSwaggerParameter(
           name = "instant",
           `type` = Some("string"),
           format = Some("date-time"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "dayOfBirth").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "dayOfBirth").seq.head === GenSwaggerParameter(
           name = "dayOfBirth",
           `type` = Some("string"),
           format = Some("date"),
           required = false,
           nullable = Some(true)
         )
-        result.filter(r ⇒ r.name == "localDateTime").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "localDateTime").seq.head === GenSwaggerParameter(
           name = "localDateTime",
           `type` = Some("string"),
           format = Some("date-time"),
@@ -546,7 +546,7 @@ class DefinitionGeneratorSpec extends Specification {
 
       "with correct array property" >> {
         val itemsParam = GenSwaggerParameter(name = "customKey", required = true, `type` = Some("string"))
-        result.filter(r ⇒ r.name == "customKey").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "customKey").seq.head === GenSwaggerParameter(
           name = "customKey",
           required = true,
           `type` = Some("array"),
@@ -555,7 +555,7 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with correct string property" >> {
-        result.filter(r ⇒ r.name == "firstName").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "firstName").seq.head === GenSwaggerParameter(
           name = "firstName",
           `type` = Some("string"),
           required = false,
@@ -564,7 +564,7 @@ class DefinitionGeneratorSpec extends Specification {
       }
 
       "with reference type" >> {
-        result.filter(r ⇒ r.name == "attribute").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "attribute").seq.head === GenSwaggerParameter(
           name = "attribute",
           referenceType = Some("com.iheart.playSwagger.Attribute"),
           required = false,
@@ -579,7 +579,7 @@ class DefinitionGeneratorSpec extends Specification {
             required = true,
             referenceType = Some("com.iheart.playSwagger.Attribute")
           )
-        result.filter(r ⇒ r.name == "attributeList").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "attributeList").seq.head === GenSwaggerParameter(
           name = "attributeList",
           `type` = Some("array"),
           items = Some(itemsParamList),
@@ -593,7 +593,7 @@ class DefinitionGeneratorSpec extends Specification {
             required = true,
             referenceType = Some("com.iheart.playSwagger.Attribute")
           )
-        result.filter(r ⇒ r.name == "attributeSet").seq.head === GenSwaggerParameter(
+        result.filter(r => r.name == "attributeSet").seq.head === GenSwaggerParameter(
           name = "attributeSet",
           `type` = Some("array"),
           items = Some(itemsParamSet),

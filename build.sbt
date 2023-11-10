@@ -3,7 +3,10 @@ ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 ThisBuild / publish / skip := true
 ThisBuild / scalafixDependencies ++= Seq(
   "com.github.liancheng" %% "organize-imports" % "0.6.0",
-  "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.3"
+  "com.sandinh" %% "scala-rewrites" % "1.1.0-M1",
+  "net.pixiv" %% "scalafix-pixiv-rule" % "4.5.3",
+  "com.github.xuwei-k" %% "scalafix-rules" % "0.3.1",
+  "com.github.jatcwang" %% "scalafix-named-params" % "0.2.3"
 )
 
 addCommandAlias(
@@ -46,10 +49,18 @@ lazy val playSwagger = project.in(file("core"))
     addCompilerPlugin("com.github.takezoe" %% "runtime-scaladoc-reader" % "1.0.3"),
     scalaVersion := scalaV,
     crossScalaVersions := Seq(scalaVersion.value, "2.13.12"),
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Seq("-Wunused")
       case _ => Seq("-Xlint:unused")
-    })
+    }) ++ Seq(
+      "-deprecation",
+      "-feature",
+      "-Ypatmat-exhaust-depth",
+      "40",
+      "-P:semanticdb:synthetics:on"
+    )
   )
 
 lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
@@ -74,8 +85,16 @@ lazy val sbtPlaySwagger = project.in(file("sbtPlugin"))
         Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
     },
     scriptedBufferLog := false,
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 13)) => Seq("-Wunused")
       case _ => Seq("-Xlint:unused")
-    })
+    }) ++ Seq(
+      "-deprecation",
+      "-feature",
+      "-Ypatmat-exhaust-depth",
+      "40",
+      "-P:semanticdb:synthetics:on"
+    )
   )

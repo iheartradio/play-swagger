@@ -26,7 +26,7 @@ object GenSwaggerParameter {
       enum: Option[Seq[String]]
   )(implicit name: String, default: Option[JsValue], description: Option[String]): GenSwaggerParameter =
     new GenSwaggerParameter(
-      name,
+      name = name,
       `type` = Some(`type`),
       format = format,
       required = default.isEmpty,
@@ -36,5 +36,5 @@ object GenSwaggerParameter {
     )
 
   def apply(name: String, `type`: String): GenSwaggerParameter =
-    new GenSwaggerParameter(name, required = true, `type` = Some(`type`))
+    new GenSwaggerParameter(name = name, required = true, `type` = Some(`type`))
 }

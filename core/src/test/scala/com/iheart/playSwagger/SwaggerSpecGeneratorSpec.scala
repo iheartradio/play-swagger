@@ -334,11 +334,11 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "generate tags definition" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      tags.get.map(tO ⇒ (tO \ "name").as[String]).sorted must contain(exactly("player"))
+      tags.get.map(tO => (tO \ "name").as[String]).sorted must contain(exactly("player"))
 
       val allTags =
-        pathJson.as[JsObject].value.values.flatMap { pathObj ⇒
-          pathObj.as[JsObject].value.values.flatMap { opObj ⇒
+        pathJson.as[JsObject].value.values.flatMap { pathObj =>
+          pathObj.as[JsObject].value.values.flatMap { opObj =>
             val tag = (opObj \ "tags").asOpt[Seq[String]]
 
             tag must beSome[Seq[String]]
@@ -363,14 +363,14 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "merge tag description from base" >> {
       val tags = (json \ "tags").asOpt[Seq[JsObject]]
       tags must beSome[Seq[JsObject]]
-      val playTag = tags.get.find(t ⇒ (t \ "name").as[String] == "player")
+      val playTag = tags.get.find(t => (t \ "name").as[String] == "player")
       (playTag.get \ "description").asOpt[String] === Some("this is player api")
     }
 
     "get both body and url params" >> {
       val params = (playerAddTrackJson \ "parameters").as[JsArray].value
       params.length === 2
-      params.map(p ⇒ (p \ "name").as[String]).toSet === Set("body", "pid")
+      params.map(p => (p \ "name").as[String]).toSet === Set("body", "pid")
 
     }
 
@@ -607,8 +607,8 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     }
 
     "definition properties does not contain 'required' boolean field" >> {
-      definitionsJson.as[JsObject].values.forall { definition ⇒
-        (definition \ "properties").as[JsObject].values.forall { property ⇒
+      definitionsJson.as[JsObject].values.forall { definition =>
+        (definition \ "properties").as[JsObject].values.forall { property =>
           (property \ "required").toOption === None
         }
       }
@@ -616,7 +616,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "definitions exposes 'required' array if there are required properties" >> {
       val requiredFields = Seq("name", "artist", "related", "numbers")
-      (trackJson \ "required").as[Seq[String]] must contain(allOf(requiredFields: _*).exactly)
+      (trackJson \ "required").as[Seq[String]] must contain(allOf(requiredFields.toSeq: _*).exactly)
     }
 
     "definitions does not expose 'required' array if there are no required properties" >> {
@@ -643,7 +643,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
     "not contain tags that are empty" >> {
       val tags = (json \ "tags").as[Seq[JsObject]]
-        .map(o ⇒ (o \ "name").as[String])
+        .map(o => (o \ "name").as[String])
       tags must not contain "no"
     }
 
@@ -656,12 +656,12 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
     "accept parameter references" >> {
       val parameters = (pathJson \ "/references/magic/echoMagic/{type}" \ "post" \ "parameters").as[Seq[JsObject]]
 
-      parameters must contain((entry: JsObject) ⇒
+      parameters must contain((entry: JsObject) =>
         entry.value.get("$ref").contains(JsString("#/parameters/magic"))
       )
         .exactly(1.times)
 
-      parameters must contain((entry: JsObject) ⇒
+      parameters must contain((entry: JsObject) =>
         entry.value.get("name").contains(JsString("notMagic"))
       )
         .exactly(1.times)
@@ -671,7 +671,7 @@ class SwaggerSpecGeneratorIntegrationSpec extends Specification {
 
       val parameters = (pathJson \ "/zoo/zone/{zid}/animals/{aid}" \ "get" \ "parameters").as[Seq[JsObject]]
       parameters.size === 1
-      parameters must contain((entry: JsObject) ⇒
+      parameters must contain((entry: JsObject) =>
         entry.value.get("name").contains(JsString("aid"))
       )
         .exactly(1.times).not
